@@ -1,6 +1,6 @@
 package ${basePackage}.app.web.controller;
 
-import ${basePackage}.app.biz.${className}BizService;
+import ${basePackage}.app.biz.${className}Manager;
 import ${basePackage}.app.web.assembler.${className}Assembler;
 import ${basePackage}.app.web.param.${className}CreateRequest;
 import ${basePackage}.app.web.param.${className}QueryRequest;
@@ -30,11 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "${tableComment}管理")
 public class ${className}Controller {
 
-    /** ${tableComment}业务服务。 */
-    private final ${className}BizService ${classNameLower}BizService;
+    /** ${tableComment} Manager。 */
+    private final ${className}Manager ${classNameLower}Manager;
 
-    public ${className}Controller(${className}BizService ${classNameLower}BizService) {
-        this.${classNameLower}BizService = ${classNameLower}BizService;
+    public ${className}Controller(${className}Manager ${classNameLower}Manager) {
+        this.${classNameLower}Manager = ${classNameLower}Manager;
     }
 
     /**
@@ -54,7 +54,7 @@ public class ${className}Controller {
 
             @Override
             public ${className}Response execute(${className}CreateRequest param) {
-                ${className} ${classNameLower} = ${classNameLower}BizService.create${className}(${className}Assembler.toModel(param));
+                ${className} ${classNameLower} = ${classNameLower}Manager.create${className}(${className}Assembler.toModel(param));
                 return ${className}Assembler.toResponse(${classNameLower});
             }
 
@@ -81,7 +81,7 @@ public class ${className}Controller {
 
             @Override
             public ${className}Response execute(Long param) {
-                return ${className}Assembler.toResponse(${classNameLower}BizService.get${className}(param));
+                return ${className}Assembler.toResponse(${classNameLower}Manager.get${className}(param));
             }
 
             @Override
@@ -107,7 +107,7 @@ public class ${className}Controller {
 
             @Override
             public PageResult<${className}Response> execute(${className}QueryRequest param) {
-                PageResult<${className}> page = ${classNameLower}BizService.page${className}s(${className}Assembler.toQueryParam(param));
+                PageResult<${className}> page = ${classNameLower}Manager.page${className}s(${className}Assembler.toQueryParam(param));
                 return new PageResult<>(page.getTotal(), param.getPageNum(), param.getPageSize(),
                         page.getDataList().stream().map(${className}Assembler::toResponse).toList());
             }
@@ -120,6 +120,7 @@ public class ${className}Controller {
 
     /**
      * 更新${entityName}（全量）。
+     * 注意：PUT 为全量覆盖，未传字段会被置 NULL；部分更新请走 updateByCondition（Manager/DomainService）。
      *
      * @param id      ${entityName} ID
      * @param request 更新内容
@@ -136,7 +137,7 @@ public class ${className}Controller {
 
             @Override
             public ${className}Response execute(${className}UpdateRequest param) {
-                ${className} ${classNameLower} = ${classNameLower}BizService.update${className}(${className}Assembler.toModel(param, id));
+                ${className} ${classNameLower} = ${classNameLower}Manager.update${className}(${className}Assembler.toModel(param, id));
                 return ${className}Assembler.toResponse(${classNameLower});
             }
 
@@ -163,7 +164,7 @@ public class ${className}Controller {
 
             @Override
             public void execute(Long param) {
-                ${classNameLower}BizService.delete${className}(param);
+                ${classNameLower}Manager.delete${className}(param);
             }
 
             @Override

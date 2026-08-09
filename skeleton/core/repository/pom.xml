@@ -24,19 +24,10 @@
             <groupId>com.jakt</groupId>
             <artifactId>aiplatform-common-dal</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.jakt</groupId>
-            <artifactId>aiplatform-common-util</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-        </dependency>
-        <!-- @Resource 注解（UserRepositoryImpl 使用） -->
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
     </dependencies>
 </project>

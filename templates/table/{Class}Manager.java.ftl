@@ -3,7 +3,6 @@ package ${basePackage}.app.biz;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.param.${className}QueryParam;
 import ${basePackage}.core.model.result.PageResult;
-import ${basePackage}.core.repository.${className}Repository;
 import ${basePackage}.core.service.${className}DomainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,23 +11,19 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * ${tableComment}业务服务：用例编排。输入输出都是领域模型，不做前端格式转换。
+ * ${tableComment} Manager：用例编排。输入输出都是领域模型，不做前端格式转换。
+ * 只依赖 core-model 与 core-service（DomainService），不直接触碰仓储。
  */
 @Service
-public class ${className}BizService {
+public class ${className}Manager {
 
-    private static final Logger log = LoggerFactory.getLogger(${className}BizService.class);
+    private static final Logger log = LoggerFactory.getLogger(${className}Manager.class);
 
     /** ${tableComment}领域服务。 */
     private final ${className}DomainService ${classNameLower}DomainService;
 
-    /** ${tableComment}仓储。 */
-    private final ${className}Repository ${classNameLower}Repository;
-
-    public ${className}BizService(${className}DomainService ${classNameLower}DomainService,
-                                  ${className}Repository ${classNameLower}Repository) {
+    public ${className}Manager(${className}DomainService ${classNameLower}DomainService) {
         this.${classNameLower}DomainService = ${classNameLower}DomainService;
-        this.${classNameLower}Repository = ${classNameLower}Repository;
     }
 
     /**
@@ -60,7 +55,7 @@ public class ${className}BizService {
      * @return 分页结果
      */
     public PageResult<${className}> page${className}s(${className}QueryParam query) {
-        return ${classNameLower}Repository.findPage(query);
+        return ${classNameLower}DomainService.findPage(query);
     }
 
     /**
@@ -70,11 +65,12 @@ public class ${className}BizService {
      * @return ${entityName}列表
      */
     public List<${className}> list${className}s(${className}QueryParam query) {
-        return ${classNameLower}Repository.findList(query);
+        return ${classNameLower}DomainService.findList(query);
     }
 
     /**
      * 更新${entityName}（全量）。
+     * 注意：PUT 为全量覆盖，未传字段会被置 NULL；部分更新请用 {@link #updateByCondition}。
      *
      * @param ${classNameLower} ${entityName}（含主键）
      * @return 更新后的${entityName}
@@ -91,7 +87,7 @@ public class ${className}BizService {
      * @param ${classNameLower} ${entityName}（至少含主键）
      */
     public void updateByCondition(${className} ${classNameLower}) {
-        ${classNameLower}Repository.updateByCondition(${classNameLower});
+        ${classNameLower}DomainService.updateByCondition(${classNameLower});
         log.info("按条件更新${entityName}成功 id={}", ${classNameLower}.getId());
     }
 

@@ -32,7 +32,8 @@ public final class CrudGenerator {
         TEMPLATES.put("{Class}RepositoryImpl.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/impl/{Class}RepositoryImpl.java");
         TEMPLATES.put("{Class}RepositoryAssembler.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/assembler/{Class}Assembler.java");
         TEMPLATES.put("{Class}DomainService.java.ftl", "core/service/src/main/java/{pkg}/core/service/{Class}DomainService.java");
-        TEMPLATES.put("{Class}BizService.java.ftl", "biz/service-impl/src/main/java/{pkg}/app/biz/{Class}BizService.java");
+        TEMPLATES.put("{Class}DomainServiceTest.java.ftl", "core/service/src/test/java/{pkg}/core/service/{Class}DomainServiceTest.java");
+        TEMPLATES.put("{Class}Manager.java.ftl", "biz/service-impl/src/main/java/{pkg}/app/biz/{Class}Manager.java");
         TEMPLATES.put("{Class}Controller.java.ftl", "web/src/main/java/{pkg}/app/web/controller/{Class}Controller.java");
         TEMPLATES.put("{Class}CreateRequest.java.ftl", "web/src/main/java/{pkg}/app/web/param/{Class}CreateRequest.java");
         TEMPLATES.put("{Class}UpdateRequest.java.ftl", "web/src/main/java/{pkg}/app/web/param/{Class}UpdateRequest.java");
@@ -102,6 +103,7 @@ public final class CrudGenerator {
         model.put("hasBigDecimal", meta.hasBigDecimal);
         model.put("hasRequiredString", meta.hasRequiredString);
         model.put("hasRequiredNonString", meta.hasRequiredNonString);
+        model.put("hasString", meta.hasString);
         return model;
     }
 

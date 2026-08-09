@@ -35,10 +35,10 @@
     </appender>
 
     <!-- 异步调度日志 -->
-    <appender name="ASYN_SCHEDULE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/asyn-schedule.log</file>
+    <appender name="ASYNC_SCHEDULE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/async-schedule.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/asyn-schedule.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>logs/async-schedule.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -53,8 +53,8 @@
     <logger name="biz-service" level="INFO" additivity="false">
         <appender-ref ref="BIZ_SERVICE"/>
     </logger>
-    <logger name="asyn-schedule" level="INFO" additivity="false">
-        <appender-ref ref="ASYN_SCHEDULE"/>
+    <logger name="async-schedule" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_SCHEDULE"/>
     </logger>
 
     <root level="INFO">

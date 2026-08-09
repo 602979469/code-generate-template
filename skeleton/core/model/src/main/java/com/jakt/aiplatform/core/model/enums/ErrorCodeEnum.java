@@ -27,9 +27,6 @@ public enum ErrorCodeEnum implements ErrorCode {
     /** 资源不存在。 */
     RESOURCE_NOT_FOUND(30001, "资源不存在"),
 
-    /** 用户不存在。 */
-    USER_NOT_FOUND(30002, "用户不存在"),
-
     /** 外部服务调用失败。 */
     EXTERNAL_ERROR(40000, "外部服务调用失败");
 

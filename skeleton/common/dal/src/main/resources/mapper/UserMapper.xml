@@ -130,9 +130,11 @@
 
     <!-- 按条件更新：只更新传入的非空字段（部分更新），适合只改几个字段的场景；
          注意：无法把字段更新为 null，需要置 null 请用 update 全量更新；
-         update_time 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护 -->
+         update_time 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护；
+         全部字段均为空时跳过更新（返回 0），避免生成非法 SQL -->
     <update id="updateByCondition" parameterType="com.jakt.aiplatform.common.dal.dataobject.UserDO">
         UPDATE sys_user
+        <if test="deptId != null or loginName != null or userName != null or userType != null or email != null or phonenumber != null or sex != null or avatar != null or password != null or salt != null or status != null or loginIp != null or loginDate != null or pwdUpdateDate != null or remark != null">
         <set>
             <if test="deptId != null">
                 dept_id = #{deptId},
@@ -180,9 +182,11 @@
                 remark = #{remark},
             </if>
         </set>
+        </if>
         WHERE id = #{id}
     </update>
 
+    <!-- 当前为物理删除；软删除后续启用（del_flag 留待 BizDO） -->
     <delete id="deleteById">
         DELETE FROM sys_user WHERE id = #{id}
     </delete>

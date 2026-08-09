@@ -1,6 +1,6 @@
 package com.jakt.aiplatform.app.web.controller;
 
-import com.jakt.aiplatform.app.biz.UserBizService;
+import com.jakt.aiplatform.app.biz.UserManager;
 import com.jakt.aiplatform.app.web.assembler.UserAssembler;
 import com.jakt.aiplatform.app.web.param.UserCreateRequest;
 import com.jakt.aiplatform.app.web.param.UserQueryRequest;
@@ -30,11 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "用户信息表管理")
 public class UserController {
 
-    /** 用户信息表业务服务。 */
-    private final UserBizService userBizService;
+    /** 用户信息表 Manager。 */
+    private final UserManager userManager;
 
-    public UserController(UserBizService userBizService) {
-        this.userBizService = userBizService;
+    public UserController(UserManager userManager) {
+        this.userManager = userManager;
     }
 
     /**
@@ -54,7 +54,7 @@ public class UserController {
 
             @Override
             public UserResponse execute(UserCreateRequest param) {
-                User user = userBizService.createUser(UserAssembler.toModel(param));
+                User user = userManager.createUser(UserAssembler.toModel(param));
                 return UserAssembler.toResponse(user);
             }
 
@@ -81,7 +81,7 @@ public class UserController {
 
             @Override
             public UserResponse execute(Long param) {
-                return UserAssembler.toResponse(userBizService.getUser(param));
+                return UserAssembler.toResponse(userManager.getUser(param));
             }
 
             @Override
@@ -107,7 +107,7 @@ public class UserController {
 
             @Override
             public PageResult<UserResponse> execute(UserQueryRequest param) {
-                PageResult<User> page = userBizService.pageUsers(UserAssembler.toQueryParam(param));
+                PageResult<User> page = userManager.pageUsers(UserAssembler.toQueryParam(param));
                 return new PageResult<>(page.getTotal(), param.getPageNum(), param.getPageSize(),
                         page.getDataList().stream().map(UserAssembler::toResponse).toList());
             }
@@ -120,6 +120,7 @@ public class UserController {
 
     /**
      * 更新用户信息（全量）。
+     * 注意：PUT 为全量覆盖，未传字段会被置 NULL；部分更新请走 updateByCondition（Manager/DomainService）。
      *
      * @param id      用户信息 ID
      * @param request 更新内容
@@ -136,7 +137,7 @@ public class UserController {
 
             @Override
             public UserResponse execute(UserUpdateRequest param) {
-                User user = userBizService.updateUser(UserAssembler.toModel(param, id));
+                User user = userManager.updateUser(UserAssembler.toModel(param, id));
                 return UserAssembler.toResponse(user);
             }
 
@@ -163,7 +164,7 @@ public class UserController {
 
             @Override
             public void execute(Long param) {
-                userBizService.deleteUser(param);
+                userManager.deleteUser(param);
             }
 
             @Override

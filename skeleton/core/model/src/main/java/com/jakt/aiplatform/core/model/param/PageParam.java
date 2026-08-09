@@ -22,6 +22,6 @@ public class PageParam {
 
     /** SQL LIMIT 偏移量。 */
     public int getOffset() {
-        return (pageNum - 1) * pageSize;
+        return (Math.max(pageNum, 1) - 1) * Math.max(pageSize, 1);
     }
 }

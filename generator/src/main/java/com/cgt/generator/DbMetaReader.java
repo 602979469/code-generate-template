@@ -56,6 +56,7 @@ public final class DbMetaReader {
                         meta.hasLocalDateTime |= "LocalDateTime".equals(column.javaType);
                         meta.hasLocalDate |= "LocalDate".equals(column.javaType);
                         meta.hasBigDecimal |= "BigDecimal".equals(column.javaType);
+                        meta.hasString |= column.string;
                     }
                 }
             }

@@ -49,9 +49,8 @@ public final class AiPlatformTemplate {
                 AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "参数校验失败 接口信息={} 原因={}", caller, e.getMessage());
                 result = AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, e.getMessage());
             } catch (Exception e) {
-                String message = "执行" + caller + "校验逻辑时抛出异常, err=" + e.getMessage();
-                AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, message, e);
-                result = AiPlatformResult.fail(ErrorCodeEnum.SYSTEM_ERROR, message);
+                AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "执行" + caller + "校验逻辑时抛出异常", e);
+                result = AiPlatformResult.fail(ErrorCodeEnum.SYSTEM_ERROR);
             }
 
             if (result == null) {
@@ -63,9 +62,8 @@ public final class AiPlatformTemplate {
                             caller, e.getErrorCode().getCode(), e.getMessage());
                     result = AiPlatformResult.fail(e.getErrorCode(), e.getMessage());
                 } catch (Exception e) {
-                    String message = "执行" + caller + "业务逻辑时抛出异常, err=" + e.getMessage();
-                    AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, message, e);
-                    result = AiPlatformResult.fail(ErrorCodeEnum.SYSTEM_ERROR, message);
+                    AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "执行" + caller + "业务逻辑时抛出异常", e);
+                    result = AiPlatformResult.fail(ErrorCodeEnum.SYSTEM_ERROR);
                 }
             }
         } finally {

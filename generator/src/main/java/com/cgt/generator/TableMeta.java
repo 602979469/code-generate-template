@@ -32,4 +32,6 @@ public final class TableMeta {
     public boolean hasRequiredString;
     /** 是否存在必填非字符串列（决定 DTO 是否导入 @NotNull）。 */
     public boolean hasRequiredNonString;
+    /** 是否存在字符串列（决定 DTO 是否导入 @Size）。 */
+    public boolean hasString;
 }

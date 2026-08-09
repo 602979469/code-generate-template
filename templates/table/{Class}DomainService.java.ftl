@@ -3,8 +3,12 @@ package ${basePackage}.core.service;
 import ${basePackage}.common.util.tools.${toolPrefix}Invoker;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.enums.ErrorCodeEnum;
+import ${basePackage}.core.model.param.${className}QueryParam;
+import ${basePackage}.core.model.result.PageResult;
 import ${basePackage}.core.repository.${className}Repository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * ${tableComment}领域服务：承载${tableComment}相关的业务规则。只写规则，不碰持久化细节。
@@ -45,6 +49,15 @@ public class ${className}DomainService {
     }
 
     /**
+     * 按条件更新${entityName}（只更新传入的非空字段）。
+     *
+     * @param ${classNameLower} ${entityName}（至少含主键）
+     */
+    public void updateByCondition(${className} ${classNameLower}) {
+        ${classNameLower}Repository.updateByCondition(${classNameLower});
+    }
+
+    /**
      * 删除${entityName}：存在性校验后删除。
      *
      * @param id ${entityName} ID
@@ -64,5 +77,25 @@ public class ${className}DomainService {
         ${className} ${classNameLower} = ${classNameLower}Repository.findById(id);
         ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}, ErrorCodeEnum.RESOURCE_NOT_FOUND);
         return ${classNameLower};
+    }
+
+    /**
+     * 分页查询${entityName}：纯查询，无规则。
+     *
+     * @param query 查询参数
+     * @return 分页结果
+     */
+    public PageResult<${className}> findPage(${className}QueryParam query) {
+        return ${classNameLower}Repository.findPage(query);
+    }
+
+    /**
+     * 列表查询${entityName}：纯查询，无规则。
+     *
+     * @param query 查询参数
+     * @return ${entityName}列表
+     */
+    public List<${className}> findList(${className}QueryParam query) {
+        return ${classNameLower}Repository.findList(query);
     }
 }

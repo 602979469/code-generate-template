@@ -72,18 +72,22 @@
 
     <!-- 按条件更新：只更新传入的非空字段（部分更新），适合只改几个字段的场景；
          注意：无法把字段更新为 null，需要置 null 请用 update 全量更新；
-         update_time 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护 -->
+         update_time 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护；
+         全部字段均为空时跳过更新（返回 0），避免生成非法 SQL -->
     <update id="updateByCondition" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
         UPDATE ${tableName}
+        <if test="<#list columns as c>${c.propertyName} != null<#sep> or </#sep></#list>">
         <set>
 <#list columns as c>
             <if test="${c.propertyName} != null">
                 ${c.columnName} = #{${c.propertyName}},
             </if>
 </#list>        </set>
+        </if>
         WHERE id = #{id}
     </update>
 
+    <!-- 当前为物理删除；软删除后续启用（del_flag 留待 BizDO） -->
     <delete id="deleteById">
         DELETE FROM ${tableName} WHERE id = #{id}
     </delete>

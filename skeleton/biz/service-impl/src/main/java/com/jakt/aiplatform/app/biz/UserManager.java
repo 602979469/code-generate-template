@@ -3,7 +3,6 @@ package com.jakt.aiplatform.app.biz;
 import com.jakt.aiplatform.core.model.domain.User;
 import com.jakt.aiplatform.core.model.param.UserQueryParam;
 import com.jakt.aiplatform.core.model.result.PageResult;
-import com.jakt.aiplatform.core.repository.UserRepository;
 import com.jakt.aiplatform.core.service.UserDomainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,23 +11,19 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 用户信息表业务服务：用例编排。输入输出都是领域模型，不做前端格式转换。
+ * 用户信息表 Manager：用例编排。输入输出都是领域模型，不做前端格式转换。
+ * 只依赖 core-model 与 core-service（DomainService），不直接触碰仓储。
  */
 @Service
-public class UserBizService {
+public class UserManager {
 
-    private static final Logger log = LoggerFactory.getLogger(UserBizService.class);
+    private static final Logger log = LoggerFactory.getLogger(UserManager.class);
 
     /** 用户信息表领域服务。 */
     private final UserDomainService userDomainService;
 
-    /** 用户信息表仓储。 */
-    private final UserRepository userRepository;
-
-    public UserBizService(UserDomainService userDomainService,
-                                  UserRepository userRepository) {
+    public UserManager(UserDomainService userDomainService) {
         this.userDomainService = userDomainService;
-        this.userRepository = userRepository;
     }
 
     /**
@@ -60,7 +55,7 @@ public class UserBizService {
      * @return 分页结果
      */
     public PageResult<User> pageUsers(UserQueryParam query) {
-        return userRepository.findPage(query);
+        return userDomainService.findPage(query);
     }
 
     /**
@@ -70,11 +65,12 @@ public class UserBizService {
      * @return 用户信息列表
      */
     public List<User> listUsers(UserQueryParam query) {
-        return userRepository.findList(query);
+        return userDomainService.findList(query);
     }
 
     /**
      * 更新用户信息（全量）。
+     * 注意：PUT 为全量覆盖，未传字段会被置 NULL；部分更新请用 {@link #updateByCondition}。
      *
      * @param user 用户信息（含主键）
      * @return 更新后的用户信息
@@ -91,7 +87,7 @@ public class UserBizService {
      * @param user 用户信息（至少含主键）
      */
     public void updateByCondition(User user) {
-        userRepository.updateByCondition(user);
+        userDomainService.updateByCondition(user);
         log.info("按条件更新用户信息成功 id={}", user.getId());
     }
 

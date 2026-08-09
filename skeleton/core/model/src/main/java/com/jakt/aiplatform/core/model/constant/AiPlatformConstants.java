@@ -1,10 +1,10 @@
 package com.jakt.aiplatform.core.model.constant;
 
 /**
- * 平台常量。
+ * 平台常量：按需在此登记项目级常量（如缓存 key 前缀、日志标识等）。
  */
-public class AiPlatformConstants {
+public final class AiPlatformConstants {
 
-    /** 平台标识。 */
-    public static final String AI_PLATFORM = "aiPlatform";
+    private AiPlatformConstants() {
+    }
 }

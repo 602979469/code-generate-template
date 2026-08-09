@@ -15,7 +15,7 @@ public enum LogFileEnum {
     BIZ_SERVICE("biz-service"),
 
     /** 异步调度日志。 */
-    ASYN_SCHEDULE("asyn-schedule");
+    ASYNC_SCHEDULE("async-schedule");
 
     /** 日志文件名 / Logger 名称。 */
     private final String fileName;

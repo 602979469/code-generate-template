@@ -22,10 +22,12 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("sys-thread-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(60);
         return executor;
     }
 
-    /** 异步任务线程池（线程池名称枚举后续补充）。 */
+    /** 异步任务线程池，与 {@link ThreadPoolEnum#ASYNC_THREAD_POOL} 对应。 */
     @Bean(name = "asyncThreadPool")
     public ThreadPoolTaskExecutor asyncThreadPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -34,6 +36,8 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(200);
         executor.setThreadNamePrefix("async-thread-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(60);
         return executor;
     }
 }

@@ -10,23 +10,18 @@ public class AiPlatformException extends RuntimeException {
 
     private final ErrorCode errorCode;
 
-    private final String errorMessage;
-
     public AiPlatformException(ErrorCode errorCode) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
-        this.errorMessage = errorCode.getMessage();
     }
 
     public AiPlatformException(ErrorCode errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
-        this.errorMessage = message;
     }
 
     public AiPlatformException(ErrorCode errorCode, String message, Throwable cause) {
         super(message, cause);
         this.errorCode = errorCode;
-        this.errorMessage = message;
     }
 }

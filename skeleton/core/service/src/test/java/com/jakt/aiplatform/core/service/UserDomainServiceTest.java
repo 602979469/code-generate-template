@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -15,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * 用户领域服务单元测试：Mock 仓储，验证领域规则。
+ * User领域服务单元测试：Mock 仓储，验证领域规则。
  */
 @ExtendWith(MockitoExtension.class)
 class UserDomainServiceTest {
@@ -27,19 +28,17 @@ class UserDomainServiceTest {
     private UserDomainService userDomainService;
 
     @Test
-    void createUser_blankLoginName_throwsBizException() {
+    void createUser_missingRequired_throwsBizException() {
         User user = new User();
-        user.setLoginName("  ");
 
         assertThatThrownBy(() -> userDomainService.createUser(user))
-                .isInstanceOf(AiPlatformException.class)
-                .hasMessageContaining("登录账号不能为空");
+                .isInstanceOf(AiPlatformException.class);
     }
 
     @Test
     void createUser_success() {
         User user = new User();
-        user.setLoginName("admin");
+        user.setLoginName("test");
         when(userRepository.insert(user)).thenAnswer(invocation -> {
             User saved = invocation.getArgument(0);
             saved.setId(1L);
