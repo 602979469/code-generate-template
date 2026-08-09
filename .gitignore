@@ -1,4 +1,4 @@
-generator/target/
+target/
 .idea/
 *.iml
 .DS_Store

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 聚合根：让 IDEA 把整个仓库识别为 Maven 项目。
+         generator  = 生成器本体
+         skeleton   = 项目初始化样板（本身是一个完整的多模块项目，仅用于预览/校验）
+         templates/ = 表级 CRUD 模板（非 Maven 模块，普通目录） -->
+    <groupId>com.cgt</groupId>
+    <artifactId>code-generate-template</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>code-generate-template</name>
+    <description>项目样板 + 表级 CRUD 代码生成器</description>
+
+    <modules>
+        <module>generator</module>
+        <module>skeleton</module>
+    </modules>
+</project>
