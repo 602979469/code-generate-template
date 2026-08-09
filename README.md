@@ -35,7 +35,8 @@ code-generate-template/
 
 | 变量 | 含义 | 示例 |
 | --- | --- | --- |
-| `${projectPrefix}` | 项目前缀类名 | AiProd |
+| `${projectPrefix}` | 项目前缀类名（Application 等） | AiProd |
+| `${toolPrefix}` | 工具类/异常/常量前缀 | AiPlatform |
 | `${basePackage}` | 基础包名（= groupId.artifactId） | com.jakt.aiprod |
 | `${className}` | 表对应的类名（去掉 tablePrefix） | sys_dept -> Dept |
 | `${tableName}` | 表名 | sys_dept |
@@ -50,7 +51,7 @@ skeleton 是"能编译的真实代码"，生成时按顺序做 token 替换，�
 | --- | --- |
 | `AiplatformApplication` | `${projectPrefix}Application` |
 | `com.jakt.aiplatform` | 基础包名 |
-| `AiPlatform` | `${projectPrefix}` |
+| `AiPlatform` | `${toolPrefix}`（工具类/异常/常量） |
 | `aiplatform` | `${projectArtifactPrefix}` |
 | `com.jakt` | `${groupId}` |
 

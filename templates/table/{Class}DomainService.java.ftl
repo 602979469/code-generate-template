@@ -1,6 +1,6 @@
 package ${basePackage}.core.service;
 
-import ${basePackage}.common.util.tools.${projectPrefix}Invoker;
+import ${basePackage}.common.util.tools.${toolPrefix}Invoker;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.enums.ErrorCodeEnum;
 import ${basePackage}.core.repository.${className}Repository;
@@ -22,8 +22,8 @@ public class ${className}DomainService {
     }
 
     public ${className} create${className}(${className} ${classNameLower}) {
-<#list requiredColumns as c><#if c.string>        ${projectPrefix}Invoker.throwErrWhenBlank(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
-<#else>        ${projectPrefix}Invoker.throwErrWhenNull(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
+<#list requiredColumns as c><#if c.string>        ${toolPrefix}Invoker.throwErrWhenBlank(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
+<#else>        ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
 </#if></#list>        LocalDateTime now = LocalDateTime.now();
         ${classNameLower}.setCreateTime(now);
         ${classNameLower}.setUpdateTime(now);

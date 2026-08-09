@@ -34,7 +34,9 @@ public final class SkeletonGenerator {
         Files.createDirectories(cfg.outputDir);
 
         try (Stream<Path> walk = Files.walk(skeleton)) {
-            for (Path source : walk.filter(Files::isRegularFile).toList()) {
+            for (Path source : walk.filter(Files::isRegularFile)
+                    .filter(p -> !isSkipped(skeleton.relativize(p)))
+                    .toList()) {
                 Path relative = skeleton.relativize(source);
                 String targetRel = replace(relative.toString().replace('\\', '/'));
                 Path target = cfg.outputDir.resolve(targetRel);
@@ -47,11 +49,22 @@ public final class SkeletonGenerator {
         System.out.println("[gen] 项目初始化完成 -> " + cfg.outputDir);
     }
 
+    /** 跳过构建产物/IDE 目录（target、.git、.idea、out）。 */
+    private static boolean isSkipped(Path relative) {
+        for (Path part : relative) {
+            String name = part.toString();
+            if ("target".equals(name) || ".git".equals(name) || ".idea".equals(name) || "out".equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String replace(String text) {
         String out = text;
         out = out.replace(TOKENS.get(0)[0], cfg.projectPrefix + "Application");
         out = out.replace(TOKENS.get(1)[0], cfg.basePackage());
-        out = out.replace(TOKENS.get(2)[0], cfg.projectPrefix);
+        out = out.replace(TOKENS.get(2)[0], cfg.toolPrefix);
         out = out.replace(TOKENS.get(3)[0], cfg.projectArtifactPrefix);
         out = out.replace(TOKENS.get(4)[0], cfg.groupId);
         return out;

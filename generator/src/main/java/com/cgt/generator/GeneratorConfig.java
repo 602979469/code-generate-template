@@ -16,6 +16,8 @@ public final class GeneratorConfig {
     public Path repoDir;
 
     public String projectPrefix;
+    /** 工具类/异常/常量前缀，默认取 projectPrefix。 */
+    public String toolPrefix;
     public String groupId;
     public String projectArtifactPrefix;
     public String jdbcUrl;
@@ -59,6 +61,7 @@ public final class GeneratorConfig {
         cfg.repoDir = configFile.getParent();
 
         cfg.projectPrefix = first(cli.get("p"), props.getProperty("projectPrefix"), "AiProd");
+        cfg.toolPrefix = first(cli.get("toolPrefix"), props.getProperty("toolPrefix"), cfg.projectPrefix);
         cfg.groupId = first(cli.get("g"), props.getProperty("groupId"), "com.jakt");
         cfg.projectArtifactPrefix = first(cli.get("a"), props.getProperty("projectArtifactPrefix"),
                 cfg.projectPrefix.toLowerCase());

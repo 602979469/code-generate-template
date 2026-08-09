@@ -83,6 +83,7 @@ public final class CrudGenerator {
     private Map<String, Object> buildModel(TableMeta meta) {
         Map<String, Object> model = new LinkedHashMap<>();
         model.put("projectPrefix", cfg.projectPrefix);
+        model.put("toolPrefix", cfg.toolPrefix);
         model.put("basePackage", cfg.basePackage());
         model.put("groupId", cfg.groupId);
         model.put("className", meta.className);
