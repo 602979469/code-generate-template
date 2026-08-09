@@ -66,9 +66,17 @@ public final class Main {
     private static void usage() {
         System.out.println("""
                 用法:
-                  init   初始化新项目   -p AiProd -g com.jakt [-a aiprod] -o 输出目录
-                  table  按表生成 CRUD  -t sys_dept,member [-o 目标项目根目录] [-f]
+                  init   初始化新项目   -p 项目前缀 -g groupId [-a artifact后缀] -o 输出目录
+                  table  按表生成 CRUD  -t 表名1,表名2 [-p 项目前缀] [-g groupId] [-a artifact后缀] [-o 目标项目] [-f]
                   list   列出表级模板
+
+                示例:
+                  init  -p AiProd -g com.jakt -a aiprod -o ../AiProd
+                  table -t sys_dept -o /Users/jakt/IdeaProjects/aiplatform
+
+                说明:
+                  -p/-g/-a 指定项目命名;不传时 init 用 generator.properties 默认值,
+                  table 会自动从目标项目识别项目名(识别失败才用默认值)。
                 全局参数:
                   -c 配置文件路径(默认 generator.properties)""");
     }
