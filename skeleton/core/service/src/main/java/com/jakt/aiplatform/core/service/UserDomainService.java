@@ -20,11 +20,11 @@ public class UserDomainService {
     }
 
     /**
-     * 创建用户信息表：必填字段校验后入库。
+     * 创建用户信息：必填字段校验后入库。
      * createTime/updateTime 由数据库自动维护，领域层不赋值。
      *
-     * @param user 用户信息表
-     * @return 创建后的用户信息表（主键已回填）
+     * @param user 用户信息
+     * @return 创建后的用户信息（主键已回填）
      */
     public User createUser(User user) {
         AiPlatformInvoker.throwErrWhenBlank(user.getLoginName(), ErrorCodeEnum.PARAM_INVALID, "登录账号不能为空");
@@ -32,11 +32,11 @@ public class UserDomainService {
     }
 
     /**
-     * 更新User（全量）：存在性校验后更新。
+     * 更新用户信息（全量）：存在性校验后更新。
      * updateTime 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护。
      *
-     * @param user 用户信息表（含主键）
-     * @return 更新后的用户信息表
+     * @param user 用户信息（含主键）
+     * @return 更新后的用户信息
      */
     public User updateUser(User user) {
         AiPlatformInvoker.throwErrWhenNull(userRepository.findById(user.getId()), ErrorCodeEnum.RESOURCE_NOT_FOUND);
@@ -44,9 +44,9 @@ public class UserDomainService {
     }
 
     /**
-     * 删除用户信息表：存在性校验后删除。
+     * 删除用户信息：存在性校验后删除。
      *
-     * @param id 用户信息表 ID
+     * @param id 用户信息 ID
      */
     public void deleteUser(Long id) {
         AiPlatformInvoker.throwErrWhenNull(userRepository.findById(id), ErrorCodeEnum.RESOURCE_NOT_FOUND);
@@ -54,10 +54,10 @@ public class UserDomainService {
     }
 
     /**
-     * 按 ID 获取用户信息表：不存在时抛业务异常。
+     * 按 ID 获取用户信息：不存在时抛业务异常。
      *
-     * @param id 用户信息表 ID
-     * @return 用户信息表
+     * @param id 用户信息 ID
+     * @return 用户信息
      */
     public User getUser(Long id) {
         User user = userRepository.findById(id);

@@ -57,6 +57,8 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
 7. 命名：`XxxController`（web/controller）、`XxxBizService`、`XxxDomainService`、`XxxRepository`、`XxxMapper`、`XxxDO`（common-dal）、`Xxx` Model（core-model）、`XxxRequest`（web/param）、`XxxResponse`（web/result）、仓储层 `XxxAssembler`（core/repository/assembler）。
 8. 代码风格：构造器注入 + `final` 字段；DTO 用 class + Lombok（`@Data`/`@Builder`），请求继承 `BaseRequest`、响应继承 `BaseResult`；领域模型用 Lombok `@Data`。
 9. 方法注释：有接口的接口加注释；实现类（implements 接口）方法不注释；不实现接口的类（Controller/Assembler/DomainService/BizService）方法统一加标准 javadoc。
+10. 敏感字段：生成器输出与表结构全字段对齐（含 password/salt 等）。敏感字段的响应剔除、查询暴露与日志脱敏属于业务二开职责，禁止打印密码、token 等敏感信息（见禁止模式）。
+11. 分页参数 `pageNum`/`pageSize` 的 `@Min`/`@Max` 是通用约定，不属于字段级特殊校验；`BizTemplate` 为工具类模板、当前未接线，业务入口统一走 `${toolPrefix}Template`，禁止模仿调用 BizTemplate。
 
 ## 新增一个业务模块（以 Order 为例）
 

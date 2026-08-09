@@ -62,6 +62,7 @@ public final class DbMetaReader {
             // 查询条件 = id + 全部业务字段 + 创建/更新时间，程序员按需删减
             buildQueryColumns(meta);
             meta.tableComment = readTableComment(conn, schema, table.dbTableName);
+            meta.entityName = meta.tableComment.replaceAll("表$", "");
         } catch (SQLException e) {
             throw new IllegalStateException("读取表结构失败: " + table.dbTableName, e);
         }

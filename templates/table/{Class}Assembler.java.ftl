@@ -19,8 +19,8 @@ public final class ${className}Assembler {
     /**
      * 创建请求 DTO → 领域模型。
      *
-     * @param request 创建${tableComment}请求 DTO
-     * @return ${tableComment}领域模型
+     * @param request 创建${entityName}请求 DTO
+     * @return ${entityName}领域模型
      */
     public static ${className} toModel(${className}CreateRequest request) {
         ${className} ${classNameLower} = new ${className}();
@@ -32,9 +32,9 @@ public final class ${className}Assembler {
     /**
      * 更新请求 DTO + 路径 ID → 领域模型。
      *
-     * @param request 更新${tableComment}请求 DTO
-     * @param id      路径中的${tableComment} ID
-     * @return ${tableComment}领域模型
+     * @param request 更新${entityName}请求 DTO
+     * @param id      路径中的${entityName} ID
+     * @return ${entityName}领域模型
      */
     public static ${className} toModel(${className}UpdateRequest request, Long id) {
         ${className} ${classNameLower} = new ${className}();
@@ -47,8 +47,8 @@ public final class ${className}Assembler {
     /**
      * 查询请求 DTO → 查询参数。
      *
-     * @param request ${tableComment}查询请求 DTO
-     * @return ${tableComment}查询参数
+     * @param request ${entityName}查询请求 DTO
+     * @return ${entityName}查询参数
      */
     public static ${className}QueryParam toQueryParam(${className}QueryRequest request) {
         ${className}QueryParam param = new ${className}QueryParam();
@@ -66,8 +66,8 @@ public final class ${className}Assembler {
     /**
      * 领域模型 → 响应 DTO。
      *
-     * @param ${classNameLower} ${tableComment}领域模型
-     * @return ${tableComment}响应 DTO
+     * @param ${classNameLower} ${entityName}领域模型
+     * @return ${entityName}响应 DTO
      */
     public static ${className}Response toResponse(${className} ${classNameLower}) {
         ${className}Response response = new ${className}Response();

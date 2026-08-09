@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * 创建用户信息表请求 DTO。
+ * 创建用户信息请求 DTO。
  *
  * <p>校验规则与 sys_user 表字段对齐：非空 + varchar 长度，不做业务自定义规则。
  */

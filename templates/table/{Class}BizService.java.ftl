@@ -32,29 +32,29 @@ public class ${className}BizService {
     }
 
     /**
-     * 创建${tableComment}。
+     * 创建${entityName}。
      *
-     * @param ${classNameLower} ${tableComment}
-     * @return 创建成功后的${tableComment}
+     * @param ${classNameLower} ${entityName}
+     * @return 创建成功后的${entityName}
      */
     public ${className} create${className}(${className} ${classNameLower}) {
         ${className} created = ${classNameLower}DomainService.create${className}(${classNameLower});
-        log.info("创建${tableComment}成功 id={}", created.getId());
+        log.info("创建${entityName}成功 id={}", created.getId());
         return created;
     }
 
     /**
-     * 按 ID 查询${tableComment}。
+     * 按 ID 查询${entityName}。
      *
-     * @param id ${tableComment} ID
-     * @return ${tableComment}
+     * @param id ${entityName} ID
+     * @return ${entityName}
      */
     public ${className} get${className}(Long id) {
         return ${classNameLower}DomainService.get${className}(id);
     }
 
     /**
-     * 分页查询${tableComment}。
+     * 分页查询${entityName}。
      *
      * @param query 查询参数
      * @return 分页结果
@@ -64,44 +64,44 @@ public class ${className}BizService {
     }
 
     /**
-     * 列表查询${tableComment}。
+     * 列表查询${entityName}。
      *
      * @param query 查询参数
-     * @return ${tableComment}列表
+     * @return ${entityName}列表
      */
     public List<${className}> list${className}s(${className}QueryParam query) {
         return ${classNameLower}Repository.findList(query);
     }
 
     /**
-     * 更新${tableComment}（全量）。
+     * 更新${entityName}（全量）。
      *
-     * @param ${classNameLower} ${tableComment}（含主键）
-     * @return 更新后的${tableComment}
+     * @param ${classNameLower} ${entityName}（含主键）
+     * @return 更新后的${entityName}
      */
     public ${className} update${className}(${className} ${classNameLower}) {
         ${className} updated = ${classNameLower}DomainService.update${className}(${classNameLower});
-        log.info("更新${tableComment}成功 id={}", updated.getId());
+        log.info("更新${entityName}成功 id={}", updated.getId());
         return updated;
     }
 
     /**
-     * 按条件更新${tableComment}（只更新传入的非空字段）。
+     * 按条件更新${entityName}（只更新传入的非空字段）。
      *
-     * @param ${classNameLower} ${tableComment}（至少含主键）
+     * @param ${classNameLower} ${entityName}（至少含主键）
      */
     public void updateByCondition(${className} ${classNameLower}) {
         ${classNameLower}Repository.updateByCondition(${classNameLower});
-        log.info("按条件更新${tableComment}成功 id={}", ${classNameLower}.getId());
+        log.info("按条件更新${entityName}成功 id={}", ${classNameLower}.getId());
     }
 
     /**
-     * 删除${tableComment}。
+     * 删除${entityName}。
      *
-     * @param id ${tableComment} ID
+     * @param id ${entityName} ID
      */
     public void delete${className}(Long id) {
         ${classNameLower}DomainService.delete${className}(id);
-        log.info("删除${tableComment}成功 id={}", id);
+        log.info("删除${entityName}成功 id={}", id);
     }
 }

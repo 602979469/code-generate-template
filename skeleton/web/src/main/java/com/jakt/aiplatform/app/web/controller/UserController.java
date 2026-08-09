@@ -38,10 +38,10 @@ public class UserController {
     }
 
     /**
-     * 创建用户信息表。
+     * 创建用户信息。
      *
-     * @param request 创建用户信息表请求体
-     * @return 创建成功后的用户信息表信息
+     * @param request 创建用户信息请求体
+     * @return 创建成功后的用户信息信息
      */
     @PostMapping
     public AiPlatformResult<UserResponse> create(@RequestBody UserCreateRequest request) {
@@ -65,10 +65,10 @@ public class UserController {
     }
 
     /**
-     * 按 ID 查询用户信息表。
+     * 按 ID 查询用户信息。
      *
-     * @param id 用户信息表 ID
-     * @return 用户信息表信息
+     * @param id 用户信息 ID
+     * @return 用户信息信息
      */
     @GetMapping("/{id}")
     public AiPlatformResult<UserResponse> get(@PathVariable Long id) {
@@ -91,7 +91,7 @@ public class UserController {
     }
 
     /**
-     * 分页查询用户信息表。
+     * 分页查询用户信息。
      *
      * @param request 查询条件（含分页参数与时间区间）
      * @return 分页结果
@@ -119,11 +119,11 @@ public class UserController {
     }
 
     /**
-     * 更新用户信息表（全量）。
+     * 更新用户信息（全量）。
      *
-     * @param id      用户信息表 ID
+     * @param id      用户信息 ID
      * @param request 更新内容
-     * @return 更新后的用户信息表信息
+     * @return 更新后的用户信息信息
      */
     @PutMapping("/{id}")
     public AiPlatformResult<UserResponse> update(@PathVariable Long id, @RequestBody UserUpdateRequest request) {
@@ -147,9 +147,9 @@ public class UserController {
     }
 
     /**
-     * 删除用户信息表。
+     * 删除用户信息。
      *
-     * @param id 用户信息表 ID
+     * @param id 用户信息 ID
      * @return 删除结果
      */
     @DeleteMapping("/{id}")

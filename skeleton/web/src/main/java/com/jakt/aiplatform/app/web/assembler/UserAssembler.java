@@ -19,8 +19,8 @@ public final class UserAssembler {
     /**
      * 创建请求 DTO → 领域模型。
      *
-     * @param request 创建用户信息表请求 DTO
-     * @return 用户信息表领域模型
+     * @param request 创建用户信息请求 DTO
+     * @return 用户信息领域模型
      */
     public static User toModel(UserCreateRequest request) {
         User user = new User();
@@ -45,9 +45,9 @@ public final class UserAssembler {
     /**
      * 更新请求 DTO + 路径 ID → 领域模型。
      *
-     * @param request 更新用户信息表请求 DTO
-     * @param id      路径中的用户信息表 ID
-     * @return 用户信息表领域模型
+     * @param request 更新用户信息请求 DTO
+     * @param id      路径中的用户信息 ID
+     * @return 用户信息领域模型
      */
     public static User toModel(UserUpdateRequest request, Long id) {
         User user = new User();
@@ -73,8 +73,8 @@ public final class UserAssembler {
     /**
      * 查询请求 DTO → 查询参数。
      *
-     * @param request 用户信息表查询请求 DTO
-     * @return 用户信息表查询参数
+     * @param request 用户信息查询请求 DTO
+     * @return 用户信息查询参数
      */
     public static UserQueryParam toQueryParam(UserQueryRequest request) {
         UserQueryParam param = new UserQueryParam();
@@ -106,8 +106,8 @@ public final class UserAssembler {
     /**
      * 领域模型 → 响应 DTO。
      *
-     * @param user 用户信息表领域模型
-     * @return 用户信息表响应 DTO
+     * @param user 用户信息领域模型
+     * @return 用户信息响应 DTO
      */
     public static UserResponse toResponse(User user) {
         UserResponse response = new UserResponse();

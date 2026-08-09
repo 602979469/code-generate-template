@@ -16,7 +16,7 @@ public final class UserAssembler {
      * DO → 领域模型。
      *
      * @param userDO 用户信息表数据对象；为空返回 null
-     * @return 用户信息表领域模型
+     * @return 用户信息领域模型
      */
     public static User toModel(UserDO userDO) {
         if (userDO == null) {
@@ -30,7 +30,7 @@ public final class UserAssembler {
     /**
      * 领域模型 → DO。
      *
-     * @param user 用户信息表领域模型
+     * @param user 用户信息领域模型
      * @return 用户信息表数据对象
      */
     public static UserDO toDO(User user) {

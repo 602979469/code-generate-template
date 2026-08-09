@@ -15,7 +15,7 @@ public interface UserRepository {
      * 按主键查询。
      *
      * @param id 主键
-     * @return 用户信息表领域模型
+     * @return 用户信息领域模型
      */
     User findById(Long id);
 
@@ -31,23 +31,23 @@ public interface UserRepository {
      * 列表查询。
      *
      * @param query 查询参数
-     * @return 用户信息表列表
+     * @return 用户信息列表
      */
     List<User> findList(UserQueryParam query);
 
     /**
      * 新增。
      *
-     * @param user 用户信息表
-     * @return 新增后的用户信息表（主键已回填）
+     * @param user 用户信息
+     * @return 新增后的用户信息（主键已回填）
      */
     User insert(User user);
 
     /**
      * 更新。
      *
-     * @param user 用户信息表
-     * @return 更新后的用户信息表
+     * @param user 用户信息
+     * @return 更新后的用户信息
      */
     User update(User user);
 
@@ -55,7 +55,7 @@ public interface UserRepository {
      * 按条件更新：只更新传入的非空字段（部分更新）。
      * 注意：无法把字段更新为 null，需要置 null 请用 {@link #update}；create_time/update_time 由数据库自动维护。
      *
-     * @param user 用户信息表（至少含主键）
+     * @param user 用户信息（至少含主键）
      */
     void updateByCondition(User user);
 

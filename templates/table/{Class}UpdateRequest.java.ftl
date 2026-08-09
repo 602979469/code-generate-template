@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * 更新${tableComment}请求 DTO。
+ * 更新${entityName}请求 DTO。
  *
  * <p>校验规则与 ${tableName} 表字段对齐：非空 + varchar 长度，不做业务自定义规则。
  */

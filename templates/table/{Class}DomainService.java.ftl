@@ -20,11 +20,11 @@ public class ${className}DomainService {
     }
 
     /**
-     * 创建${tableComment}：必填字段校验后入库。
+     * 创建${entityName}：必填字段校验后入库。
      * createTime/updateTime 由数据库自动维护，领域层不赋值。
      *
-     * @param ${classNameLower} ${tableComment}
-     * @return 创建后的${tableComment}（主键已回填）
+     * @param ${classNameLower} ${entityName}
+     * @return 创建后的${entityName}（主键已回填）
      */
     public ${className} create${className}(${className} ${classNameLower}) {
 <#list requiredColumns as c><#if c.string>        ${toolPrefix}Invoker.throwErrWhenBlank(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
@@ -33,11 +33,11 @@ public class ${className}DomainService {
     }
 
     /**
-     * 更新${className}（全量）：存在性校验后更新。
+     * 更新${entityName}（全量）：存在性校验后更新。
      * updateTime 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护。
      *
-     * @param ${classNameLower} ${tableComment}（含主键）
-     * @return 更新后的${tableComment}
+     * @param ${classNameLower} ${entityName}（含主键）
+     * @return 更新后的${entityName}
      */
     public ${className} update${className}(${className} ${classNameLower}) {
         ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}Repository.findById(${classNameLower}.getId()), ErrorCodeEnum.RESOURCE_NOT_FOUND);
@@ -45,9 +45,9 @@ public class ${className}DomainService {
     }
 
     /**
-     * 删除${tableComment}：存在性校验后删除。
+     * 删除${entityName}：存在性校验后删除。
      *
-     * @param id ${tableComment} ID
+     * @param id ${entityName} ID
      */
     public void delete${className}(Long id) {
         ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}Repository.findById(id), ErrorCodeEnum.RESOURCE_NOT_FOUND);
@@ -55,10 +55,10 @@ public class ${className}DomainService {
     }
 
     /**
-     * 按 ID 获取${tableComment}：不存在时抛业务异常。
+     * 按 ID 获取${entityName}：不存在时抛业务异常。
      *
-     * @param id ${tableComment} ID
-     * @return ${tableComment}
+     * @param id ${entityName} ID
+     * @return ${entityName}
      */
     public ${className} get${className}(Long id) {
         ${className} ${classNameLower} = ${classNameLower}Repository.findById(id);

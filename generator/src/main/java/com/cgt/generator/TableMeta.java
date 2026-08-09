@@ -10,6 +10,8 @@ public final class TableMeta {
 
     public String tableName;
     public String tableComment;
+    /** 实体名：表注释去掉尾部"表"，用于"创建/更新/删除"等 javadoc 动词句。 */
+    public String entityName;
     public String className;
     public String classNameLower;
 

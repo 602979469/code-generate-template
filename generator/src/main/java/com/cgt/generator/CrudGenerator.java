@@ -89,6 +89,7 @@ public final class CrudGenerator {
         model.put("classNameLower", meta.classNameLower);
         model.put("tableName", meta.tableName);
         model.put("tableComment", meta.tableComment);
+        model.put("entityName", meta.entityName);
         model.put("columns", meta.columns);
         model.put("queryColumns", meta.queryColumns);
         model.put("requiredColumns", meta.requiredColumns);

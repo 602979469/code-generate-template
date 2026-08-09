@@ -15,7 +15,7 @@ public interface ${className}Repository {
      * 按主键查询。
      *
      * @param id 主键
-     * @return ${tableComment}领域模型
+     * @return ${entityName}领域模型
      */
     ${className} findById(Long id);
 
@@ -31,23 +31,23 @@ public interface ${className}Repository {
      * 列表查询。
      *
      * @param query 查询参数
-     * @return ${tableComment}列表
+     * @return ${entityName}列表
      */
     List<${className}> findList(${className}QueryParam query);
 
     /**
      * 新增。
      *
-     * @param ${classNameLower} ${tableComment}
-     * @return 新增后的${tableComment}（主键已回填）
+     * @param ${classNameLower} ${entityName}
+     * @return 新增后的${entityName}（主键已回填）
      */
     ${className} insert(${className} ${classNameLower});
 
     /**
      * 更新。
      *
-     * @param ${classNameLower} ${tableComment}
-     * @return 更新后的${tableComment}
+     * @param ${classNameLower} ${entityName}
+     * @return 更新后的${entityName}
      */
     ${className} update(${className} ${classNameLower});
 
@@ -55,7 +55,7 @@ public interface ${className}Repository {
      * 按条件更新：只更新传入的非空字段（部分更新）。
      * 注意：无法把字段更新为 null，需要置 null 请用 {@link #update}；create_time/update_time 由数据库自动维护。
      *
-     * @param ${classNameLower} ${tableComment}（至少含主键）
+     * @param ${classNameLower} ${entityName}（至少含主键）
      */
     void updateByCondition(${className} ${classNameLower});
 

@@ -38,10 +38,10 @@ public class ${className}Controller {
     }
 
     /**
-     * 创建${tableComment}。
+     * 创建${entityName}。
      *
-     * @param request 创建${tableComment}请求体
-     * @return 创建成功后的${tableComment}信息
+     * @param request 创建${entityName}请求体
+     * @return 创建成功后的${entityName}信息
      */
     @PostMapping
     public ${toolPrefix}Result<${className}Response> create(@RequestBody ${className}CreateRequest request) {
@@ -65,10 +65,10 @@ public class ${className}Controller {
     }
 
     /**
-     * 按 ID 查询${tableComment}。
+     * 按 ID 查询${entityName}。
      *
-     * @param id ${tableComment} ID
-     * @return ${tableComment}信息
+     * @param id ${entityName} ID
+     * @return ${entityName}信息
      */
     @GetMapping("/{id}")
     public ${toolPrefix}Result<${className}Response> get(@PathVariable Long id) {
@@ -91,7 +91,7 @@ public class ${className}Controller {
     }
 
     /**
-     * 分页查询${tableComment}。
+     * 分页查询${entityName}。
      *
      * @param request 查询条件（含分页参数与时间区间）
      * @return 分页结果
@@ -119,11 +119,11 @@ public class ${className}Controller {
     }
 
     /**
-     * 更新${tableComment}（全量）。
+     * 更新${entityName}（全量）。
      *
-     * @param id      ${tableComment} ID
+     * @param id      ${entityName} ID
      * @param request 更新内容
-     * @return 更新后的${tableComment}信息
+     * @return 更新后的${entityName}信息
      */
     @PutMapping("/{id}")
     public ${toolPrefix}Result<${className}Response> update(@PathVariable Long id, @RequestBody ${className}UpdateRequest request) {
@@ -147,9 +147,9 @@ public class ${className}Controller {
     }
 
     /**
-     * 删除${tableComment}。
+     * 删除${entityName}。
      *
-     * @param id ${tableComment} ID
+     * @param id ${entityName} ID
      * @return 删除结果
      */
     @DeleteMapping("/{id}")
