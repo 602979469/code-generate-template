@@ -2,11 +2,9 @@ package ${basePackage}.app.web.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-<#if hasLocalDateTime>
+
 import java.time.LocalDateTime;
-</#if>
-<#if hasLocalDate>
-import java.time.LocalDate;
+<#if hasLocalDate>import java.time.LocalDate;
 </#if>
 
 /**

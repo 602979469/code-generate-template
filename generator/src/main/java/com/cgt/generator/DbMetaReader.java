@@ -20,9 +20,6 @@ public final class DbMetaReader {
     /** 保留审计字段，后续 BizDO 启用，当前不生成。 */
     private static final Set<String> RESERVED = Set.of("create_by", "update_by", "del_flag");
 
-    /** 不适合做查询条件的列。 */
-    private static final Set<String> NON_QUERY = Set.of("remark", "password", "salt", "avatar");
-
     private DbMetaReader() {
     }
 
@@ -55,15 +52,14 @@ public final class DbMetaReader {
                         if (column.required) {
                             table.requiredColumns.add(column);
                         }
-                        if (!"NONE".equals(column.queryType)) {
-                            table.queryColumns.add(column);
-                        }
                         table.hasLocalDateTime |= "LocalDateTime".equals(column.javaType);
                         table.hasLocalDate |= "LocalDate".equals(column.javaType);
                         table.hasBigDecimal |= "BigDecimal".equals(column.javaType);
                     }
                 }
             }
+            // 查询条件 = id + 全部业务字段 + 创建/更新时间，程序员按需删减
+            buildQueryColumns(table);
             table.tableComment = readTableComment(conn, schema, tableName);
         } catch (SQLException e) {
             throw new IllegalStateException("读取表结构失败: " + tableName, e);
@@ -95,13 +91,29 @@ public final class DbMetaReader {
     }
 
     private static String queryType(ColumnMeta c) {
-        if (c.auto || c.pk || NON_QUERY.contains(c.columnName) || "text".equalsIgnoreCase(c.columnName) || c.javaType == null) {
-            return "NONE";
-        }
         if (c.string) {
             return "status".equals(c.columnName) ? "EQ" : "LIKE";
         }
         return "EQ";
+    }
+
+    private static void buildQueryColumns(TableMeta table) {
+        addQueryColumn(table, "id", "id", "Long", "主键ID");
+        table.queryColumns.addAll(table.columns);
+        addQueryColumn(table, "create_time", "createTime", "LocalDateTime", "创建时间");
+        addQueryColumn(table, "update_time", "updateTime", "LocalDateTime", "更新时间");
+    }
+
+    private static void addQueryColumn(TableMeta table, String columnName, String propertyName,
+                                       String javaType, String comment) {
+        ColumnMeta c = new ColumnMeta();
+        c.columnName = columnName;
+        c.propertyName = propertyName;
+        c.javaType = javaType;
+        c.comment = comment;
+        c.string = "String".equals(javaType);
+        c.queryType = queryType(c);
+        table.queryColumns.add(c);
     }
 
     private static void buildSqlFragments(TableMeta table) {
