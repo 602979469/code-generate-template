@@ -1,29 +1,56 @@
 package com.jakt.aiplatform.core.model.domain;
 
-import lombok.*;
-
+import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 系统用户领域模型。
+ * 用户信息表领域模型。
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
 public class User extends BaseModel {
+    /** 部门ID。 */
+    private Long deptId;
 
-    /** 用户名，唯一。 */
-    private String username;
+    /** 登录账号。 */
+    private String loginName;
 
-    /** 昵称。 */
-    private String nickname;
+    /** 用户昵称。 */
+    private String userName;
 
-    /** 邮箱。 */
+    /** 用户类型（00系统用户 01注册用户）。 */
+    private String userType;
+
+    /** 用户邮箱。 */
     private String email;
 
-    /** 手机号。 */
-    private String phone;
+    /** 手机号码。 */
+    private String phonenumber;
 
-    /** 状态：0 正常，1 停用。 */
-    private Integer status;
+    /** 用户性别（0男 1女 2未知）。 */
+    private String sex;
+
+    /** 头像路径。 */
+    private String avatar;
+
+    /** 密码。 */
+    private String password;
+
+    /** 盐加密。 */
+    private String salt;
+
+    /** 账号状态（0正常 1停用）。 */
+    private String status;
+
+    /** 最后登录IP。 */
+    private String loginIp;
+
+    /** 最后登录时间。 */
+    private LocalDateTime loginDate;
+
+    /** 密码最后更新时间。 */
+    private LocalDateTime pwdUpdateDate;
+
+    /** 备注。 */
+    private String remark;
 
 }

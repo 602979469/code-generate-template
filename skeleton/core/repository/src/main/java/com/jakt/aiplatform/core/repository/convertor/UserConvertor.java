@@ -4,6 +4,9 @@ import com.jakt.aiplatform.common.dal.dataobject.UserDO;
 import com.jakt.aiplatform.core.model.domain.User;
 import org.springframework.beans.BeanUtils;
 
+/**
+ * 用户信息表 DO 与 Model 互转。
+ */
 public class UserConvertor {
 
     public static User toModel(UserDO userDO) {
@@ -15,7 +18,6 @@ public class UserConvertor {
         return user;
     }
 
-    /** Model 转 DO。 */
     public static UserDO toDO(User user) {
         UserDO userDO = new UserDO();
         BeanUtils.copyProperties(user, userDO);

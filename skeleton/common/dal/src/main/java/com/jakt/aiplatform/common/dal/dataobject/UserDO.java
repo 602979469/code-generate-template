@@ -2,17 +2,14 @@ package com.jakt.aiplatform.common.dal.dataobject;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
 import java.time.LocalDateTime;
 
 /**
- * 系统用户数据对象
- *
+ * 用户信息表数据对象，与 sys_user 表结构一一对应。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class UserDO extends BaseDO {
-
     /** 部门ID。 */
     private Long deptId;
 
@@ -22,28 +19,28 @@ public class UserDO extends BaseDO {
     /** 用户昵称。 */
     private String userName;
 
-    /** 用户类型：00 系统用户，01 注册用户。 */
+    /** 用户类型（00系统用户 01注册用户）。 */
     private String userType;
 
-    /** 邮箱。 */
+    /** 用户邮箱。 */
     private String email;
 
     /** 手机号码。 */
     private String phonenumber;
 
-    /** 性别：0 男，1 女，2 未知。 */
+    /** 用户性别（0男 1女 2未知）。 */
     private String sex;
 
     /** 头像路径。 */
     private String avatar;
 
-    /** 密码（密文）。 */
+    /** 密码。 */
     private String password;
 
     /** 盐加密。 */
     private String salt;
 
-    /** 状态：0 正常，1 停用。 */
+    /** 账号状态（0正常 1停用）。 */
     private String status;
 
     /** 最后登录IP。 */
@@ -57,4 +54,5 @@ public class UserDO extends BaseDO {
 
     /** 备注。 */
     private String remark;
+
 }

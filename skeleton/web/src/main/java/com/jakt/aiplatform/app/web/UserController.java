@@ -21,13 +21,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 用户管理接口。Controller 只做参数校验、DTO 转换与结果包装，不含业务规则。
+ * 用户信息表管理接口。Controller 只做参数校验、DTO 转换与结果包装，不含业务规则。
  */
 @RestController
 @RequestMapping("/api/v1/users")
-@Tag(name = "用户管理")
+@Tag(name = "用户信息表管理")
 public class UserController {
 
+    /** 用户信息表业务服务。 */
     private final UserBizService userBizService;
 
     public UserController(UserBizService userBizService) {
@@ -54,7 +55,7 @@ public class UserController {
     @GetMapping("/page")
     public Result<PageResult<UserResponse>> page(@Valid UserQueryRequest request) {
         PageResult<User> page = userBizService.pageUsers(UserAssembler.toQueryParam(request));
-        PageResult<UserResponse> pageResult = new PageResult<>(page.getTotal(),request.getPageNum(),request.getPageSize(),
+        PageResult<UserResponse> pageResult = new PageResult<>(page.getTotal(), request.getPageNum(), request.getPageSize(),
                 page.getDataList().stream().map(UserAssembler::toResponse).toList());
         Result<PageResult<UserResponse>> result = new Result<>();
         result.setSuccess(true);

@@ -10,26 +10,28 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * 用户业务服务：用例编排。输入输出都是领域模型，不做前端格式转换。
+ * 用户信息表业务服务：用例编排。输入输出都是领域模型，不做前端格式转换。
  */
 @Service
 public class UserBizService {
 
     private static final Logger log = LoggerFactory.getLogger(UserBizService.class);
 
+    /** 用户信息表领域服务。 */
     private final UserDomainService userDomainService;
 
+    /** 用户信息表仓储。 */
     private final UserRepository userRepository;
 
     public UserBizService(UserDomainService userDomainService,
-                          UserRepository userRepository) {
+                                  UserRepository userRepository) {
         this.userDomainService = userDomainService;
         this.userRepository = userRepository;
     }
 
     public User createUser(User user) {
         User created = userDomainService.createUser(user);
-        log.info("创建用户成功 id={} username={}", created.getId(), created.getUsername());
+        log.info("创建用户信息表成功 id={}", created.getId());
         return created;
     }
 
@@ -43,12 +45,12 @@ public class UserBizService {
 
     public User updateUser(User user) {
         User updated = userDomainService.updateUser(user);
-        log.info("更新用户成功 id={}", updated.getId());
+        log.info("更新用户信息表成功 id={}", updated.getId());
         return updated;
     }
 
     public void deleteUser(Long id) {
         userDomainService.deleteUser(id);
-        log.info("删除用户成功 id={}", id);
+        log.info("删除用户信息表成功 id={}", id);
     }
 }

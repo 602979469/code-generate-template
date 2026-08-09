@@ -27,18 +27,19 @@ class UserDomainServiceTest {
     private UserDomainService userDomainService;
 
     @Test
-    void createUser_duplicateUsername_throwsBizException() {
-        when(userRepository.findByUsername("admin")).thenReturn(new User());
+    void createUser_blankLoginName_throwsBizException() {
+        User user = new User();
+        user.setLoginName("  ");
 
-        assertThatThrownBy(() -> userDomainService.createUser(newUser(null, "admin")))
+        assertThatThrownBy(() -> userDomainService.createUser(user))
                 .isInstanceOf(AiPlatformException.class)
-                .hasMessageContaining("用户名已存在");
+                .hasMessageContaining("登录账号不能为空");
     }
 
     @Test
     void createUser_success() {
-        User user = newUser(null, "alice");
-        when(userRepository.findByUsername("alice")).thenReturn(null);
+        User user = new User();
+        user.setLoginName("admin");
         when(userRepository.insert(user)).thenAnswer(invocation -> {
             User saved = invocation.getArgument(0);
             saved.setId(1L);
@@ -49,7 +50,7 @@ class UserDomainServiceTest {
 
         assertThat(created.getId()).isEqualTo(1L);
         assertThat(created.getCreateTime()).isNotNull();
-        assertThat(created.getStatus()).isEqualTo(0);
+        assertThat(created.getUpdateTime()).isNotNull();
         verify(userRepository).insert(user);
     }
 
@@ -59,14 +60,15 @@ class UserDomainServiceTest {
 
         assertThatThrownBy(() -> userDomainService.getUser(999L))
                 .isInstanceOf(AiPlatformException.class)
-                .hasMessageContaining("用户不存在");
+                .hasMessageContaining("资源不存在");
     }
 
-    private User newUser(Long id, String username) {
-        User user = new User();
-        user.setId(id);
-        user.setUsername(username);
-        user.setNickname(username);
-        return user;
+    @Test
+    void deleteUser_notFound_throwsBizException() {
+        when(userRepository.findById(999L)).thenReturn(null);
+
+        assertThatThrownBy(() -> userDomainService.deleteUser(999L))
+                .isInstanceOf(AiPlatformException.class)
+                .hasMessageContaining("资源不存在");
     }
 }

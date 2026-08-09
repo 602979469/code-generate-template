@@ -69,7 +69,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
-                    <mainClass>com.jakt.aiplatform.bootstrap.AiplatformApplication</mainClass>
+                    <mainClass>com.jakt.aiplatform.bootstrap.AiPlatformApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

@@ -4,46 +4,77 @@
 
     <!-- 与 sys_user 表一一对应，id/create_time/update_time 由 BaseDO 承载；
          create_by/update_by/del_flag 等审计字段后续由 BizDO 启用，当前不映射 -->
-    <sql id="selectUserColumns">
-        id, dept_id, login_name, user_name, user_type, email, phonenumber, sex, avatar,
-        password, salt, status, login_ip, login_date, pwd_update_date,
-        create_time, update_time, remark
+    <sql id="selectColumns">
+        id, dept_id, login_name, user_name, user_type, email, phonenumber, sex, avatar, password, salt, status, login_ip, login_date, pwd_update_date, remark, create_time, update_time
     </sql>
 
-    <!--
-        查询条件与 UserQueryParam 的对应关系：
-        username -> login_name（登录账号，模糊）
-        nickname -> user_name（用户昵称，模糊）
-        status   -> status（账号状态）
-    -->
     <sql id="queryConditions">
         <where>
-            <if test="username != null and username != ''">
-                AND login_name LIKE CONCAT('%', #{username}, '%')
+            <if test="id != null">
+                AND id = #{id}
             </if>
-            <if test="nickname != null and nickname != ''">
-                AND user_name LIKE CONCAT('%', #{nickname}, '%')
+            <if test="deptId != null">
+                AND dept_id = #{deptId}
             </if>
-            <if test="status != null">
+            <if test="loginName != null and loginName != ''">
+                AND login_name LIKE CONCAT('%', #{loginName}, '%')
+            </if>
+            <if test="userName != null and userName != ''">
+                AND user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="userType != null and userType != ''">
+                AND user_type LIKE CONCAT('%', #{userType}, '%')
+            </if>
+            <if test="email != null and email != ''">
+                AND email LIKE CONCAT('%', #{email}, '%')
+            </if>
+            <if test="phonenumber != null and phonenumber != ''">
+                AND phonenumber LIKE CONCAT('%', #{phonenumber}, '%')
+            </if>
+            <if test="sex != null and sex != ''">
+                AND sex LIKE CONCAT('%', #{sex}, '%')
+            </if>
+            <if test="avatar != null and avatar != ''">
+                AND avatar LIKE CONCAT('%', #{avatar}, '%')
+            </if>
+            <if test="password != null and password != ''">
+                AND password LIKE CONCAT('%', #{password}, '%')
+            </if>
+            <if test="salt != null and salt != ''">
+                AND salt LIKE CONCAT('%', #{salt}, '%')
+            </if>
+            <if test="status != null and status != ''">
                 AND status = #{status}
+            </if>
+            <if test="loginIp != null and loginIp != ''">
+                AND login_ip LIKE CONCAT('%', #{loginIp}, '%')
+            </if>
+            <if test="loginDate != null">
+                AND login_date = #{loginDate}
+            </if>
+            <if test="pwdUpdateDate != null">
+                AND pwd_update_date = #{pwdUpdateDate}
+            </if>
+            <if test="remark != null and remark != ''">
+                AND remark LIKE CONCAT('%', #{remark}, '%')
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                AND update_time = #{updateTime}
             </if>
         </where>
     </sql>
 
     <select id="selectById" resultType="com.jakt.aiplatform.common.dal.dataobject.UserDO">
-        SELECT <include refid="selectUserColumns"/>
+        SELECT <include refid="selectColumns"/>
         FROM sys_user
         WHERE id = #{id}
     </select>
 
-    <select id="selectByLoginName" resultType="com.jakt.aiplatform.common.dal.dataobject.UserDO">
-        SELECT <include refid="selectUserColumns"/>
-        FROM sys_user
-        WHERE login_name = #{loginName}
-    </select>
-
     <select id="selectPage" resultType="com.jakt.aiplatform.common.dal.dataobject.UserDO">
-        SELECT <include refid="selectUserColumns"/>
+        SELECT <include refid="selectColumns"/>
         FROM sys_user
         <include refid="queryConditions"/>
         ORDER BY id DESC
@@ -51,7 +82,7 @@
     </select>
 
     <select id="selectList" resultType="com.jakt.aiplatform.common.dal.dataobject.UserDO">
-        SELECT <include refid="selectUserColumns"/>
+        SELECT <include refid="selectColumns"/>
         FROM sys_user
         <include refid="queryConditions"/>
         ORDER BY id DESC
@@ -63,18 +94,12 @@
         <include refid="queryConditions"/>
     </select>
 
-    <!-- create_by/update_by/del_flag 不参与插入，使用表默认值 -->
     <insert id="insert" parameterType="com.jakt.aiplatform.common.dal.dataobject.UserDO"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO sys_user (dept_id, login_name, user_name, user_type, email, phonenumber, sex, avatar,
-                              password, salt, status, login_ip, login_date, pwd_update_date,
-                              create_time, update_time, remark)
-        VALUES (#{deptId}, #{loginName}, #{userName}, #{userType}, #{email}, #{phonenumber}, #{sex}, #{avatar},
-                #{password}, #{salt}, #{status}, #{loginIp}, #{loginDate}, #{pwdUpdateDate},
-                #{createTime}, #{updateTime}, #{remark})
+        INSERT INTO sys_user (dept_id, login_name, user_name, user_type, email, phonenumber, sex, avatar, password, salt, status, login_ip, login_date, pwd_update_date, remark, create_time, update_time)
+        VALUES (#{deptId}, #{loginName}, #{userName}, #{userType}, #{email}, #{phonenumber}, #{sex}, #{avatar}, #{password}, #{salt}, #{status}, #{loginIp}, #{loginDate}, #{pwdUpdateDate}, #{remark}, #{createTime}, #{updateTime})
     </insert>
 
-    <!-- 更新不涉及主键与创建时间（create_time） -->
     <update id="update" parameterType="com.jakt.aiplatform.common.dal.dataobject.UserDO">
         UPDATE sys_user
         SET dept_id = #{deptId},
@@ -91,8 +116,8 @@
             login_ip = #{loginIp},
             login_date = #{loginDate},
             pwd_update_date = #{pwdUpdateDate},
-            update_time = #{updateTime},
-            remark = #{remark}
+            remark = #{remark},
+            update_time = #{updateTime}
         WHERE id = #{id}
     </update>
 

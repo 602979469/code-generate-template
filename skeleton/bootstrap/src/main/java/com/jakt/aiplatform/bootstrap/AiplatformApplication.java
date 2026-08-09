@@ -9,9 +9,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication(scanBasePackages = "com.jakt.aiplatform")
 @MapperScan("com.jakt.aiplatform.common.dal.mapper")
-public class AiplatformApplication {
+public class AiPlatformApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(AiplatformApplication.class, args);
+        SpringApplication.run(AiPlatformApplication.class, args);
     }
 }
