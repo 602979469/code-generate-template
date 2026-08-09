@@ -24,6 +24,11 @@ public final class Main {
                 return;
             }
             String cmd = args[0];
+            // 防御：第一个参数必须是合法命令，避免 -c 被误当命令
+            if (cmd.startsWith("-") || !(cmd.equals("init") || cmd.equals("table") || cmd.equals("list"))) {
+                usage();
+                return;
+            }
             Map<String, String> opts = parseOptions(args, 1);
             GeneratorConfig config = GeneratorConfig.load(opts);
 
