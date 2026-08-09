@@ -60,27 +60,65 @@ public final class GeneratorConfig {
         }
         cfg.repoDir = configFile.getParent();
 
-        cfg.projectPrefix = first(cli.get("p"), props.getProperty("projectPrefix"), "AiProd");
-        cfg.toolPrefix = first(cli.get("toolPrefix"), props.getProperty("toolPrefix"), cfg.projectPrefix);
-        cfg.groupId = first(cli.get("g"), props.getProperty("groupId"), "com.jakt");
-        cfg.projectArtifactPrefix = first(cli.get("a"), props.getProperty("projectArtifactPrefix"),
-                cfg.projectPrefix.toLowerCase());
+        cfg.projectPrefix = first(cli.get("p"), props.getProperty("projectPrefix"));
+        cfg.toolPrefix = first(cli.get("tp"), props.getProperty("toolPrefix"));
+        cfg.groupId = first(cli.get("g"), props.getProperty("groupId"));
+        cfg.projectArtifactPrefix = first(cli.get("a"), props.getProperty("projectArtifactPrefix"));
         cfg.jdbcUrl = props.getProperty("jdbc.url",
                 "jdbc:mysql://localhost:3306/aiplatform?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true");
         cfg.jdbcUsername = props.getProperty("jdbc.username", "root");
         cfg.jdbcPassword = props.getProperty("jdbc.password", "");
         cfg.tablePrefix = props.getProperty("tablePrefix", "");
-        cfg.outputDir = Path.of(first(cli.get("o"), props.getProperty("outputDir"), ".")).toAbsolutePath().normalize();
+        String outputDir = cli.get("o");
+        if (outputDir == null || outputDir.isBlank()) {
+            outputDir = props.getProperty("outputDir", ".");
+        }
+        cfg.outputDir = Path.of(outputDir).toAbsolutePath().normalize();
         return cfg;
     }
 
-    private static String first(String cli, String prop, String def) {
+    /** 项目命名校验：init/table 必填，-a 需为合法 Java 包名后缀。 */
+    public void validateNaming() {
+        StringBuilder missing = new StringBuilder();
+        if (isBlank(projectPrefix)) {
+            missing.append(" -p");
+        }
+        if (isBlank(toolPrefix)) {
+            missing.append(" -tp");
+        }
+        if (isBlank(groupId)) {
+            missing.append(" -g");
+        }
+        if (isBlank(projectArtifactPrefix)) {
+            missing.append(" -a");
+        }
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException("缺少必填参数:" + missing
+                    + "\n项目命名全部必填,不设默认值。运行 gen.sh(无参数)查看用法。");
+        }
+        if (!projectArtifactPrefix.matches("[a-z][a-z0-9]*")) {
+            throw new IllegalArgumentException("-a 需为小写字母/数字(如 aiprod),"
+                    + "不能带连字符或大写——Java 包名不允许,如需连字符项目名请生成后自行调整 artifactId");
+        }
+        if (!isBlank(projectPrefix) && !projectPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
+            throw new IllegalArgumentException("-p 需为驼峰字母/数字(如 AiProd)");
+        }
+        if (!isBlank(toolPrefix) && !toolPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
+            throw new IllegalArgumentException("-tp 需为驼峰字母/数字(如 AiProd)");
+        }
+    }
+
+    private static String first(String cli, String prop) {
         if (cli != null && !cli.isBlank()) {
             return cli;
         }
         if (prop != null && !prop.isBlank()) {
             return prop;
         }
-        return def;
+        return null;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

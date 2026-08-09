@@ -17,17 +17,20 @@ code-generate-template/
 
 ```bash
 # 初始化新项目：AiProd（包名 com.jakt.aiprod）
-./gen.sh init -p AiProd -g com.jakt -o ../AiProd
+./gen.sh init -p AiProd -g com.jakt -a aiprod -tp AiProd -o ../AiProd
 
 # 新表生成 CRUD（mapper -> controller 共 16 个文件）
-./gen.sh table -t sys_dept,member -o /path/to/目标项目
+./gen.sh table -t sys_dept,member -p AiPlatform -g com.jakt -a aiplatform -tp AiPlatform -o /path/to/目标项目
 
 # 已存在文件默认跳过，-f 强制覆盖
-./gen.sh table -t sys_dept -f -o /path/to/目标项目
+./gen.sh table -t sys_dept -p AiPlatform -g com.jakt -a aiplatform -tp AiPlatform -f -o /path/to/目标项目
 
 # 列出表级模板
 ./gen.sh list
 ```
+
+> 项目命名（`-p`/`-g`/`-a`/`-tp`）全部必填、不设默认值：
+> `-p` 项目前缀（驼峰）、`-g` groupId、`-a` 包名/artifactId 后缀（小写）、`-tp` 工具/异常/常量前缀（驼峰，代码不做转换）。
 
 ## 占位符与改名规则
 

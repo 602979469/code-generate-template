@@ -33,8 +33,14 @@ public final class Main {
             GeneratorConfig config = GeneratorConfig.load(opts);
 
             switch (cmd) {
-                case "init" -> new SkeletonGenerator(config).run();
-                case "table" -> new CrudGenerator(config, opts).run();
+                case "init" -> {
+                    config.validateNaming();
+                    new SkeletonGenerator(config).run();
+                }
+                case "table" -> {
+                    config.validateNaming();
+                    new CrudGenerator(config, opts).run();
+                }
                 case "list" -> CrudGenerator.listTemplates(config);
                 default -> usage();
             }
@@ -66,18 +72,29 @@ public final class Main {
     private static void usage() {
         System.out.println("""
                 用法:
-                  init   初始化新项目   -p 项目前缀 -g groupId [-a artifact后缀] -o 输出目录
-                  table  按表生成 CRUD  -t 表名1,表名2 [-p 项目前缀] [-g groupId] [-a artifact后缀] [-o 目标项目] [-f]
-                  list   列出表级模板
+                  init:
+                    ./gen.sh init -p <项目前缀> -g <groupId> -a <包名后缀> -tp <工具前缀> -o <输出目录>
+                    示例: ./gen.sh init -p AiProd -g com.jakt -a aiprod -tp AiProd -o ../AiProd
 
-                示例:
-                  init  -p AiProd -g com.jakt -a aiprod -o ../AiProd
-                  table -t sys_dept -o /Users/jakt/IdeaProjects/aiplatform
+                  table:
+                    ./gen.sh table -t <表名1,表名2> -p <项目前缀> -g <groupId> -a <包名后缀> -tp <工具前缀> [-o <目标项目根目录>] [-f]
+                    示例: ./gen.sh table -t sys_dept,member -p AiPlatform -g com.jakt -a aiplatform -tp AiPlatform -o .
 
-                说明:
-                  -p/-g/-a 指定项目命名;不传时 init 用 generator.properties 默认值,
-                  table 会自动从目标项目识别项目名(识别失败才用默认值)。
-                全局参数:
-                  -c 配置文件路径(默认 generator.properties)""");
+                  list:
+                    ./gen.sh list
+
+                参数说明:
+                  -p   项目前缀(驼峰,用于启动类名): 如 AiProd
+                  -g   Maven groupId: 如 com.jakt
+                  -a   artifactId/包名后缀(小写字母数字,Java 包名不允许连字符): 如 aiprod
+                  -tp  工具类/异常/常量前缀(驼峰,由你自己指定,代码不做转换): 如 AiProd
+                  -o   输出目录
+                  -t   表名,多个用逗号分隔
+                  -f   覆盖已存在文件(默认跳过)
+
+                必填项:
+                  init  : -p -g -a -tp -o 全部必填,无默认值
+                  table : -t -p -g -a -tp 必填,-o 默认当前目录
+                  list  : 无参数""");
     }
 }

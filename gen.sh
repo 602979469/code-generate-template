@@ -1,29 +1,71 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# code-generate-template 命令行入口
-#   初始化新项目: ./gen.sh init -p AiProd -g com.jakt -o ../AiProd
-#   新表生成 CRUD: ./gen.sh table -t sys_dept,member -o /path/to/project
-#   列出表级模板: ./gen.sh list
-
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JAR="$DIR/generator/target/generator.jar"
 
-# 参数校验：无命令或命令不合法时打印用法，不进入 Java
+usage() {
+  cat <<'EOF'
+用法:
+  init:
+    ./gen.sh init -p <项目前缀> -g <groupId> -a <包名后缀> -tp <工具前缀> -o <输出目录>
+    示例: ./gen.sh init -p AiProd -g com.jakt -a aiprod -tp AiProd -o ../AiProd
+
+  table:
+    ./gen.sh table -t <表名1,表名2> -p <项目前缀> -g <groupId> -a <包名后缀> -tp <工具前缀> [-o <目标项目根目录>] [-f]
+    示例: ./gen.sh table -t sys_dept,member -p AiPlatform -g com.jakt -a aiplatform -tp AiPlatform -o .
+
+  list:
+    ./gen.sh list
+
+参数说明:
+  -p   项目前缀(驼峰,用于启动类名): 如 AiProd
+  -g   Maven groupId: 如 com.jakt
+  -a   artifactId/包名后缀(小写字母数字,Java 包名不允许连字符): 如 aiprod
+  -tp  工具类/异常/常量前缀(驼峰,由你自己指定,代码不做转换): 如 AiProd
+  -o   输出目录
+  -t   表名,多个用逗号分隔
+  -f   覆盖已存在文件(默认跳过)
+
+必填项:
+  init  : -p -g -a -tp -o 全部必填,无默认值
+  table : -t -p -g -a -tp 必填,-o 默认当前目录
+  list  : 无参数
+EOF
+}
+
+# 命令校验：无命令或命令不合法时打印用法
 if [ $# -eq 0 ] || { [ "$1" != "init" ] && [ "$1" != "table" ] && [ "$1" != "list" ]; }; then
-  echo "用法:"
-  echo "  ./gen.sh init  -p 项目前缀 -g groupId [-a artifact后缀] -o 输出目录"
-  echo "  ./gen.sh table -t 表名1,表名2 [-p 项目前缀] [-g groupId] [-a artifact后缀] [-o 目标项目] [-f]"
-  echo "  ./gen.sh list"
-  echo ""
-  echo "示例:"
-  echo "  ./gen.sh init  -p AiProd -g com.jakt -a aiprod -o ../AiProd"
-  echo "  ./gen.sh table -t sys_dept -o /Users/jakt/IdeaProjects/aiplatform"
-  echo ""
-  echo "说明:"
-  echo "  -p/-g/-a 指定项目命名(类名前缀/groupId/artifactId后缀)。"
-  echo "  不传时: init 用 generator.properties 默认值; table 会自动从目标项目"
-  echo "  识别项目名(如 AiPlatform/aiplatform)，识别失败才用默认值。"
+  usage
+  exit 1
+fi
+
+# 必填参数校验：-key 后必须跟一个不以 - 开头的值
+has_opt() {
+  local key="-${1}"
+  local prev=""
+  for a in "$@"; do
+    if [ "$prev" = "$key" ] && [ "${a#-}" = "$a" ]; then
+      return 0
+    fi
+    prev="$a"
+  done
+  return 1
+}
+
+missing=""
+if [ "$1" = "init" ]; then
+  for opt in p g a tp o; do
+    has_opt "$opt" "$@" || missing="$missing -$opt"
+  done
+elif [ "$1" = "table" ]; then
+  for opt in t p g a tp; do
+    has_opt "$opt" "$@" || missing="$missing -$opt"
+  done
+fi
+if [ -n "$missing" ]; then
+  echo "缺少必填参数:$missing"
+  usage
   exit 1
 fi
 

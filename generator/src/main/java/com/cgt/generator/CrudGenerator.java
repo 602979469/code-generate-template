@@ -13,10 +13,6 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * 表级 CRUD 生成：读表结构 -> 渲染 templates/table/*.ftl -> 写入目标项目。
@@ -69,7 +65,6 @@ public final class CrudGenerator {
     }
 
     public void run() throws IOException, TemplateException {
-        detectProjectNaming();
         String tables = opts.get("t");
         if (tables == null || tables.isBlank()) {
             throw new IllegalArgumentException("table 命令需要 -t 表名，多个用逗号分隔");
@@ -83,75 +78,6 @@ public final class CrudGenerator {
                 render(meta, entry.getKey(), entry.getValue(), model, force);
             }
         }
-    }
-
-    /**
-     * 未显式指定 -p/-g/-a 时，从目标项目自动识别项目命名
-     * （pom.xml 的 groupId/artifactId + 已有的 *Application.java 类名前缀）。
-     */
-    private void detectProjectNaming() {
-        boolean changed = false;
-        Path pom = cfg.outputDir.resolve("pom.xml");
-        if (Files.exists(pom)) {
-            try {
-                String content = Files.readString(pom);
-                if (!opts.containsKey("g")) {
-                    Matcher g = Pattern.compile("<groupId>([^<$][^<]*)</groupId>").matcher(content);
-                    if (g.find()) {
-                        cfg.groupId = g.group(1).trim();
-                        changed = true;
-                    }
-                }
-                if (!opts.containsKey("a")) {
-                    Matcher a = Pattern.compile("<artifactId>([^<$][^<]*)</artifactId>").matcher(content);
-                    if (a.find()) {
-                        cfg.projectArtifactPrefix = a.group(1).trim();
-                        changed = true;
-                    }
-                }
-            } catch (IOException ignored) {
-                // 读取 pom 失败则跳过自动识别
-            }
-        }
-        if (!opts.containsKey("p")) {
-            String prefix = findProjectPrefix(cfg.outputDir);
-            if (prefix != null) {
-                cfg.projectPrefix = prefix;
-                changed = true;
-            }
-        }
-        if (changed) {
-            System.out.println("[gen] 未指定项目名，已从目标项目自动识别: prefix=" + cfg.projectPrefix
-                    + ", artifact=" + cfg.projectArtifactPrefix + ", group=" + cfg.groupId);
-        }
-    }
-
-    private static String findProjectPrefix(Path outputDir) {
-        try (Stream<Path> walk = Files.walk(outputDir)) {
-            Optional<Path> app = walk.filter(Files::isRegularFile)
-                    .filter(p -> !p.toString().contains("/.git/"))
-                    .filter(p -> p.getFileName().toString().endsWith("Application.java"))
-                    .findFirst();
-            if (app.isPresent()) {
-                String name = app.get().getFileName().toString();
-                return name.substring(0, name.length() - "Application.java".length());
-            }
-        } catch (IOException ignored) {
-            // 忽略
-        }
-        try (Stream<Path> walk = Files.walk(outputDir)) {
-            Optional<Path> invoker = walk.filter(Files::isRegularFile)
-                    .filter(p -> !p.toString().contains("/.git/"))
-                    .filter(p -> p.getFileName().toString().endsWith("Invoker.java"))
-                    .findFirst();
-            if (invoker.isPresent()) {
-                String name = invoker.get().getFileName().toString();
-                return name.substring(0, name.length() - "Invoker.java".length());
-            }
-        } catch (IOException ignored) {
-            // 忽略
-        }
-        return null;
     }
 
     private Map<String, Object> buildModel(TableMeta meta) {
