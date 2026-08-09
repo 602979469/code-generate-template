@@ -1,13 +1,13 @@
-package com.jakt.aiplatform.app.web.controller;
+package com.jakt.aiplatform.web.controller;
 
 import com.jakt.aiplatform.biz.service.UserManager;
-import com.jakt.aiplatform.app.web.assembler.UserAssembler;
-import com.jakt.aiplatform.app.web.param.UserCreateRequest;
-import com.jakt.aiplatform.app.web.param.UserQueryRequest;
-import com.jakt.aiplatform.app.web.param.UserUpdateRequest;
-import com.jakt.aiplatform.app.web.result.UserResponse;
-import com.jakt.aiplatform.app.web.result.AiPlatformResult;
-import com.jakt.aiplatform.app.web.template.AiPlatformTemplate;
+import com.jakt.aiplatform.web.assembler.UserAssembler;
+import com.jakt.aiplatform.web.param.UserCreateRequest;
+import com.jakt.aiplatform.web.param.UserQueryRequest;
+import com.jakt.aiplatform.web.param.UserUpdateRequest;
+import com.jakt.aiplatform.web.result.UserResponse;
+import com.jakt.aiplatform.web.result.AiPlatformResult;
+import com.jakt.aiplatform.web.template.AiPlatformTemplate;
 import com.jakt.aiplatform.common.util.tools.AiPlatformParamValidator;
 import com.jakt.aiplatform.core.model.domain.User;
 import com.jakt.aiplatform.core.model.result.PageResult;

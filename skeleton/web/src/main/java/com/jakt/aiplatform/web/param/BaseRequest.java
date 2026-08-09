@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.app.web.param;
+package com.jakt.aiplatform.web.param;
 
 import lombok.Data;
 

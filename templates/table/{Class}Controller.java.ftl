@@ -1,13 +1,13 @@
-package ${basePackage}.app.web.controller;
+package ${basePackage}.web.controller;
 
 import ${basePackage}.biz.service.${className}Manager;
-import ${basePackage}.app.web.assembler.${className}Assembler;
-import ${basePackage}.app.web.param.${className}CreateRequest;
-import ${basePackage}.app.web.param.${className}QueryRequest;
-import ${basePackage}.app.web.param.${className}UpdateRequest;
-import ${basePackage}.app.web.result.${className}Response;
-import ${basePackage}.app.web.result.${toolPrefix}Result;
-import ${basePackage}.app.web.template.${toolPrefix}Template;
+import ${basePackage}.web.assembler.${className}Assembler;
+import ${basePackage}.web.param.${className}CreateRequest;
+import ${basePackage}.web.param.${className}QueryRequest;
+import ${basePackage}.web.param.${className}UpdateRequest;
+import ${basePackage}.web.result.${className}Response;
+import ${basePackage}.web.result.${toolPrefix}Result;
+import ${basePackage}.web.template.${toolPrefix}Template;
 import ${basePackage}.common.util.tools.${toolPrefix}ParamValidator;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.result.PageResult;

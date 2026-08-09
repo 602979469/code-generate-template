@@ -48,7 +48,7 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
 
 ## 核心约定（速查）
 
-1. 所有接口返回 web 层 `AiPlatformResult<T>`（app.web.result 定义，ok/fail 工厂组装）；Controller 统一走 `AiPlatformTemplate.execute` + Callback，禁止返回裸对象。
+1. 所有接口返回 web 层 `AiPlatformResult<T>`（web.result 定义，ok/fail 工厂组装）；Controller 统一走 `AiPlatformTemplate.execute` + Callback，禁止返回裸对象。
 2. 业务异常一律抛 `AiPlatformException(ErrorCodeEnum.XXX)`（core-model 定义），禁止字符串错误码；条件校验统一用 `AiPlatformInvoker`（throwErrWhenNull/throwErrWhenBlank/throwErrWhenEmpty/throwErrWhenTrue 等），禁止手写 `if (xx) { throw ... }`。
 3. 判空/判 blank 统一用 Hutool（`StrUtil`/`CollUtil`/`ArrayUtil`/`ObjectUtil`），禁止手写 null/empty 判断。
 4. 事务：禁止 `@Transactional` 注解。当前阶段项目不使用 TransactionTemplate（已移除），单表操作直接调 Mapper；后续出现跨表复杂用例时再引入事务工具。

@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.app.web.result;
+package com.jakt.aiplatform.web.result;
 
 import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
 import com.jakt.aiplatform.core.model.exception.ErrorCode;

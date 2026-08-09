@@ -1,10 +1,10 @@
-package com.jakt.aiplatform.app.web.assembler;
+package com.jakt.aiplatform.web.assembler;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.jakt.aiplatform.app.web.param.UserCreateRequest;
-import com.jakt.aiplatform.app.web.param.UserQueryRequest;
-import com.jakt.aiplatform.app.web.param.UserUpdateRequest;
-import com.jakt.aiplatform.app.web.result.UserResponse;
+import com.jakt.aiplatform.web.param.UserCreateRequest;
+import com.jakt.aiplatform.web.param.UserQueryRequest;
+import com.jakt.aiplatform.web.param.UserUpdateRequest;
+import com.jakt.aiplatform.web.result.UserResponse;
 import com.jakt.aiplatform.core.model.domain.User;
 import com.jakt.aiplatform.core.model.param.UserQueryParam;
 

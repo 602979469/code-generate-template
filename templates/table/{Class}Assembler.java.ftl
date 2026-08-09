@@ -1,10 +1,10 @@
-package ${basePackage}.app.web.assembler;
+package ${basePackage}.web.assembler;
 
 import cn.hutool.core.util.ObjectUtil;
-import ${basePackage}.app.web.param.${className}CreateRequest;
-import ${basePackage}.app.web.param.${className}QueryRequest;
-import ${basePackage}.app.web.param.${className}UpdateRequest;
-import ${basePackage}.app.web.result.${className}Response;
+import ${basePackage}.web.param.${className}CreateRequest;
+import ${basePackage}.web.param.${className}QueryRequest;
+import ${basePackage}.web.param.${className}UpdateRequest;
+import ${basePackage}.web.result.${className}Response;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.param.${className}QueryParam;
 

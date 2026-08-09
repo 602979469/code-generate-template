@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.app.web.filter;
+package com.jakt.aiplatform.web.filter;
 
 import cn.hutool.core.util.StrUtil;
 import com.jakt.aiplatform.common.util.tools.TraceIdUtil;

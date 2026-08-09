@@ -1,4 +1,4 @@
-package ${basePackage}.app.web.result;
+package ${basePackage}.web.result;
 
 <#if hasLocalDateTime>import java.time.LocalDateTime;
 </#if><#if hasLocalDate>import java.time.LocalDate;

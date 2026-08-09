@@ -35,12 +35,12 @@ public final class CrudGenerator {
         TEMPLATES.put("{Class}DomainServiceTest.java.ftl", "core/service/src/test/java/{pkg}/core/service/{Class}DomainServiceTest.java");
         TEMPLATES.put("{Class}Manager.java.ftl", "biz/service-impl/src/main/java/{pkg}/biz/service/{Class}Manager.java");
         TEMPLATES.put("{Class}ManagerImpl.java.ftl", "biz/service-impl/src/main/java/{pkg}/biz/service/impl/{Class}ManagerImpl.java");
-        TEMPLATES.put("{Class}Controller.java.ftl", "web/src/main/java/{pkg}/app/web/controller/{Class}Controller.java");
-        TEMPLATES.put("{Class}CreateRequest.java.ftl", "web/src/main/java/{pkg}/app/web/param/{Class}CreateRequest.java");
-        TEMPLATES.put("{Class}UpdateRequest.java.ftl", "web/src/main/java/{pkg}/app/web/param/{Class}UpdateRequest.java");
-        TEMPLATES.put("{Class}QueryRequest.java.ftl", "web/src/main/java/{pkg}/app/web/param/{Class}QueryRequest.java");
-        TEMPLATES.put("{Class}Response.java.ftl", "web/src/main/java/{pkg}/app/web/result/{Class}Response.java");
-        TEMPLATES.put("{Class}Assembler.java.ftl", "web/src/main/java/{pkg}/app/web/assembler/{Class}Assembler.java");
+        TEMPLATES.put("{Class}Controller.java.ftl", "web/src/main/java/{pkg}/web/controller/{Class}Controller.java");
+        TEMPLATES.put("{Class}CreateRequest.java.ftl", "web/src/main/java/{pkg}/web/param/{Class}CreateRequest.java");
+        TEMPLATES.put("{Class}UpdateRequest.java.ftl", "web/src/main/java/{pkg}/web/param/{Class}UpdateRequest.java");
+        TEMPLATES.put("{Class}QueryRequest.java.ftl", "web/src/main/java/{pkg}/web/param/{Class}QueryRequest.java");
+        TEMPLATES.put("{Class}Response.java.ftl", "web/src/main/java/{pkg}/web/result/{Class}Response.java");
+        TEMPLATES.put("{Class}Assembler.java.ftl", "web/src/main/java/{pkg}/web/assembler/{Class}Assembler.java");
     }
 
     private final GeneratorConfig cfg;

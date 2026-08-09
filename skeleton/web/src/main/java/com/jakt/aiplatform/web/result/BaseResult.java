@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.app.web.result;
+package com.jakt.aiplatform.web.result;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,6 +1,6 @@
-package com.jakt.aiplatform.app.web.template;
+package com.jakt.aiplatform.web.template;
 
-import com.jakt.aiplatform.app.web.result.AiPlatformResult;
+import com.jakt.aiplatform.web.result.AiPlatformResult;
 import com.jakt.aiplatform.common.util.enums.LogFileEnum;
 import com.jakt.aiplatform.common.util.tools.AiPlatformLoggerUtil;
 import com.jakt.aiplatform.common.util.tools.AiPlatformParamValidator;

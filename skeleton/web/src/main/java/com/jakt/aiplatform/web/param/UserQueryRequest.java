@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.app.web.param;
+package com.jakt.aiplatform.web.param;
 
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.Max;

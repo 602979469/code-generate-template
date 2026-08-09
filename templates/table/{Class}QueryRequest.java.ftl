@@ -1,4 +1,4 @@
-package ${basePackage}.app.web.param;
+package ${basePackage}.web.param;
 
 import java.time.LocalDateTime;
 <#if hasLocalDate>import java.time.LocalDate;
