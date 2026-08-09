@@ -1,15 +1,21 @@
-package com.jakt.aiplatform.core.model.domain;
+package com.jakt.aiplatform.app.web.result;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * 用户信息表领域模型。
+ * 用户信息表响应 DTO。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class User extends BaseModel {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserResponse extends BaseResult {
     /** 部门ID。 */
     private Long deptId;
 

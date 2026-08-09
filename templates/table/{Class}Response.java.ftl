@@ -1,18 +1,26 @@
-package ${basePackage}.app.web.dto;
+package ${basePackage}.app.web.result;
 
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+<#if hasLocalDateTime>import java.time.LocalDateTime;
+</#if><#if hasLocalDate>import java.time.LocalDate;
+</#if><#if hasBigDecimal>import java.math.BigDecimal;
+</#if>
 
 /**
  * ${tableComment}响应 DTO。
  */
-public record ${className}Response(
-        /** 主键 ID。 */
-        Long id,
-<#list columns as c>        /** ${c.comment}。 */
-        ${c.javaType} ${c.propertyName},
-</#list>        /** 创建时间。 */
-        LocalDateTime createTime,
-        /** 更新时间。 */
-        LocalDateTime updateTime
-) {
-}
+@Data
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ${className}Response extends BaseResult {
+<#list columns as c>
+    /** ${c.comment}。 */
+    private ${c.javaType} ${c.propertyName};
+
+</#list>}

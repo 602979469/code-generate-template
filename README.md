@@ -62,11 +62,12 @@ skeleton 是"能编译的真实代码"，生成时按顺序做 token 替换，�
 
 ## 表级生成说明
 
-- 强约束：表必须包含 `id` / `create_time` / `update_time`（对应 BaseDO）；`create_by` / `update_by` / `del_flag` 为保留审计列，当前不生成，后续由 BizDO 扩展。
+- 强约束：表必须包含 `id` / `create_time` / `update_time`（对应 BaseDO / BaseModel）；`create_by` / `update_by` / `del_flag` 为保留审计列，当前不生成，后续由 BizDO 扩展。
 - 字段类型映射：bigint->Long、int/tinyint->Integer、varchar/char/text->String、datetime->LocalDateTime、decimal->BigDecimal。
 - 查询条件：当前全部等值 `=`（含 varchar）；LIKE 属于业务需求，无法从建表语句推导，后续按需求/配置扩展。
 - 必填校验：NOT NULL 且无默认值的列进入 DomainService 的 `throwErrWhenBlank/throwErrWhenNull` 校验。
-- 输出 16 个文件：DO、Mapper、Mapper.xml、Model、QueryParam、Repository、RepositoryImpl、Convertor、DomainService、BizService、Controller、4 个 DTO、Assembler。
+- 输出 16 个文件：DO、Mapper、Mapper.xml、Model、QueryParam、Repository、RepositoryImpl、仓储 Assembler（assembler 包）、DomainService、BizService、Controller（web/controller，走 ${toolPrefix}Template）、4 个 DTO（web/param、web/result）、web Assembler。
+- web 层：返回体统一 `${toolPrefix}Result`（web/result）；Controller 用 `${toolPrefix}Template.execute + Callback`，参数校验在 beforeService 调 `${toolPrefix}ParamValidator`。
 
 ## 维护约定
 

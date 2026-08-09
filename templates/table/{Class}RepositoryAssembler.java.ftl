@@ -1,13 +1,16 @@
-package ${basePackage}.core.repository.convertor;
+package ${basePackage}.core.repository.assembler;
 
 import ${basePackage}.common.dal.dataobject.${className}DO;
 import ${basePackage}.core.model.domain.${className};
 import org.springframework.beans.BeanUtils;
 
 /**
- * ${tableComment} DO 与 Model 互转。
+ * ${tableComment} DO 与领域模型互转，只存在于 repository。
  */
-public class ${className}Convertor {
+public final class ${className}Assembler {
+
+    private ${className}Assembler() {
+    }
 
     public static ${className} toModel(${className}DO ${classNameLower}DO) {
         if (${classNameLower}DO == null) {

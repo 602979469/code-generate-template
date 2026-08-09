@@ -6,14 +6,14 @@ import com.jakt.aiplatform.core.model.domain.User;
 import com.jakt.aiplatform.core.model.param.UserQueryParam;
 import com.jakt.aiplatform.core.model.result.PageResult;
 import com.jakt.aiplatform.core.repository.UserRepository;
-import com.jakt.aiplatform.core.repository.convertor.UserConvertor;
+import com.jakt.aiplatform.core.repository.assembler.UserAssembler;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.jakt.aiplatform.core.repository.convertor.UserConvertor.toDO;
-import static com.jakt.aiplatform.core.repository.convertor.UserConvertor.toModel;
+import static com.jakt.aiplatform.core.repository.assembler.UserAssembler.toDO;
+import static com.jakt.aiplatform.core.repository.assembler.UserAssembler.toModel;
 
 /**
  * 用户信息表仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
@@ -32,7 +32,7 @@ public class UserRepositoryImpl implements UserRepository {
     public PageResult<User> findPage(UserQueryParam query) {
         List<UserDO> doList = userMapper.selectPage(query);
         long total = userMapper.countByQuery(query);
-        List<User> list = doList.stream().map(UserConvertor::toModel).toList();
+        List<User> list = doList.stream().map(UserAssembler::toModel).toList();
         return new PageResult<>(total, query.getPageNum(), query.getPageSize(), list);
     }
 

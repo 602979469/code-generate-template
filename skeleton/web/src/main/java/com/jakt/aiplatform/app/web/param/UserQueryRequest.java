@@ -1,15 +1,27 @@
-package com.jakt.aiplatform.core.model.domain;
+package com.jakt.aiplatform.app.web.param;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 /**
- * 用户信息表领域模型。
+ * 用户信息表查询请求。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class User extends BaseModel {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserQueryRequest extends BaseRequest {
+    /** 主键ID。 */
+    private Long id;
+
     /** 部门ID。 */
     private Long deptId;
 
@@ -55,4 +67,24 @@ public class User extends BaseModel {
     /** 备注。 */
     private String remark;
 
+    /** 创建时间起。 */
+    private LocalDateTime createTimeBegin;
+
+    /** 创建时间止。 */
+    private LocalDateTime createTimeEnd;
+
+    /** 更新时间起。 */
+    private LocalDateTime updateTimeBegin;
+
+    /** 更新时间止。 */
+    private LocalDateTime updateTimeEnd;
+
+    /** 页码，从 1 开始。 */
+    @Min(value = 1, message = "页码不能小于 1")
+    private Integer pageNum = 1;
+
+    /** 每页条数。 */
+    @Min(value = 1, message = "每页条数不能小于 1")
+    @Max(value = 100, message = "每页条数不能超过 100")
+    private Integer pageSize = 10;
 }

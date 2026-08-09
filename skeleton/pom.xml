@@ -114,6 +114,15 @@
         </dependencies>
     </dependencyManagement>
 
+    <!-- Lombok 统一在此引入（provided，仅编译期生效）：所有子模块继承，无需各自声明 -->
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <pluginManagement>
             <plugins>

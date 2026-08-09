@@ -1,9 +1,9 @@
 package ${basePackage}.app.web.assembler;
 
-import ${basePackage}.app.web.dto.${className}CreateRequest;
-import ${basePackage}.app.web.dto.${className}QueryRequest;
-import ${basePackage}.app.web.dto.${className}Response;
-import ${basePackage}.app.web.dto.${className}UpdateRequest;
+import ${basePackage}.app.web.param.${className}CreateRequest;
+import ${basePackage}.app.web.param.${className}QueryRequest;
+import ${basePackage}.app.web.param.${className}UpdateRequest;
+import ${basePackage}.app.web.result.${className}Response;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.param.${className}QueryParam;
 
@@ -18,7 +18,7 @@ public final class ${className}Assembler {
     public static ${className} toModel(${className}CreateRequest request) {
         ${className} ${classNameLower} = new ${className}();
 <#list columns as c>
-        ${classNameLower}.set${c.propertyName?cap_first}(request.${c.propertyName}());
+        ${classNameLower}.set${c.propertyName?cap_first}(request.get${c.propertyName?cap_first}());
 </#list>        return ${classNameLower};
     }
 
@@ -26,7 +26,7 @@ public final class ${className}Assembler {
         ${className} ${classNameLower} = new ${className}();
         ${classNameLower}.setId(id);
 <#list columns as c>
-        ${classNameLower}.set${c.propertyName?cap_first}(request.${c.propertyName}());
+        ${classNameLower}.set${c.propertyName?cap_first}(request.get${c.propertyName?cap_first}());
 </#list>        return ${classNameLower};
     }
 
@@ -34,21 +34,22 @@ public final class ${className}Assembler {
         ${className}QueryParam param = new ${className}QueryParam();
 <#list queryColumns as c>
         param.set${c.propertyName?cap_first}(request.get${c.propertyName?cap_first}());
-</#list>        param.setPageNum(request.getPageNum() == null ? 1 : request.getPageNum());
-        param.setCreateTimeBegin(request.getCreateTimeBegin());
+</#list>        param.setCreateTimeBegin(request.getCreateTimeBegin());
         param.setCreateTimeEnd(request.getCreateTimeEnd());
         param.setUpdateTimeBegin(request.getUpdateTimeBegin());
         param.setUpdateTimeEnd(request.getUpdateTimeEnd());
+        param.setPageNum(request.getPageNum() == null ? 1 : request.getPageNum());
         param.setPageSize(request.getPageSize() == null ? 10 : request.getPageSize());
         return param;
     }
 
     public static ${className}Response toResponse(${className} ${classNameLower}) {
-        return new ${className}Response(
-                ${classNameLower}.getId(),
-<#list columns as c>                ${classNameLower}.get${c.propertyName?cap_first}(),
-</#list>                ${classNameLower}.getCreateTime(),
-                ${classNameLower}.getUpdateTime()
-        );
+        ${className}Response response = new ${className}Response();
+        response.setId(${classNameLower}.getId());
+<#list columns as c>
+        response.set${c.propertyName?cap_first}(${classNameLower}.get${c.propertyName?cap_first}());
+</#list>        response.setCreateTime(${classNameLower}.getCreateTime());
+        response.setUpdateTime(${classNameLower}.getUpdateTime());
+        return response;
     }
 }

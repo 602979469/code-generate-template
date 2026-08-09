@@ -30,14 +30,14 @@ public final class CrudGenerator {
         TEMPLATES.put("{Class}QueryParam.java.ftl", "core/model/src/main/java/{pkg}/core/model/param/{Class}QueryParam.java");
         TEMPLATES.put("{Class}Repository.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/{Class}Repository.java");
         TEMPLATES.put("{Class}RepositoryImpl.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/impl/{Class}RepositoryImpl.java");
-        TEMPLATES.put("{Class}Convertor.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/convertor/{Class}Convertor.java");
+        TEMPLATES.put("{Class}RepositoryAssembler.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/assembler/{Class}Assembler.java");
         TEMPLATES.put("{Class}DomainService.java.ftl", "core/service/src/main/java/{pkg}/core/service/{Class}DomainService.java");
         TEMPLATES.put("{Class}BizService.java.ftl", "biz/service-impl/src/main/java/{pkg}/app/biz/{Class}BizService.java");
-        TEMPLATES.put("{Class}Controller.java.ftl", "web/src/main/java/{pkg}/app/web/{Class}Controller.java");
-        TEMPLATES.put("{Class}CreateRequest.java.ftl", "web/src/main/java/{pkg}/app/web/dto/{Class}CreateRequest.java");
-        TEMPLATES.put("{Class}UpdateRequest.java.ftl", "web/src/main/java/{pkg}/app/web/dto/{Class}UpdateRequest.java");
-        TEMPLATES.put("{Class}QueryRequest.java.ftl", "web/src/main/java/{pkg}/app/web/dto/{Class}QueryRequest.java");
-        TEMPLATES.put("{Class}Response.java.ftl", "web/src/main/java/{pkg}/app/web/dto/{Class}Response.java");
+        TEMPLATES.put("{Class}Controller.java.ftl", "web/src/main/java/{pkg}/app/web/controller/{Class}Controller.java");
+        TEMPLATES.put("{Class}CreateRequest.java.ftl", "web/src/main/java/{pkg}/app/web/param/{Class}CreateRequest.java");
+        TEMPLATES.put("{Class}UpdateRequest.java.ftl", "web/src/main/java/{pkg}/app/web/param/{Class}UpdateRequest.java");
+        TEMPLATES.put("{Class}QueryRequest.java.ftl", "web/src/main/java/{pkg}/app/web/param/{Class}QueryRequest.java");
+        TEMPLATES.put("{Class}Response.java.ftl", "web/src/main/java/{pkg}/app/web/result/{Class}Response.java");
         TEMPLATES.put("{Class}Assembler.java.ftl", "web/src/main/java/{pkg}/app/web/assembler/{Class}Assembler.java");
     }
 

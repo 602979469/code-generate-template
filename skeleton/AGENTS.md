@@ -32,28 +32,28 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
                               core-model（零依赖，所有人依赖）  common-util / common-integration
 ```
 
-- `core-model`：领域模型、查询参数、AiPlatformException/ErrorCodeEnum、Result/PageResult、BizTemplate。仅依赖 lombok/slf4j。
+- `core-model`：领域模型、查询参数、AiPlatformException/ErrorCodeEnum、Result/PageResult、BizTemplate。仅依赖 slf4j（lombok 由根 pom 统一提供）。
 - `common-integration`：外部服务集成（预留）。
 - `common-dal`：MyBatis Mapper（interface + XML）、DO。
-- `common-util`：工具（TraceIdUtil、RestTemplateConfig、AiPlatformInvoker、线程池配置与调用工具）。
-- `core-repository`：封装 Mapper，DO→Model，可组合多个 Mapper，当前阶段单表操作不引入事务。
+- `common-util`：工具（TraceIdUtil、RestTemplateConfig、AiPlatformInvoker、AiPlatformParamValidator、AiPlatformLoggerUtil、线程池配置与调用工具）。
+- `core-repository`：封装 Mapper，DO→Model（XxxAssembler，assembler 包），可组合多个 Mapper，当前阶段单表操作不引入事务。
 - `core-service`：领域服务，承载业务规则。
 - `biz-service-impl`：BizService，用例编排，输入输出都是领域模型。
-- `web`：Controller、DTO、全局异常处理、日志切面。
+- `web`：Controller（web/controller）、DTO（web/param、web/result）、AiPlatformTemplate、全局异常处理、日志切面。
 - `bootstrap`：MainApplication + 注解扫描 + 配置文件，唯一可启动模块。
 
 禁止：反向/循环依赖；`web` 直接依赖 `common-dal` 或 `core-repository`。
 
 ## 核心约定（速查）
 
-1. 所有接口返回 `Result<T>`（core-model result 包定义），禁止返回裸对象。
+1. 所有接口返回 web 层 `AiPlatformResult<T>`（app.web.result 定义，ok/fail 工厂组装）；Controller 统一走 `AiPlatformTemplate.execute` + Callback，禁止返回裸对象。
 2. 业务异常一律抛 `AiPlatformException(ErrorCodeEnum.XXX)`（core-model 定义），禁止字符串错误码；条件校验统一用 `AiPlatformInvoker`（throwErrWhenNull/throwErrWhenBlank/throwErrWhenEmpty/throwErrWhenTrue 等），禁止手写 `if (xx) { throw ... }`。
 3. 判空/判 blank 统一用 Hutool（`StrUtil`/`CollUtil`/`ArrayUtil`/`ObjectUtil`），禁止手写 null/empty 判断。
 4. 事务：禁止 `@Transactional` 注解。当前阶段项目不使用 TransactionTemplate（已移除），单表操作直接调 Mapper；后续出现跨表复杂用例时再引入事务工具。
-5. 参数校验：DTO 注解 + Controller `@Valid`；业务规则在 `core-service` 编码校验后抛 `AiPlatformException`。
+5. 参数校验：DTO 注解 + `AiPlatformParamValidator`（Controller 的 beforeService 中调用）；业务规则在 `core-service` 编码校验后抛 `AiPlatformException`。
 6. 日志：禁止业务代码手写 try-catch 打日志；关键节点 `logger.info`；traceId 自动写入 MDC。
-7. 命名：`XxxController`、`XxxBizService`、`XxxDomainService`、`XxxRepository`、`XxxMapper`、`XxxDO`（common-dal）、`Xxx` Model（core-model）、`XxxRequest`/`XxxResponse`（web DTO）。
-7. 代码风格：构造器注入 + `final` 字段；DTO 优先 record（GET 查询绑定用普通类）；领域模型用 Lombok @Data。
+7. 命名：`XxxController`（web/controller）、`XxxBizService`、`XxxDomainService`、`XxxRepository`、`XxxMapper`、`XxxDO`（common-dal）、`Xxx` Model（core-model）、`XxxRequest`（web/param）、`XxxResponse`（web/result）、仓储层 `XxxAssembler`（core/repository/assembler）。
+8. 代码风格：构造器注入 + `final` 字段；DTO 用 class + Lombok（`@Data`/`@Builder`），请求继承 `BaseRequest`、响应继承 `BaseResult`；领域模型用 Lombok `@Data`。
 
 ## 新增一个业务模块（以 Order 为例）
 
@@ -63,7 +63,7 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
 4. `aiplatform-core-repository`：`OrderRepository`（封装 Mapper，DO→Model，单表操作直接调 Mapper）；
 5. `aiplatform-core-service`：`OrderDomainService`（业务规则）；
 6. `aiplatform-biz-service-impl`：`OrderBizService`（编排，输入输出 Model）；
-7. `aiplatform-web`：`OrderCreateRequest`/`OrderResponse` DTO + `OrderController`；
+7. `aiplatform-web`：`OrderCreateRequest`（web/param）、`OrderResponse`（web/result）+ `OrderController`（web/controller，走 AiPlatformTemplate）；
 8. 对照 `User` 模块写领域规则单元测试（Mockito 桩仓储）。
 
 ## 禁止模式
