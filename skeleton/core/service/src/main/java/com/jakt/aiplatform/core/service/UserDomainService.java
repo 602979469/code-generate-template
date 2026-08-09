@@ -53,6 +53,7 @@ public class UserDomainService {
      * @param user 用户信息（至少含主键）
      */
     public void updateByCondition(User user) {
+        AiPlatformInvoker.throwErrWhenNull(userRepository.findById(user.getId()), ErrorCodeEnum.RESOURCE_NOT_FOUND);
         userRepository.updateByCondition(user);
     }
 

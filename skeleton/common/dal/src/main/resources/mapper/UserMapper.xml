@@ -133,8 +133,8 @@
          update_time 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护；
          全部字段均为空时跳过更新（返回 0），避免生成非法 SQL -->
     <update id="updateByCondition" parameterType="com.jakt.aiplatform.common.dal.dataobject.UserDO">
-        UPDATE sys_user
         <if test="deptId != null or loginName != null or userName != null or userType != null or email != null or phonenumber != null or sex != null or avatar != null or password != null or salt != null or status != null or loginIp != null or loginDate != null or pwdUpdateDate != null or remark != null">
+            UPDATE sys_user
         <set>
             <if test="deptId != null">
                 dept_id = #{deptId},
@@ -182,8 +182,8 @@
                 remark = #{remark},
             </if>
         </set>
+            WHERE id = #{id}
         </if>
-        WHERE id = #{id}
     </update>
 
     <!-- 当前为物理删除；软删除后续启用（del_flag 留待 BizDO） -->

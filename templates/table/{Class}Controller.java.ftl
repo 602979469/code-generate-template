@@ -1,6 +1,6 @@
 package ${basePackage}.app.web.controller;
 
-import ${basePackage}.app.biz.${className}Manager;
+import ${basePackage}.biz.service.${className}Manager;
 import ${basePackage}.app.web.assembler.${className}Assembler;
 import ${basePackage}.app.web.param.${className}CreateRequest;
 import ${basePackage}.app.web.param.${className}QueryRequest;

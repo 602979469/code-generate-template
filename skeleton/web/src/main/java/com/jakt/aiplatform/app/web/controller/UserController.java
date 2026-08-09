@@ -1,6 +1,6 @@
 package com.jakt.aiplatform.app.web.controller;
 
-import com.jakt.aiplatform.app.biz.UserManager;
+import com.jakt.aiplatform.biz.service.UserManager;
 import com.jakt.aiplatform.app.web.assembler.UserAssembler;
 import com.jakt.aiplatform.app.web.param.UserCreateRequest;
 import com.jakt.aiplatform.app.web.param.UserQueryRequest;

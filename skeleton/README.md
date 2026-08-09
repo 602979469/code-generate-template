@@ -41,7 +41,7 @@ web → biz-service-impl → core-service → core-repository → common-dal
 
 ```
 UserController(web)                        # 参数校验、DTO 转换、Result 包装
-  → UserManager(biz-service-impl)          # 用例编排
+  → UserManager/UserManagerImpl(biz)       # 用例编排（接口 + 实现）
     → UserDomainService(core-service)      # 领域规则：必填校验、存在性
       → UserRepository(core-repository)    # 封装 Mapper，DO → Model
         → UserMapper(common-dal)           # MyBatis interface + XML

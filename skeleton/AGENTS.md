@@ -40,7 +40,7 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
 - `common-util`：工具（TraceIdUtil、RestTemplateConfig、AiPlatformInvoker、AiPlatformParamValidator、AiPlatformLoggerUtil、线程池配置与调用工具）。
 - `core-repository`：封装 Mapper，DO→Model（XxxAssembler，assembler 包），可组合多个 Mapper，当前阶段单表操作不引入事务。
 - `core-service`：领域服务，承载业务规则。
-- `biz-service-impl`：Manager（XxxManager），用例编排，只依赖 core-model 与 core-service，不直接触碰仓储。
+- `biz-service-impl`：`XxxManager`（biz.service 接口）+ `XxxManagerImpl`（biz.service.impl），用例编排，只依赖 core-model 与 core-service，不直接触碰仓储。
 - `web`：Controller（web/controller）、DTO（web/param、web/result）、AiPlatformTemplate（统一日志/参数校验/异常封装）。
 - `bootstrap`：MainApplication + 注解扫描 + 配置文件，唯一可启动模块。
 
@@ -54,7 +54,7 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
 4. 事务：禁止 `@Transactional` 注解。当前阶段项目不使用 TransactionTemplate（已移除），单表操作直接调 Mapper；后续出现跨表复杂用例时再引入事务工具。
 5. 参数校验：DTO 注解 + `AiPlatformParamValidator`（Controller 的 beforeService 中调用）；业务规则在 `core-service` 编码校验后抛 `AiPlatformException`。
 6. 日志：禁止业务代码手写 try-catch 打日志；关键节点 `logger.info`；traceId 自动写入 MDC。
-7. 命名：`XxxController`（web/controller）、`XxxManager`（app.biz）、`XxxDomainService`、`XxxRepository`、`XxxMapper`、`XxxDO`（common-dal）、`Xxx` Model（core-model）、`XxxRequest`（web/param）、`XxxResponse`（web/result）、仓储层 `XxxAssembler`（core/repository/assembler）。
+7. 命名：`XxxController`（web/controller）、`XxxManager`（biz.service 接口）/ `XxxManagerImpl`（biz.service.impl）、`XxxDomainService`、`XxxRepository`、`XxxMapper`、`XxxDO`（common-dal）、`Xxx` Model（core-model）、`XxxRequest`（web/param）、`XxxResponse`（web/result）、仓储层 `XxxAssembler`（core/repository/assembler）。
 8. 代码风格：构造器注入 + `final` 字段；DTO 用 class + Lombok（`@Data`/`@Builder`），请求继承 `BaseRequest`、响应继承 `BaseResult`；领域模型用 Lombok `@Data`。
 9. 方法注释：有接口的接口加注释；实现类（implements 接口）方法不注释；不实现接口的类（Controller/Assembler/DomainService/Manager）方法统一加标准 javadoc。
 10. 敏感字段：生成器输出与表结构全字段对齐（含 password/salt 等）。敏感字段的响应剔除、查询暴露与日志脱敏属于业务二开职责，禁止打印密码、token 等敏感信息（见禁止模式）。
@@ -67,7 +67,7 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
 3. `aiplatform-core-model`：`Order` Model、`OrderQueryParam` 查询参数；
 4. `aiplatform-core-repository`：`OrderRepository`（封装 Mapper，DO→Model，单表操作直接调 Mapper）；
 5. `aiplatform-core-service`：`OrderDomainService`（业务规则）；
-6. `aiplatform-biz-service-impl`：`OrderManager`（编排，输入输出 Model）；
+6. `aiplatform-biz-service-impl`：`OrderManager`（biz.service 接口）+ `OrderManagerImpl`（biz.service.impl，编排，输入输出 Model）；
 7. `aiplatform-web`：`OrderCreateRequest`（web/param）、`OrderResponse`（web/result）+ `OrderController`（web/controller，走 AiPlatformTemplate）；
 8. 对照 `User` 模块写领域规则单元测试（Mockito 桩仓储）。
 
