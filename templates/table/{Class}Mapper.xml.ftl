@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${basePackage}.common.dal.mapper.${className}Mapper">
+
+    <!-- 与 ${tableName} 表一一对应，id/create_time/update_time 由 BaseDO 承载；
+         create_by/update_by/del_flag 等审计字段后续由 BizDO 启用，当前不映射 -->
+    <sql id="selectColumns">
+        ${selectColumns}
+    </sql>
+
+    <sql id="queryConditions">
+        <where>
+<#list queryColumns as c>
+            <if test="${c.propertyName} != null<#if c.string> and ${c.propertyName} != ''</#if>">
+                AND ${c.columnName} <#if c.queryType == "LIKE">LIKE CONCAT('%', #{${c.propertyName}}, '%')<#else>= #{${c.propertyName}}</#if>
+            </if>
+</#list>        </where>
+    </sql>
+
+    <select id="selectById" resultType="${basePackage}.common.dal.dataobject.${className}DO">
+        SELECT <include refid="selectColumns"/>
+        FROM ${tableName}
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectPage" resultType="${basePackage}.common.dal.dataobject.${className}DO">
+        SELECT <include refid="selectColumns"/>
+        FROM ${tableName}
+        <include refid="queryConditions"/>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="selectList" resultType="${basePackage}.common.dal.dataobject.${className}DO">
+        SELECT <include refid="selectColumns"/>
+        FROM ${tableName}
+        <include refid="queryConditions"/>
+        ORDER BY id DESC
+    </select>
+
+    <select id="countByQuery" resultType="long">
+        SELECT COUNT(*)
+        FROM ${tableName}
+        <include refid="queryConditions"/>
+    </select>
+
+    <insert id="insert" parameterType="${basePackage}.common.dal.dataobject.${className}DO"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ${tableName} (${insertColumns})
+        VALUES (${insertValues})
+    </insert>
+
+    <update id="update" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
+        UPDATE ${tableName}
+        SET ${updateSet}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM ${tableName} WHERE id = #{id}
+    </delete>
+</mapper>
