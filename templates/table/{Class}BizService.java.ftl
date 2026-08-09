@@ -17,8 +17,10 @@ public class ${className}BizService {
 
     private static final Logger log = LoggerFactory.getLogger(${className}BizService.class);
 
+    /** ${tableComment}领域服务。 */
     private final ${className}DomainService ${classNameLower}DomainService;
 
+    /** ${tableComment}仓储。 */
     private final ${className}Repository ${classNameLower}Repository;
 
     public ${className}BizService(${className}DomainService ${classNameLower}DomainService,

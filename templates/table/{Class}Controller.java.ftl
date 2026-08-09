@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "${tableComment}管理")
 public class ${className}Controller {
 
+    /** ${tableComment}业务服务。 */
     private final ${className}BizService ${classNameLower}BizService;
 
     public ${className}Controller(${className}BizService ${classNameLower}BizService) {

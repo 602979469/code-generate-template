@@ -42,10 +42,8 @@ public final class ${className}Assembler {
     public static ${className}Response toResponse(${className} ${classNameLower}) {
         return new ${className}Response(
                 ${classNameLower}.getId(),
-<#list columns as c>
-                ${classNameLower}.get${c.propertyName?cap_first}()<#sep>,</#sep>
-</#list>,
-                ${classNameLower}.getCreateTime(),
+<#list columns as c>                ${classNameLower}.get${c.propertyName?cap_first}(),
+</#list>                ${classNameLower}.getCreateTime(),
                 ${classNameLower}.getUpdateTime()
         );
     }

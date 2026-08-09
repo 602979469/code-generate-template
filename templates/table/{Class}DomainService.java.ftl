@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Service
 public class ${className}DomainService {
 
+    /** ${tableComment}仓储。 */
     private final ${className}Repository ${classNameLower}Repository;
 
     public ${className}DomainService(${className}Repository ${classNameLower}Repository) {
@@ -21,13 +22,9 @@ public class ${className}DomainService {
     }
 
     public ${className} create${className}(${className} ${classNameLower}) {
-<#list requiredColumns as c>
-<#if c.string>
-        ${projectPrefix}Invoker.throwErrWhenBlank(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
-<#else>
-        ${projectPrefix}Invoker.throwErrWhenNull(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
-</#if>
-</#list>        LocalDateTime now = LocalDateTime.now();
+<#list requiredColumns as c><#if c.string>        ${projectPrefix}Invoker.throwErrWhenBlank(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
+<#else>        ${projectPrefix}Invoker.throwErrWhenNull(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
+</#if></#list>        LocalDateTime now = LocalDateTime.now();
         ${classNameLower}.setCreateTime(now);
         ${classNameLower}.setUpdateTime(now);
         return ${classNameLower}Repository.insert(${classNameLower});

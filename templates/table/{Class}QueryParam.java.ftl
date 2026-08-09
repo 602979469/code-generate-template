@@ -4,11 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-<#if hasLocalDateTime>
-import java.time.LocalDateTime;
-</#if>
-<#if hasLocalDate>
-import java.time.LocalDate;
+<#if hasLocalDateTime>import java.time.LocalDateTime;
+</#if><#if hasLocalDate>import java.time.LocalDate;
 </#if>
 
 /**
@@ -19,7 +16,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ${className}QueryParam extends PageParam {
-
 <#list queryColumns as c>
     /** ${c.comment}。 */
     private ${c.javaType} ${c.propertyName};

@@ -4,6 +4,9 @@ import ${basePackage}.common.dal.dataobject.${className}DO;
 import ${basePackage}.core.model.domain.${className};
 import org.springframework.beans.BeanUtils;
 
+/**
+ * ${tableComment} DO 与 Model 互转。
+ */
 public class ${className}Convertor {
 
     public static ${className} toModel(${className}DO ${classNameLower}DO) {
@@ -15,7 +18,6 @@ public class ${className}Convertor {
         return ${classNameLower};
     }
 
-    /** Model 转 DO。 */
     public static ${className}DO toDO(${className} ${classNameLower}) {
         ${className}DO ${classNameLower}DO = new ${className}DO();
         BeanUtils.copyProperties(${classNameLower}, ${classNameLower}DO);

@@ -21,6 +21,7 @@ import static ${basePackage}.core.repository.convertor.${className}Convertor.toM
 @Repository
 public class ${className}RepositoryImpl implements ${className}Repository {
 
+    /** ${tableComment} Mapper。 */
     @Resource
     private ${className}Mapper ${classNameLower}Mapper;
 
