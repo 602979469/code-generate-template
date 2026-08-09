@@ -40,7 +40,7 @@ public class RequestLogAspect {
             long cost = System.currentTimeMillis() - start;
             String code = "?";
             if (result instanceof Result<?> r) {
-                code = String.valueOf(r.getCode());
+                code = String.valueOf(r.getErrorCodeEnum() == null ? 0 : r.getErrorCodeEnum().getCode());
             } else if (error != null) {
                 code = "exception";
             }
