@@ -24,6 +24,6 @@ public class PageResult<T> {
     /** 每页条数。 */
     private int pageSize = 10;
 
-    /** 当前页数 */
+    /** 当前页数据列表。 */
     private List<T> dataList;
 }

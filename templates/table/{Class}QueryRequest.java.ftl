@@ -1,5 +1,8 @@
 package ${basePackage}.app.web.param;
 
+import java.time.LocalDateTime;
+<#if hasLocalDate>import java.time.LocalDate;
+</#if>
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -7,10 +10,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-<#if hasLocalDate>import java.time.LocalDate;
-</#if>
 
 /**
  * ${tableComment}查询请求。

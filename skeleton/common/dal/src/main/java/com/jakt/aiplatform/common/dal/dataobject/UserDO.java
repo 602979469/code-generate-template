@@ -1,8 +1,8 @@
 package com.jakt.aiplatform.common.dal.dataobject;
 
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import java.time.LocalDateTime;
 
 /**
  * 用户信息表数据对象，与 sys_user 表结构一一对应。

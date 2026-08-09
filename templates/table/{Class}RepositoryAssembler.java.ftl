@@ -12,6 +12,12 @@ public final class ${className}Assembler {
     private ${className}Assembler() {
     }
 
+    /**
+     * DO → 领域模型。
+     *
+     * @param ${classNameLower}DO ${tableComment}数据对象；为空返回 null
+     * @return ${tableComment}领域模型
+     */
     public static ${className} toModel(${className}DO ${classNameLower}DO) {
         if (${classNameLower}DO == null) {
             return null;
@@ -21,6 +27,12 @@ public final class ${className}Assembler {
         return ${classNameLower};
     }
 
+    /**
+     * 领域模型 → DO。
+     *
+     * @param ${classNameLower} ${tableComment}领域模型
+     * @return ${tableComment}数据对象
+     */
     public static ${className}DO toDO(${className} ${classNameLower}) {
         ${className}DO ${classNameLower}DO = new ${className}DO();
         BeanUtils.copyProperties(${classNameLower}, ${classNameLower}DO);

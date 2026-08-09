@@ -11,7 +11,7 @@ SOFABoot 风格的多模块 DDD 样板：**每个叶子节点都是一个 Maven 
 ```
 aiplatform（聚合根 pom）
 ├── bootstrap/                  # aiplatform-bootstrap        启动模块：MainApplication + 扫描 + 配置
-├── web/                        # aiplatform-web              视图层：Controller、DTO、异常处理、日志切面
+├── web/                        # aiplatform-web              视图层：Controller、DTO、AiPlatformTemplate（统一日志/校验/异常）
 ├── biz/                        # aiplatform-biz              业务层聚合（空壳）
 │   └── service-impl/           # aiplatform-biz-service-impl 业务层：BizService（编排、操作领域模型）
 ├── core/                       # aiplatform-core             核心领域层聚合
@@ -42,7 +42,7 @@ web → biz-service-impl → core-service → core-repository → common-dal
 ```
 UserController(web)                        # 参数校验、DTO 转换、Result 包装
   → UserBizService(biz-service-impl)       # 用例编排
-    → UserDomainService(core-service)      # 领域规则：用户名唯一、存在性
+    → UserDomainService(core-service)      # 领域规则：必填校验、存在性
       → UserRepository(core-repository)    # 封装 Mapper，DO → Model
         → UserMapper(common-dal)           # MyBatis interface + XML
           → sys_user 表
@@ -77,24 +77,13 @@ UserController(web)                        # 参数校验、DTO 转换、Result 
    - Swagger：<http://localhost:8080/swagger-ui.html>
    - 分页查询：`GET /api/v1/users/page?pageNum=1&pageSize=10`
 
-## 规范文档
-
-| 文档 | 内容 |
-| --- | --- |
-| [docs/00-架构与分层规范.md](docs/00-架构与分层规范.md) | 模块职责、依赖方向、SOFABoot 拆模块思路 |
-| [docs/01-异常与错误码规范.md](docs/01-异常与错误码规范.md) | 错误码分段、AiPlatformException 与 BizTemplate 使用规则 |
-| [docs/02-日志规范.md](docs/02-日志规范.md) | traceId 全链路、日志分级 |
-| [docs/03-参数校验规范.md](docs/03-参数校验规范.md) | 前后端校验边界、注解与编码 |
-| [docs/04-命名与编码规范.md](docs/04-命名与编码规范.md) | 模块/类命名、代码风格 |
-| [docs/05-事务与启动规范.md](docs/05-事务与启动规范.md) | 事务约定、bootstrap 启动 |
-
-给 AI 开发代理的指引见 [AGENTS.md](AGENTS.md)。
-
 ## 改造成你的项目
 
 1. 全局替换包名 `com.jakt` → 你的公司域名倒写；
 2. 全局替换 `aiplatform` → 你的项目名；
-3. 按 [docs/00](docs/00-架构与分层规范.md) 的"新增业务模块"清单扩展，或让 AI 照着 `User` 模块复制一份。
+3. 新增业务模块请直接用 code-generate-template 的表级生成器，或让 AI 照着 `User` 模块复制一份。
+
+给 AI 开发代理的指引见 [AGENTS.md](AGENTS.md)。
 
 ## 路线图（后期支持，本期不做）
 

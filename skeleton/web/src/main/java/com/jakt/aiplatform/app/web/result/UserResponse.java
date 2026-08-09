@@ -1,11 +1,11 @@
 package com.jakt.aiplatform.app.web.result;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
 /**
  * 用户信息表响应 DTO。

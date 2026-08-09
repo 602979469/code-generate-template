@@ -61,6 +61,15 @@ public interface ${className}Mapper {
     int update(${className}DO ${classNameLower}DO);
 
     /**
+     * 按条件更新：只更新传入的非空字段（部分更新），适合只改几个字段的场景。
+     * 注意：无法把字段更新为 null，需要置 null 请用 {@link #update}；create_time/update_time 由数据库自动维护，不参与更新。
+     *
+     * @param ${classNameLower}DO 数据对象（至少含主键）
+     * @return 受影响行数
+     */
+    int updateByCondition(${className}DO ${classNameLower}DO);
+
+    /**
      * 按主键删除，返回受影响行数。
      *
      * @param id 主键

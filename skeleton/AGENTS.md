@@ -1,6 +1,6 @@
 # AGENTS.md — 给 AI 编码代理的项目约定
 
-> 修改代码前，请先完整阅读本文件与 `docs/` 下的规范文档。本项目以"规范约束"为第一目标，违反约束的代码即使能跑也算缺陷。
+> 修改代码前，请先完整阅读本文件。本项目以"规范约束"为第一目标，违反约束的代码即使能跑也算缺陷。
 
 ## 项目定位
 
@@ -29,7 +29,9 @@ bootstrap       → aiplatform-bootstrap
 ```
 aiplatform-bootstrap → web → biz-service-impl → core-service → core-repository → common-dal
                                         ↘                                     ↗
-                              core-model（零依赖，所有人依赖）  common-util / common-integration
+                              core-model（零依赖，所有人依赖）
+                                        ↑
+                              common-util / common-integration（基础共享；common-util 依赖 core-model）
 ```
 
 - `core-model`：领域模型、查询参数、AiPlatformException/ErrorCodeEnum、Result/PageResult、BizTemplate。仅依赖 slf4j（lombok 由根 pom 统一提供）。
@@ -39,7 +41,7 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
 - `core-repository`：封装 Mapper，DO→Model（XxxAssembler，assembler 包），可组合多个 Mapper，当前阶段单表操作不引入事务。
 - `core-service`：领域服务，承载业务规则。
 - `biz-service-impl`：BizService，用例编排，输入输出都是领域模型。
-- `web`：Controller（web/controller）、DTO（web/param、web/result）、AiPlatformTemplate、全局异常处理、日志切面。
+- `web`：Controller（web/controller）、DTO（web/param、web/result）、AiPlatformTemplate（统一日志/参数校验/异常封装）。
 - `bootstrap`：MainApplication + 注解扫描 + 配置文件，唯一可启动模块。
 
 禁止：反向/循环依赖；`web` 直接依赖 `common-dal` 或 `core-repository`。
@@ -54,6 +56,7 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
 6. 日志：禁止业务代码手写 try-catch 打日志；关键节点 `logger.info`；traceId 自动写入 MDC。
 7. 命名：`XxxController`（web/controller）、`XxxBizService`、`XxxDomainService`、`XxxRepository`、`XxxMapper`、`XxxDO`（common-dal）、`Xxx` Model（core-model）、`XxxRequest`（web/param）、`XxxResponse`（web/result）、仓储层 `XxxAssembler`（core/repository/assembler）。
 8. 代码风格：构造器注入 + `final` 字段；DTO 用 class + Lombok（`@Data`/`@Builder`），请求继承 `BaseRequest`、响应继承 `BaseResult`；领域模型用 Lombok `@Data`。
+9. 方法注释：有接口的接口加注释；实现类（implements 接口）方法不注释；不实现接口的类（Controller/Assembler/DomainService/BizService）方法统一加标准 javadoc。
 
 ## 新增一个业务模块（以 Order 为例）
 

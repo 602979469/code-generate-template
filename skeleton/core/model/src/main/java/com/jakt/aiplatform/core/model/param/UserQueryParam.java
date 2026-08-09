@@ -1,10 +1,10 @@
 package com.jakt.aiplatform.core.model.param;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
 /**
  * 用户信息表查询参数。

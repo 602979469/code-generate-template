@@ -49,8 +49,6 @@ class UserDomainServiceTest {
         User created = userDomainService.createUser(user);
 
         assertThat(created.getId()).isEqualTo(1L);
-        assertThat(created.getCreateTime()).isNotNull();
-        assertThat(created.getUpdateTime()).isNotNull();
         verify(userRepository).insert(user);
     }
 

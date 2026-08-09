@@ -28,7 +28,7 @@ public class Result<T> implements Serializable {
     private String errorMessage;
 
     /** 业务数据。 */
-    public T data;
+    private T data;
 
     public static <T> Result<T> ok() {
         Result<T> result = new Result<>();

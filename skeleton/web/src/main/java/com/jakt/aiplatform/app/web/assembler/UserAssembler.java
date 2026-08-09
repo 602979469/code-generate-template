@@ -1,5 +1,6 @@
 package com.jakt.aiplatform.app.web.assembler;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.jakt.aiplatform.app.web.param.UserCreateRequest;
 import com.jakt.aiplatform.app.web.param.UserQueryRequest;
 import com.jakt.aiplatform.app.web.param.UserUpdateRequest;
@@ -15,6 +16,12 @@ public final class UserAssembler {
     private UserAssembler() {
     }
 
+    /**
+     * 创建请求 DTO → 领域模型。
+     *
+     * @param request 创建用户信息表请求 DTO
+     * @return 用户信息表领域模型
+     */
     public static User toModel(UserCreateRequest request) {
         User user = new User();
         user.setDeptId(request.getDeptId());
@@ -35,6 +42,13 @@ public final class UserAssembler {
         return user;
     }
 
+    /**
+     * 更新请求 DTO + 路径 ID → 领域模型。
+     *
+     * @param request 更新用户信息表请求 DTO
+     * @param id      路径中的用户信息表 ID
+     * @return 用户信息表领域模型
+     */
     public static User toModel(UserUpdateRequest request, Long id) {
         User user = new User();
         user.setId(id);
@@ -56,6 +70,12 @@ public final class UserAssembler {
         return user;
     }
 
+    /**
+     * 查询请求 DTO → 查询参数。
+     *
+     * @param request 用户信息表查询请求 DTO
+     * @return 用户信息表查询参数
+     */
     public static UserQueryParam toQueryParam(UserQueryRequest request) {
         UserQueryParam param = new UserQueryParam();
         param.setId(request.getId());
@@ -78,11 +98,17 @@ public final class UserAssembler {
         param.setCreateTimeEnd(request.getCreateTimeEnd());
         param.setUpdateTimeBegin(request.getUpdateTimeBegin());
         param.setUpdateTimeEnd(request.getUpdateTimeEnd());
-        param.setPageNum(request.getPageNum() == null ? 1 : request.getPageNum());
-        param.setPageSize(request.getPageSize() == null ? 10 : request.getPageSize());
+        param.setPageNum(ObjectUtil.defaultIfNull(request.getPageNum(), 1));
+        param.setPageSize(ObjectUtil.defaultIfNull(request.getPageSize(), 10));
         return param;
     }
 
+    /**
+     * 领域模型 → 响应 DTO。
+     *
+     * @param user 用户信息表领域模型
+     * @return 用户信息表响应 DTO
+     */
     public static UserResponse toResponse(User user) {
         UserResponse response = new UserResponse();
         response.setId(user.getId());

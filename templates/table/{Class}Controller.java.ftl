@@ -37,6 +37,12 @@ public class ${className}Controller {
         this.${classNameLower}BizService = ${classNameLower}BizService;
     }
 
+    /**
+     * 创建${tableComment}。
+     *
+     * @param request 创建${tableComment}请求体
+     * @return 创建成功后的${tableComment}信息
+     */
     @PostMapping
     public ${toolPrefix}Result<${className}Response> create(@RequestBody ${className}CreateRequest request) {
         return ${toolPrefix}Template.execute(request, new ${toolPrefix}Template.Callback<${className}CreateRequest, ${className}Response>() {
@@ -58,6 +64,12 @@ public class ${className}Controller {
         });
     }
 
+    /**
+     * 按 ID 查询${tableComment}。
+     *
+     * @param id ${tableComment} ID
+     * @return ${tableComment}信息
+     */
     @GetMapping("/{id}")
     public ${toolPrefix}Result<${className}Response> get(@PathVariable Long id) {
         return ${toolPrefix}Template.execute(id, new ${toolPrefix}Template.Callback<Long, ${className}Response>() {
@@ -78,6 +90,12 @@ public class ${className}Controller {
         });
     }
 
+    /**
+     * 分页查询${tableComment}。
+     *
+     * @param request 查询条件（含分页参数与时间区间）
+     * @return 分页结果
+     */
     @GetMapping("/page")
     public ${toolPrefix}Result<PageResult<${className}Response>> page(${className}QueryRequest request) {
         return ${toolPrefix}Template.execute(request, new ${toolPrefix}Template.Callback<${className}QueryRequest, PageResult<${className}Response>>() {
@@ -100,6 +118,13 @@ public class ${className}Controller {
         });
     }
 
+    /**
+     * 更新${tableComment}（全量）。
+     *
+     * @param id      ${tableComment} ID
+     * @param request 更新内容
+     * @return 更新后的${tableComment}信息
+     */
     @PutMapping("/{id}")
     public ${toolPrefix}Result<${className}Response> update(@PathVariable Long id, @RequestBody ${className}UpdateRequest request) {
         return ${toolPrefix}Template.execute(request, new ${toolPrefix}Template.Callback<${className}UpdateRequest, ${className}Response>() {
@@ -121,6 +146,12 @@ public class ${className}Controller {
         });
     }
 
+    /**
+     * 删除${tableComment}。
+     *
+     * @param id ${tableComment} ID
+     * @return 删除结果
+     */
     @DeleteMapping("/{id}")
     public ${toolPrefix}Result<Void> delete(@PathVariable Long id) {
         return ${toolPrefix}Template.executeWithoutResult(id, new ${toolPrefix}Template.CallbackWithoutResult<Long>() {

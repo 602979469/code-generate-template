@@ -1,12 +1,12 @@
 package ${basePackage}.core.model.param;
 
+<#if hasLocalDateTime>import java.time.LocalDateTime;
+</#if><#if hasLocalDate>import java.time.LocalDate;
+</#if>
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-<#if hasLocalDateTime>import java.time.LocalDateTime;
-</#if><#if hasLocalDate>import java.time.LocalDate;
-</#if>
 
 /**
  * ${tableComment}查询参数。

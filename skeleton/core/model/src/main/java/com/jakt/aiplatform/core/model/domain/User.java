@@ -1,8 +1,8 @@
 package com.jakt.aiplatform.core.model.domain;
 
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import java.time.LocalDateTime;
 
 /**
  * 用户信息表领域模型。

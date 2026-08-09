@@ -1,11 +1,11 @@
 package ${basePackage}.common.dal.dataobject;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 <#if hasLocalDateTime>import java.time.LocalDateTime;
 </#if><#if hasLocalDate>import java.time.LocalDate;
 </#if><#if hasBigDecimal>import java.math.BigDecimal;
 </#if>
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * ${tableComment}数据对象，与 ${tableName} 表结构一一对应。

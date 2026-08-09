@@ -69,7 +69,11 @@ public final class AiPlatformTemplate {
                 }
             }
         } finally {
-            callback.afterService(param, data);
+            try {
+                callback.afterService(param, data);
+            } catch (Exception e) {
+                AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "afterService 执行异常 caller=" + caller, e);
+            }
             boolean success = result != null && result.isSuccess();
             long cost = System.currentTimeMillis() - start;
             AiPlatformLoggerUtil.info(LogFileEnum.BIZ_SERVICE,
@@ -116,13 +120,13 @@ public final class AiPlatformTemplate {
      */
     public interface Callback<P, R> {
 
-        /** 业务执行前钩子：建议在此调用 {@link AiPlatformParamValidator#validate(Object, Class[])} 做参数校验。 */
+        /** 业务执行前钩子：统一在此调用 {@link AiPlatformParamValidator#validate(Object, Class[])} 做参数校验。 */
         void beforeService(P param);
 
         /** 核心业务逻辑。 */
         R execute(P param);
 
-        /** 业务执行后钩子：可做清理/日志，可为空实现。 */
+        /** 业务执行后钩子：留空即可，如需清理/日志在此实现。 */
         void afterService(P param, R result);
     }
 
@@ -133,13 +137,13 @@ public final class AiPlatformTemplate {
      */
     public interface CallbackWithoutResult<P> {
 
-        /** 业务执行前钩子：建议在此调用 {@link AiPlatformParamValidator#validate(Object, Class[])} 做参数校验。 */
+        /** 业务执行前钩子：统一在此调用 {@link AiPlatformParamValidator#validate(Object, Class[])} 做参数校验。 */
         void beforeService(P param);
 
         /** 核心业务逻辑（无返回值）。 */
         void execute(P param);
 
-        /** 业务执行后钩子：可做清理/日志，可为空实现。 */
+        /** 业务执行后钩子：留空即可，如需清理/日志在此实现。 */
         void afterService(P param);
     }
 

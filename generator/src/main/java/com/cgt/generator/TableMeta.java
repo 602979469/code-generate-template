@@ -26,4 +26,8 @@ public final class TableMeta {
     public boolean hasLocalDateTime;
     public boolean hasLocalDate;
     public boolean hasBigDecimal;
+    /** 是否存在必填字符串列（决定 DTO 是否导入 @NotBlank/@Size）。 */
+    public boolean hasRequiredString;
+    /** 是否存在必填非字符串列（决定 DTO 是否导入 @NotNull）。 */
+    public boolean hasRequiredNonString;
 }

@@ -16,12 +16,6 @@
     <description>基础工具：TraceId、RestTemplate、条件断言（AiPlatformInvoker）、线程池等</description>
 
     <dependencies>
-        <!-- Lombok：枚举/工具类样板 -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>com.jakt</groupId>
             <artifactId>aiplatform-core-model</artifactId>

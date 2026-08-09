@@ -30,9 +30,6 @@ public enum ErrorCodeEnum implements ErrorCode {
     /** 用户不存在。 */
     USER_NOT_FOUND(30002, "用户不存在"),
 
-    /** 用户名已存在。 */
-    USERNAME_EXISTS(30003, "用户名已存在"),
-
     /** 外部服务调用失败。 */
     EXTERNAL_ERROR(40000, "外部服务调用失败");
 

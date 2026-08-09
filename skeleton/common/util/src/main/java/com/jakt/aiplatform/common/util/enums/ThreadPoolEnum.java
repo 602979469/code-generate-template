@@ -6,7 +6,10 @@ package com.jakt.aiplatform.common.util.enums;
 public enum ThreadPoolEnum {
 
     /** 系统业务线程池。 */
-    SYS_THREAD_POOL("sysThreadPool");
+    SYS_THREAD_POOL("sysThreadPool"),
+
+    /** 异步任务线程池。 */
+    ASYNC_THREAD_POOL("asyncThreadPool");
 
     private final String beanName;
 

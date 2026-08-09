@@ -1,11 +1,11 @@
 package ${basePackage}.core.model.domain;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 <#if hasLocalDateTime>import java.time.LocalDateTime;
 </#if><#if hasLocalDate>import java.time.LocalDate;
 </#if><#if hasBigDecimal>import java.math.BigDecimal;
 </#if>
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * ${tableComment}领域模型。

@@ -56,15 +56,31 @@
         <include refid="queryConditions"/>
     </select>
 
+    <!-- create_time/update_time 由数据库自动维护（DEFAULT CURRENT_TIMESTAMP / ON UPDATE），不参与插入 -->
     <insert id="insert" parameterType="${basePackage}.common.dal.dataobject.${className}DO"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO ${tableName} (${insertColumns})
         VALUES (${insertValues})
     </insert>
 
+    <!-- 全量更新：覆盖所有业务字段；create_time/update_time 由数据库自动维护 -->
     <update id="update" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
         UPDATE ${tableName}
         SET ${updateSet}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 按条件更新：只更新传入的非空字段（部分更新），适合只改几个字段的场景；
+         注意：无法把字段更新为 null，需要置 null 请用 update 全量更新；
+         update_time 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护 -->
+    <update id="updateByCondition" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
+        UPDATE ${tableName}
+        <set>
+<#list columns as c>
+            <if test="${c.propertyName} != null">
+                ${c.columnName} = #{${c.propertyName}},
+            </if>
+</#list>        </set>
         WHERE id = #{id}
     </update>
 

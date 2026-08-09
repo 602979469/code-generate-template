@@ -1,5 +1,6 @@
 package ${basePackage}.app.web.assembler;
 
+import cn.hutool.core.util.ObjectUtil;
 import ${basePackage}.app.web.param.${className}CreateRequest;
 import ${basePackage}.app.web.param.${className}QueryRequest;
 import ${basePackage}.app.web.param.${className}UpdateRequest;
@@ -15,6 +16,12 @@ public final class ${className}Assembler {
     private ${className}Assembler() {
     }
 
+    /**
+     * 创建请求 DTO → 领域模型。
+     *
+     * @param request 创建${tableComment}请求 DTO
+     * @return ${tableComment}领域模型
+     */
     public static ${className} toModel(${className}CreateRequest request) {
         ${className} ${classNameLower} = new ${className}();
 <#list columns as c>
@@ -22,6 +29,13 @@ public final class ${className}Assembler {
 </#list>        return ${classNameLower};
     }
 
+    /**
+     * 更新请求 DTO + 路径 ID → 领域模型。
+     *
+     * @param request 更新${tableComment}请求 DTO
+     * @param id      路径中的${tableComment} ID
+     * @return ${tableComment}领域模型
+     */
     public static ${className} toModel(${className}UpdateRequest request, Long id) {
         ${className} ${classNameLower} = new ${className}();
         ${classNameLower}.setId(id);
@@ -30,6 +44,12 @@ public final class ${className}Assembler {
 </#list>        return ${classNameLower};
     }
 
+    /**
+     * 查询请求 DTO → 查询参数。
+     *
+     * @param request ${tableComment}查询请求 DTO
+     * @return ${tableComment}查询参数
+     */
     public static ${className}QueryParam toQueryParam(${className}QueryRequest request) {
         ${className}QueryParam param = new ${className}QueryParam();
 <#list queryColumns as c>
@@ -38,11 +58,17 @@ public final class ${className}Assembler {
         param.setCreateTimeEnd(request.getCreateTimeEnd());
         param.setUpdateTimeBegin(request.getUpdateTimeBegin());
         param.setUpdateTimeEnd(request.getUpdateTimeEnd());
-        param.setPageNum(request.getPageNum() == null ? 1 : request.getPageNum());
-        param.setPageSize(request.getPageSize() == null ? 10 : request.getPageSize());
+        param.setPageNum(ObjectUtil.defaultIfNull(request.getPageNum(), 1));
+        param.setPageSize(ObjectUtil.defaultIfNull(request.getPageSize(), 10));
         return param;
     }
 
+    /**
+     * 领域模型 → 响应 DTO。
+     *
+     * @param ${classNameLower} ${tableComment}领域模型
+     * @return ${tableComment}响应 DTO
+     */
     public static ${className}Response toResponse(${className} ${classNameLower}) {
         ${className}Response response = new ${className}Response();
         response.setId(${classNameLower}.getId());

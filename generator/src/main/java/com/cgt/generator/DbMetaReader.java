@@ -50,6 +50,8 @@ public final class DbMetaReader {
                         meta.columns.add(column);
                         if (column.required) {
                             meta.requiredColumns.add(column);
+                            meta.hasRequiredString |= column.string;
+                            meta.hasRequiredNonString |= !column.string;
                         }
                         meta.hasLocalDateTime |= "LocalDateTime".equals(column.javaType);
                         meta.hasLocalDate |= "LocalDate".equals(column.javaType);
@@ -116,16 +118,14 @@ public final class DbMetaReader {
         table.selectColumns = "id, " + cols.stream().map(c -> c.columnName).collect(Collectors.joining(", "))
                 + ", create_time, update_time";
 
+        // create_time/update_time 由数据库自动维护（DEFAULT CURRENT_TIMESTAMP / ON UPDATE），不参与 INSERT/UPDATE
         List<ColumnMeta> insertCols = cols.stream().filter(c -> !c.auto).collect(Collectors.toList());
-        table.insertColumns = insertCols.stream().map(c -> c.columnName).collect(Collectors.joining(", "))
-                + ", create_time, update_time";
-        table.insertValues = insertCols.stream().map(c -> "#{" + c.propertyName + "}").collect(Collectors.joining(", "))
-                + ", #{createTime}, #{updateTime}";
+        table.insertColumns = insertCols.stream().map(c -> c.columnName).collect(Collectors.joining(", "));
+        table.insertValues = insertCols.stream().map(c -> "#{" + c.propertyName + "}").collect(Collectors.joining(", "));
 
         List<ColumnMeta> updateCols = cols.stream().filter(c -> !c.auto && !c.pk).collect(Collectors.toList());
         table.updateSet = updateCols.stream().map(c -> c.columnName + " = #{" + c.propertyName + "}")
-                .collect(Collectors.joining(",\n            "))
-                + ",\n            update_time = #{updateTime}";
+                .collect(Collectors.joining(",\n            "));
     }
 
     private static String readTableComment(Connection conn, String schema, String tableName) throws SQLException {

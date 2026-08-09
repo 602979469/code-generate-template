@@ -16,13 +16,6 @@
     <description>数据访问层：MyBatis Mapper（interface + XML）、DO、事务配置</description>
 
     <dependencies>
-        <!-- Lombok：DO 样板代码（getter/setter、toString、equals/hashCode） -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>com.jakt</groupId>
             <artifactId>aiplatform-core-model</artifactId>

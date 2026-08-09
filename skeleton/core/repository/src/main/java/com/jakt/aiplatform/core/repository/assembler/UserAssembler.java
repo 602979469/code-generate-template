@@ -12,6 +12,12 @@ public final class UserAssembler {
     private UserAssembler() {
     }
 
+    /**
+     * DO → 领域模型。
+     *
+     * @param userDO 用户信息表数据对象；为空返回 null
+     * @return 用户信息表领域模型
+     */
     public static User toModel(UserDO userDO) {
         if (userDO == null) {
             return null;
@@ -21,6 +27,12 @@ public final class UserAssembler {
         return user;
     }
 
+    /**
+     * 领域模型 → DO。
+     *
+     * @param user 用户信息表领域模型
+     * @return 用户信息表数据对象
+     */
     public static UserDO toDO(User user) {
         UserDO userDO = new UserDO();
         BeanUtils.copyProperties(user, userDO);

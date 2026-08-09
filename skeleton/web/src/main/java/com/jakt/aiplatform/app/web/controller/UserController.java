@@ -37,6 +37,12 @@ public class UserController {
         this.userBizService = userBizService;
     }
 
+    /**
+     * 创建用户信息表。
+     *
+     * @param request 创建用户信息表请求体
+     * @return 创建成功后的用户信息表信息
+     */
     @PostMapping
     public AiPlatformResult<UserResponse> create(@RequestBody UserCreateRequest request) {
         return AiPlatformTemplate.execute(request, new AiPlatformTemplate.Callback<UserCreateRequest, UserResponse>() {
@@ -58,6 +64,12 @@ public class UserController {
         });
     }
 
+    /**
+     * 按 ID 查询用户信息表。
+     *
+     * @param id 用户信息表 ID
+     * @return 用户信息表信息
+     */
     @GetMapping("/{id}")
     public AiPlatformResult<UserResponse> get(@PathVariable Long id) {
         return AiPlatformTemplate.execute(id, new AiPlatformTemplate.Callback<Long, UserResponse>() {
@@ -78,6 +90,12 @@ public class UserController {
         });
     }
 
+    /**
+     * 分页查询用户信息表。
+     *
+     * @param request 查询条件（含分页参数与时间区间）
+     * @return 分页结果
+     */
     @GetMapping("/page")
     public AiPlatformResult<PageResult<UserResponse>> page(UserQueryRequest request) {
         return AiPlatformTemplate.execute(request, new AiPlatformTemplate.Callback<UserQueryRequest, PageResult<UserResponse>>() {
@@ -100,6 +118,13 @@ public class UserController {
         });
     }
 
+    /**
+     * 更新用户信息表（全量）。
+     *
+     * @param id      用户信息表 ID
+     * @param request 更新内容
+     * @return 更新后的用户信息表信息
+     */
     @PutMapping("/{id}")
     public AiPlatformResult<UserResponse> update(@PathVariable Long id, @RequestBody UserUpdateRequest request) {
         return AiPlatformTemplate.execute(request, new AiPlatformTemplate.Callback<UserUpdateRequest, UserResponse>() {
@@ -121,6 +146,12 @@ public class UserController {
         });
     }
 
+    /**
+     * 删除用户信息表。
+     *
+     * @param id 用户信息表 ID
+     * @return 删除结果
+     */
     @DeleteMapping("/{id}")
     public AiPlatformResult<Void> delete(@PathVariable Long id) {
         return AiPlatformTemplate.executeWithoutResult(id, new AiPlatformTemplate.CallbackWithoutResult<Long>() {

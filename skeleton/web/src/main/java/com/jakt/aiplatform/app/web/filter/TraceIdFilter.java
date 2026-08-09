@@ -1,5 +1,6 @@
 package com.jakt.aiplatform.app.web.filter;
 
+import cn.hutool.core.util.StrUtil;
 import com.jakt.aiplatform.common.util.tools.TraceIdUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +24,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String traceId = request.getHeader(TraceIdUtil.TRACE_ID_HEADER);
-        if (traceId == null || traceId.isBlank()) {
+        if (StrUtil.isBlank(traceId)) {
             traceId = TraceIdUtil.generateTraceId();
         }
         TraceIdUtil.putTraceId(traceId);

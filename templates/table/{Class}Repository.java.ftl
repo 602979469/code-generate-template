@@ -4,6 +4,8 @@ import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.param.${className}QueryParam;
 import ${basePackage}.core.model.result.PageResult;
 
+import java.util.List;
+
 /**
  * ${tableComment}仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
  */
@@ -26,6 +28,14 @@ public interface ${className}Repository {
     PageResult<${className}> findPage(${className}QueryParam query);
 
     /**
+     * 列表查询。
+     *
+     * @param query 查询参数
+     * @return ${tableComment}列表
+     */
+    List<${className}> findList(${className}QueryParam query);
+
+    /**
      * 新增。
      *
      * @param ${classNameLower} ${tableComment}
@@ -40,6 +50,14 @@ public interface ${className}Repository {
      * @return 更新后的${tableComment}
      */
     ${className} update(${className} ${classNameLower});
+
+    /**
+     * 按条件更新：只更新传入的非空字段（部分更新）。
+     * 注意：无法把字段更新为 null，需要置 null 请用 {@link #update}；create_time/update_time 由数据库自动维护。
+     *
+     * @param ${classNameLower} ${tableComment}（至少含主键）
+     */
+    void updateByCondition(${className} ${classNameLower});
 
     /**
      * 按主键删除。

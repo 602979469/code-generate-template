@@ -6,8 +6,6 @@ import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
 import com.jakt.aiplatform.core.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 /**
  * 用户信息表领域服务：承载用户信息表相关的业务规则。只写规则，不碰持久化细节。
  */
@@ -21,25 +19,46 @@ public class UserDomainService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * 创建用户信息表：必填字段校验后入库。
+     * createTime/updateTime 由数据库自动维护，领域层不赋值。
+     *
+     * @param user 用户信息表
+     * @return 创建后的用户信息表（主键已回填）
+     */
     public User createUser(User user) {
         AiPlatformInvoker.throwErrWhenBlank(user.getLoginName(), ErrorCodeEnum.PARAM_INVALID, "登录账号不能为空");
-        LocalDateTime now = LocalDateTime.now();
-        user.setCreateTime(now);
-        user.setUpdateTime(now);
         return userRepository.insert(user);
     }
 
+    /**
+     * 更新User（全量）：存在性校验后更新。
+     * updateTime 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护。
+     *
+     * @param user 用户信息表（含主键）
+     * @return 更新后的用户信息表
+     */
     public User updateUser(User user) {
         AiPlatformInvoker.throwErrWhenNull(userRepository.findById(user.getId()), ErrorCodeEnum.RESOURCE_NOT_FOUND);
-        user.setUpdateTime(LocalDateTime.now());
         return userRepository.update(user);
     }
 
+    /**
+     * 删除用户信息表：存在性校验后删除。
+     *
+     * @param id 用户信息表 ID
+     */
     public void deleteUser(Long id) {
         AiPlatformInvoker.throwErrWhenNull(userRepository.findById(id), ErrorCodeEnum.RESOURCE_NOT_FOUND);
         userRepository.deleteById(id);
     }
 
+    /**
+     * 按 ID 获取用户信息表：不存在时抛业务异常。
+     *
+     * @param id 用户信息表 ID
+     * @return 用户信息表
+     */
     public User getUser(Long id) {
         User user = userRepository.findById(id);
         AiPlatformInvoker.throwErrWhenNull(user, ErrorCodeEnum.RESOURCE_NOT_FOUND);

@@ -99,6 +99,8 @@ public final class CrudGenerator {
         model.put("hasLocalDateTime", meta.hasLocalDateTime);
         model.put("hasLocalDate", meta.hasLocalDate);
         model.put("hasBigDecimal", meta.hasBigDecimal);
+        model.put("hasRequiredString", meta.hasRequiredString);
+        model.put("hasRequiredNonString", meta.hasRequiredNonString);
         return model;
     }
 

@@ -1,17 +1,17 @@
 package ${basePackage}.app.web.param;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 <#if hasLocalDateTime>import java.time.LocalDateTime;
 </#if><#if hasLocalDate>import java.time.LocalDate;
 </#if><#if hasBigDecimal>import java.math.BigDecimal;
 </#if>
+<#if hasRequiredString>import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+</#if><#if hasRequiredNonString>import jakarta.validation.constraints.NotNull;
+</#if>import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * 创建${tableComment}请求 DTO。
