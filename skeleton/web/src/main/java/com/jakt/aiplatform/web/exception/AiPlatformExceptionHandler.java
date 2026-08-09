@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * 全局异常处理器：单一入口兜住所有逃逸到框架层的异常。
@@ -47,7 +48,7 @@ public class AiPlatformExceptionHandler {
             AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "数据完整性冲突 {}", e.getMessage());
             return AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "数据冲突：违反唯一约束或非空约束");
         }
-        if (e instanceof NoHandlerFoundException) {
+        if (e instanceof NoResourceFoundException || e instanceof NoHandlerFoundException) {
             return AiPlatformResult.fail(ErrorCodeEnum.RESOURCE_NOT_FOUND, "接口不存在");
         }
         if (e instanceof HttpRequestMethodNotSupportedException) {

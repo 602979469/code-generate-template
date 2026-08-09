@@ -35,6 +35,9 @@ public final class AiPlatformParamValidator {
         String message = violations.stream()
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
                 .collect(Collectors.joining("; "));
-        AiPlatformInvoker.throwErrWhenNotBlank(message, ErrorCodeEnum.PARAM_INVALID, message);
+        AiPlatformInvoker.throwErrWhenNotBlank(
+                message,
+                ErrorCodeEnum.PARAM_INVALID,
+                message);
     }
 }

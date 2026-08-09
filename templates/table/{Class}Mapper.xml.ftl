@@ -70,10 +70,11 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 按条件更新：只更新传入的非空字段（部分更新），适合只改几个字段的场景；
+    <!-- 按条件更新：只更新传入的非空字段（部分更新），适合只改几个字段的场景。
+         全空守卫在 DomainService.updateByCondition（调用前判断，全空直接跳过）；
+         XML 的 <if> 保证不会产生空 SET。直接调用 Mapper 时需自行保证至少一个非空字段。
          注意：无法把字段更新为 null，需要置 null 请用 update 全量更新；
-         update_time 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护；
-         全部字段均为空时跳过更新（返回 0），避免生成非法 SQL -->
+         update_time 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护 -->
     <update id="updateByCondition" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
         <if test="<#list columns as c>${c.propertyName} != null<#sep> or </#sep></#list>">
             UPDATE ${tableName}

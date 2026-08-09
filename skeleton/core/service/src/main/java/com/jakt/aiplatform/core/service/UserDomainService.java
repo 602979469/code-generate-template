@@ -31,7 +31,10 @@ public class UserDomainService {
      * @return 创建后的用户信息（主键已回填）
      */
     public User createUser(User user) {
-        AiPlatformInvoker.throwErrWhenBlank(user.getLoginName(), ErrorCodeEnum.PARAM_INVALID, "登录账号不能为空");
+        AiPlatformInvoker.throwErrWhenBlank(
+                user.getLoginName(),
+                ErrorCodeEnum.PARAM_INVALID,
+                "登录账号不能为空");
         return userRepository.insert(user);
     }
 
@@ -43,17 +46,26 @@ public class UserDomainService {
      * @return 更新后的用户信息
      */
     public User updateUser(User user) {
-        AiPlatformInvoker.throwErrWhenNull(userRepository.findById(user.getId()), ErrorCodeEnum.RESOURCE_NOT_FOUND);
+        AiPlatformInvoker.throwErrWhenNull(
+                userRepository.findById(user.getId()),
+                ErrorCodeEnum.RESOURCE_NOT_FOUND);
         return userRepository.update(user);
     }
 
     /**
      * 按条件更新用户信息（只更新传入的非空字段）。
+     * 全部业务字段均为空时跳过更新（不执行 SQL）。
      *
      * @param user 用户信息（至少含主键）
      */
     public void updateByCondition(User user) {
-        AiPlatformInvoker.throwErrWhenNull(userRepository.findById(user.getId()), ErrorCodeEnum.RESOURCE_NOT_FOUND);
+        AiPlatformInvoker.throwErrWhenNull(
+                userRepository.findById(user.getId()),
+                ErrorCodeEnum.RESOURCE_NOT_FOUND);
+        // 全部业务字段均为空时跳过更新，避免产生空 SQL
+        if (user.getDeptId() == null && user.getLoginName() == null && user.getUserName() == null && user.getUserType() == null && user.getEmail() == null && user.getPhonenumber() == null && user.getSex() == null && user.getAvatar() == null && user.getPassword() == null && user.getSalt() == null && user.getStatus() == null && user.getLoginIp() == null && user.getLoginDate() == null && user.getPwdUpdateDate() == null && user.getRemark() == null) {
+            return;
+        }
         userRepository.updateByCondition(user);
     }
 
@@ -63,7 +75,9 @@ public class UserDomainService {
      * @param id 用户信息 ID
      */
     public void deleteUser(Long id) {
-        AiPlatformInvoker.throwErrWhenNull(userRepository.findById(id), ErrorCodeEnum.RESOURCE_NOT_FOUND);
+        AiPlatformInvoker.throwErrWhenNull(
+                userRepository.findById(id),
+                ErrorCodeEnum.RESOURCE_NOT_FOUND);
         userRepository.deleteById(id);
     }
 
@@ -75,7 +89,9 @@ public class UserDomainService {
      */
     public User getUser(Long id) {
         User user = userRepository.findById(id);
-        AiPlatformInvoker.throwErrWhenNull(user, ErrorCodeEnum.RESOURCE_NOT_FOUND);
+        AiPlatformInvoker.throwErrWhenNull(
+                user,
+                ErrorCodeEnum.RESOURCE_NOT_FOUND);
         return user;
     }
 

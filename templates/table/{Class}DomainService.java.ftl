@@ -31,8 +31,14 @@ public class ${className}DomainService {
      * @return 创建后的${entityName}（主键已回填）
      */
     public ${className} create${className}(${className} ${classNameLower}) {
-<#list requiredColumns as c><#if c.string>        ${toolPrefix}Invoker.throwErrWhenBlank(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
-<#else>        ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}.get${c.propertyName?cap_first}(), ErrorCodeEnum.PARAM_INVALID, "${c.comment}不能为空");
+<#list requiredColumns as c><#if c.string>        ${toolPrefix}Invoker.throwErrWhenBlank(
+                ${classNameLower}.get${c.propertyName?cap_first}(),
+                ErrorCodeEnum.PARAM_INVALID,
+                "${c.comment}不能为空");
+<#else>        ${toolPrefix}Invoker.throwErrWhenNull(
+                ${classNameLower}.get${c.propertyName?cap_first}(),
+                ErrorCodeEnum.PARAM_INVALID,
+                "${c.comment}不能为空");
 </#if></#list>        return ${classNameLower}Repository.insert(${classNameLower});
     }
 
@@ -44,18 +50,28 @@ public class ${className}DomainService {
      * @return 更新后的${entityName}
      */
     public ${className} update${className}(${className} ${classNameLower}) {
-        ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}Repository.findById(${classNameLower}.getId()), ErrorCodeEnum.RESOURCE_NOT_FOUND);
+        ${toolPrefix}Invoker.throwErrWhenNull(
+                ${classNameLower}Repository.findById(${classNameLower}.getId()),
+                ErrorCodeEnum.RESOURCE_NOT_FOUND);
         return ${classNameLower}Repository.update(${classNameLower});
     }
 
     /**
      * 按条件更新${entityName}（只更新传入的非空字段）。
+     * 全部业务字段均为空时跳过更新（不执行 SQL）。
      *
      * @param ${classNameLower} ${entityName}（至少含主键）
      */
     public void updateByCondition(${className} ${classNameLower}) {
-        ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}Repository.findById(${classNameLower}.getId()), ErrorCodeEnum.RESOURCE_NOT_FOUND);
-        ${classNameLower}Repository.updateByCondition(${classNameLower});
+        ${toolPrefix}Invoker.throwErrWhenNull(
+                ${classNameLower}Repository.findById(${classNameLower}.getId()),
+                ErrorCodeEnum.RESOURCE_NOT_FOUND);
+<#if columns?has_content>
+        // 全部业务字段均为空时跳过更新，避免产生空 SQL
+        if (<#list columns as c>${classNameLower}.get${c.propertyName?cap_first}() == null<#sep> && </#list>) {
+            return;
+        }
+</#if>        ${classNameLower}Repository.updateByCondition(${classNameLower});
     }
 
     /**
@@ -64,7 +80,9 @@ public class ${className}DomainService {
      * @param id ${entityName} ID
      */
     public void delete${className}(Long id) {
-        ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}Repository.findById(id), ErrorCodeEnum.RESOURCE_NOT_FOUND);
+        ${toolPrefix}Invoker.throwErrWhenNull(
+                ${classNameLower}Repository.findById(id),
+                ErrorCodeEnum.RESOURCE_NOT_FOUND);
         ${classNameLower}Repository.deleteById(id);
     }
 
@@ -76,7 +94,9 @@ public class ${className}DomainService {
      */
     public ${className} get${className}(Long id) {
         ${className} ${classNameLower} = ${classNameLower}Repository.findById(id);
-        ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}, ErrorCodeEnum.RESOURCE_NOT_FOUND);
+        ${toolPrefix}Invoker.throwErrWhenNull(
+                ${classNameLower},
+                ErrorCodeEnum.RESOURCE_NOT_FOUND);
         return ${classNameLower};
     }
 
