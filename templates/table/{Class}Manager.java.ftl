@@ -60,6 +60,7 @@ public class ${className}Manager {
 
     /**
      * 列表查询${entityName}。
+     * 预留能力：web 未接线，业务方按需暴露。
      *
      * @param query 查询参数
      * @return ${entityName}列表
@@ -83,6 +84,7 @@ public class ${className}Manager {
 
     /**
      * 按条件更新${entityName}（只更新传入的非空字段）。
+     * 预留能力：web 未接线，业务方按需暴露。
      *
      * @param ${classNameLower} ${entityName}（至少含主键）
      */

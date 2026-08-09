@@ -75,16 +75,16 @@
          update_time 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护；
          全部字段均为空时跳过更新（返回 0），避免生成非法 SQL -->
     <update id="updateByCondition" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
-        UPDATE ${tableName}
         <if test="<#list columns as c>${c.propertyName} != null<#sep> or </#sep></#list>">
+            UPDATE ${tableName}
         <set>
 <#list columns as c>
             <if test="${c.propertyName} != null">
                 ${c.columnName} = #{${c.propertyName}},
             </if>
 </#list>        </set>
+            WHERE id = #{id}
         </if>
-        WHERE id = #{id}
     </update>
 
     <!-- 当前为物理删除；软删除后续启用（del_flag 留待 BizDO） -->

@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 线程池配置：统一提供系统/异步线程池，业务方通过 ThreadPoolUtil 调用。
+ * 注意：MDC 不跨线程，异步任务中无 traceId；后续用 TaskDecorator 在提交时复制 MDC。
  */
 @Configuration
 public class ThreadPoolConfig {

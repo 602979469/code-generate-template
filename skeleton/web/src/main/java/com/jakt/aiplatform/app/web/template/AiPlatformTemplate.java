@@ -145,7 +145,8 @@ public final class AiPlatformTemplate {
         void afterService(P param);
     }
 
-    /** 解析调用方（Controller 类名.方法名），用于接口信息日志。 */
+    /** 解析调用方（Controller 类名.方法名），用于接口信息日志。
+     *  每次请求遍历堆栈，当前量级可接受；如需精确接口名可改为显式传参。 */
     private static String resolveCaller() {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         for (StackTraceElement element : stack) {

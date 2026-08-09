@@ -54,6 +54,7 @@ public class ${className}DomainService {
      * @param ${classNameLower} ${entityName}（至少含主键）
      */
     public void updateByCondition(${className} ${classNameLower}) {
+        ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}Repository.findById(${classNameLower}.getId()), ErrorCodeEnum.RESOURCE_NOT_FOUND);
         ${classNameLower}Repository.updateByCondition(${classNameLower});
     }
 

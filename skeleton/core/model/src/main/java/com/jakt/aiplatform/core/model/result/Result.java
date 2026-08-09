@@ -9,6 +9,7 @@ import java.io.Serializable;
 
 /**
  * 统一返回体（core-model 定义，供所有层使用）。
+ * 预留：当前仅 BizTemplate 引用（BizTemplate 未接线）；web 层接口统一使用 AiPlatformResult。
  *
  * <p>成功：success=true + data；失败：success=false + errorCodeEnum + errorMessage。
  */
