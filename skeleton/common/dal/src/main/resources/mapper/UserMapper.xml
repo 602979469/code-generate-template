@@ -17,37 +17,37 @@
                 AND dept_id = #{deptId}
             </if>
             <if test="loginName != null and loginName != ''">
-                AND login_name LIKE CONCAT('%', #{loginName}, '%')
+                AND login_name = #{loginName}
             </if>
             <if test="userName != null and userName != ''">
-                AND user_name LIKE CONCAT('%', #{userName}, '%')
+                AND user_name = #{userName}
             </if>
             <if test="userType != null and userType != ''">
-                AND user_type LIKE CONCAT('%', #{userType}, '%')
+                AND user_type = #{userType}
             </if>
             <if test="email != null and email != ''">
-                AND email LIKE CONCAT('%', #{email}, '%')
+                AND email = #{email}
             </if>
             <if test="phonenumber != null and phonenumber != ''">
-                AND phonenumber LIKE CONCAT('%', #{phonenumber}, '%')
+                AND phonenumber = #{phonenumber}
             </if>
             <if test="sex != null and sex != ''">
-                AND sex LIKE CONCAT('%', #{sex}, '%')
+                AND sex = #{sex}
             </if>
             <if test="avatar != null and avatar != ''">
-                AND avatar LIKE CONCAT('%', #{avatar}, '%')
+                AND avatar = #{avatar}
             </if>
             <if test="password != null and password != ''">
-                AND password LIKE CONCAT('%', #{password}, '%')
+                AND password = #{password}
             </if>
             <if test="salt != null and salt != ''">
-                AND salt LIKE CONCAT('%', #{salt}, '%')
+                AND salt = #{salt}
             </if>
             <if test="status != null and status != ''">
                 AND status = #{status}
             </if>
             <if test="loginIp != null and loginIp != ''">
-                AND login_ip LIKE CONCAT('%', #{loginIp}, '%')
+                AND login_ip = #{loginIp}
             </if>
             <if test="loginDate != null">
                 AND login_date = #{loginDate}
@@ -56,7 +56,7 @@
                 AND pwd_update_date = #{pwdUpdateDate}
             </if>
             <if test="remark != null and remark != ''">
-                AND remark LIKE CONCAT('%', #{remark}, '%')
+                AND remark = #{remark}
             </if>
             <if test="createTime != null">
                 AND create_time = #{createTime}

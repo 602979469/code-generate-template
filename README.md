@@ -64,7 +64,7 @@ skeleton 是"能编译的真实代码"，生成时按顺序做 token 替换，�
 
 - 强约束：表必须包含 `id` / `create_time` / `update_time`（对应 BaseDO）；`create_by` / `update_by` / `del_flag` 为保留审计列，当前不生成，后续由 BizDO 扩展。
 - 字段类型映射：bigint->Long、int/tinyint->Integer、varchar/char/text->String、datetime->LocalDateTime、decimal->BigDecimal。
-- 查询条件：varchar 列默认 LIKE，其他列 EQ，`status` 列 EQ；`remark/password/salt/avatar` 不进查询条件。
+- 查询条件：当前全部等值 `=`（含 varchar）；LIKE 属于业务需求，无法从建表语句推导，后续按需求/配置扩展。
 - 必填校验：NOT NULL 且无默认值的列进入 DomainService 的 `throwErrWhenBlank/throwErrWhenNull` 校验。
 - 输出 16 个文件：DO、Mapper、Mapper.xml、Model、QueryParam、Repository、RepositoryImpl、Convertor、DomainService、BizService、Controller、4 个 DTO、Assembler。
 

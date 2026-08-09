@@ -91,9 +91,7 @@ public final class DbMetaReader {
     }
 
     private static String queryType(ColumnMeta c) {
-        if (c.string) {
-            return "status".equals(c.columnName) ? "EQ" : "LIKE";
-        }
+        // 当前统一等值查询；LIKE 属于业务需求，无法从建表语句推导，后续按需求/配置扩展
         return "EQ";
     }
 
