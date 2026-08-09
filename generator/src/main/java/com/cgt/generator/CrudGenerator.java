@@ -11,11 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * 表级 CRUD 生成：读表结构 -> 渲染 templates/table/*.ftl -> 写入目标项目。
+ * 表级 CRUD 生成：按配置的 tables 读表结构 -> 渲染 templates/table/*.ftl -> 写入目标项目。
+ * 已存在 DO 的表默认跳过（防止覆盖），force_create=true 时强制覆盖。
  */
 public final class CrudGenerator {
 
@@ -42,12 +42,10 @@ public final class CrudGenerator {
     }
 
     private final GeneratorConfig cfg;
-    private final Map<String, String> opts;
     private final Configuration freemarker;
 
-    public CrudGenerator(GeneratorConfig cfg, Map<String, String> opts) throws IOException {
+    public CrudGenerator(GeneratorConfig cfg) throws IOException {
         this.cfg = cfg;
-        this.opts = opts;
         this.freemarker = new Configuration(Configuration.VERSION_2_3_33);
         this.freemarker.setDefaultEncoding("UTF-8");
         // 只启用 ${} 插值，MyBatis 的 #{...} 原样输出
@@ -57,25 +55,26 @@ public final class CrudGenerator {
         this.freemarker.setLogTemplateExceptions(false);
     }
 
-    public static void listTemplates(GeneratorConfig cfg) throws IOException {
-        System.out.println("表级模板 " + cfg.tableTemplatesDir());
-        try (var stream = Files.list(cfg.tableTemplatesDir())) {
-            stream.map(p -> p.getFileName().toString()).sorted().forEach(System.out::println);
-        }
-    }
-
     public void run() throws IOException, TemplateException {
-        String tables = opts.get("t");
-        if (tables == null || tables.isBlank()) {
-            throw new IllegalArgumentException("table 命令需要 -t 表名，多个用逗号分隔");
+        if (cfg.tables.isEmpty()) {
+            System.out.println("[gen] 未配置 tables，跳过表级生成");
+            return;
         }
-        boolean force = opts.containsKey("f");
+        for (GeneratorConfig.TableConfig table : cfg.tables) {
+            TableMeta meta = DbMetaReader.read(cfg, table);
 
-        for (String tableName : tables.split(",")) {
-            TableMeta meta = DbMetaReader.read(cfg, tableName.trim());
+            // 跳过已创建的表：以 DO 文件是否存在判断，防止覆盖已经写好的文件
+            Path doPath = cfg.outputDir.resolve("common/dal/src/main/java/" + cfg.packagePath()
+                    + "/common/dal/dataobject/" + meta.className + "DO.java");
+            if (Files.exists(doPath) && !table.forceCreate) {
+                System.out.println("[gen] 跳过表 " + table.dbTableName + ": 已存在 "
+                        + meta.className + "DO.java（如需覆盖请在配置中设 force_create: true，注意会覆盖手动修改的代码）");
+                continue;
+            }
+
             Map<String, Object> model = buildModel(meta);
             for (Map.Entry<String, String> entry : TEMPLATES.entrySet()) {
-                render(meta, entry.getKey(), entry.getValue(), model, force);
+                render(meta, entry.getKey(), entry.getValue(), model, table.forceCreate);
             }
         }
     }

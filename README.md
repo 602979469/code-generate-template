@@ -16,21 +16,17 @@ code-generate-template/
 ## 用法
 
 ```bash
-# 初始化新项目：AiProd（包名 com.jakt.aiprod）
-./gen.sh init -p AiProd -g com.jakt -a aiprod -tp AiProd -o ../AiProd
+# 生成/更新配置模板（当前目录 generate.yaml）
+./gen.sh
 
-# 新表生成 CRUD（mapper -> controller 共 16 个文件）
-./gen.sh table -t sys_dept,member -p AiPlatform -g com.jakt -a aiplatform -tp AiPlatform -o /path/to/目标项目
-
-# 已存在文件默认跳过，-f 强制覆盖
-./gen.sh table -t sys_dept -p AiPlatform -g com.jakt -a aiplatform -tp AiPlatform -f -o /path/to/目标项目
-
-# 列出表级模板
-./gen.sh list
+# 按配置文件生成：初始化项目骨架（已存在文件跳过）+ 按 tables 生成 CRUD
+./gen.sh ./generate.yaml
 ```
 
-> 项目命名（`-p`/`-g`/`-a`/`-tp`）全部必填、不设默认值：
-> `-p` 项目前缀（驼峰）、`-g` groupId、`-a` 包名/artifactId 后缀（小写）、`-tp` 工具/异常/常量前缀（驼峰，代码不做转换）。
+> 所有配置都通过 YAML 配置文件提供（[generate.yaml.example](generate.yaml.example) 为模板），不再使用命令行参数。
+> 项目命名（`projectPrefix`/`toolPrefix`/`groupId`/`projectArtifactPrefix`）全部必填、无默认值；
+> `tables` 为对象列表（`db_table_name` 数据库表名、`model_name` Java 对象名、`force_create` 是否强制覆盖），
+> 已存在 DO 的表默认跳过（防覆盖），`force_create: true` 会覆盖该表所有文件（危险）。
 
 ## 占位符与改名规则
 

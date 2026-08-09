@@ -23,12 +23,11 @@ public final class DbMetaReader {
     private DbMetaReader() {
     }
 
-    public static TableMeta read(GeneratorConfig cfg, String tableName) {
-        TableMeta table = new TableMeta();
-        table.tableName = tableName;
-        String bare = stripPrefix(tableName, cfg.tablePrefix);
-        table.className = toUpperCamel(bare);
-        table.classNameLower = toLowerCamel(bare);
+    public static TableMeta read(GeneratorConfig cfg, GeneratorConfig.TableConfig table) {
+        TableMeta meta = new TableMeta();
+        meta.tableName = table.dbTableName;
+        meta.className = table.modelName;
+        meta.classNameLower = toLowerCamel(table.modelName);
 
         try (Connection conn = DriverManager.getConnection(cfg.jdbcUrl, cfg.jdbcUsername, cfg.jdbcPassword)) {
             String schema = conn.getCatalog();
@@ -41,32 +40,32 @@ public final class DbMetaReader {
                     """;
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1, schema);
-                ps.setString(2, tableName);
+                ps.setString(2, table.dbTableName);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         ColumnMeta column = parseColumn(rs);
                         if (BASE_COLUMNS.contains(column.columnName) || RESERVED.contains(column.columnName)) {
                             continue;
                         }
-                        table.columns.add(column);
+                        meta.columns.add(column);
                         if (column.required) {
-                            table.requiredColumns.add(column);
+                            meta.requiredColumns.add(column);
                         }
-                        table.hasLocalDateTime |= "LocalDateTime".equals(column.javaType);
-                        table.hasLocalDate |= "LocalDate".equals(column.javaType);
-                        table.hasBigDecimal |= "BigDecimal".equals(column.javaType);
+                        meta.hasLocalDateTime |= "LocalDateTime".equals(column.javaType);
+                        meta.hasLocalDate |= "LocalDate".equals(column.javaType);
+                        meta.hasBigDecimal |= "BigDecimal".equals(column.javaType);
                     }
                 }
             }
             // 查询条件 = id + 全部业务字段 + 创建/更新时间，程序员按需删减
-            buildQueryColumns(table);
-            table.tableComment = readTableComment(conn, schema, tableName);
+            buildQueryColumns(meta);
+            meta.tableComment = readTableComment(conn, schema, table.dbTableName);
         } catch (SQLException e) {
-            throw new IllegalStateException("读取表结构失败: " + tableName, e);
+            throw new IllegalStateException("读取表结构失败: " + table.dbTableName, e);
         }
 
-        buildSqlFragments(table);
-        return table;
+        buildSqlFragments(meta);
+        return meta;
     }
 
     private static ColumnMeta parseColumn(ResultSet rs) throws SQLException {

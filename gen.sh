@@ -7,64 +7,36 @@ JAR="$DIR/generator/target/generator.jar"
 usage() {
   cat <<'EOF'
 用法:
-  init:
-    ./gen.sh init -p <项目前缀> -g <groupId> -a <包名后缀> -tp <工具前缀> -o <输出目录>
-    示例: ./gen.sh init -p AiProd -g com.jakt -a aiprod -tp AiProd -o ../AiProd
+  ./gen.sh <配置文件>
 
-  table:
-    ./gen.sh table -t <表名1,表名2> -p <项目前缀> -g <groupId> -a <包名后缀> -tp <工具前缀> [-o <目标项目根目录>] [-f]
-    示例: ./gen.sh table -t sys_dept,member -p AiPlatform -g com.jakt -a aiplatform -tp AiPlatform -o .
+说明:
+  所有配置(项目命名/数据库/tables)都通过 YAML 配置文件提供,不再使用命令行参数。
+  未提供配置文件时运行 ./gen.sh,可交互生成配置模板(当前目录 generate.yaml)。
 
-  list:
-    ./gen.sh list
-
-参数说明:
-  -p   项目前缀(驼峰,用于启动类名): 如 AiProd
-  -g   Maven groupId: 如 com.jakt
-  -a   artifactId/包名后缀(小写字母数字,Java 包名不允许连字符): 如 aiprod
-  -tp  工具类/异常/常量前缀(驼峰,由你自己指定,代码不做转换): 如 AiProd
-  -o   输出目录
-  -t   表名,多个用逗号分隔
-  -f   覆盖已存在文件(默认跳过)
-
-必填项:
-  init  : -p -g -a -tp -o 全部必填,无默认值
-  table : -t -p -g -a -tp 必填,-o 默认当前目录
-  list  : 无参数
+示例:
+  ./gen.sh ./generate.yaml
 EOF
 }
 
-# 命令校验：无命令或命令不合法时打印用法
-if [ $# -eq 0 ] || { [ "$1" != "init" ] && [ "$1" != "table" ] && [ "$1" != "list" ]; }; then
-  usage
-  exit 1
+# 未提供配置文件：交互式询问是否生成配置模板
+if [ $# -eq 0 ]; then
+  read -r -p "未提供配置文件,是否在当前目录生成 generate.yaml? [y/N] " answer
+  case "${answer:-N}" in
+    y|Y)
+      cp "$DIR/generate.yaml.example" ./generate.yaml
+      echo "已生成 ./generate.yaml,请编辑配置后运行: ./gen.sh ./generate.yaml"
+      exit 0
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
 fi
 
-# 必填参数校验：-key 后必须跟一个不以 - 开头的值
-has_opt() {
-  local key="-${1}"
-  local prev=""
-  for a in "$@"; do
-    if [ "$prev" = "$key" ] && [ "${a#-}" = "$a" ]; then
-      return 0
-    fi
-    prev="$a"
-  done
-  return 1
-}
-
-missing=""
-if [ "$1" = "init" ]; then
-  for opt in p g a tp o; do
-    has_opt "$opt" "$@" || missing="$missing -$opt"
-  done
-elif [ "$1" = "table" ]; then
-  for opt in t p g a tp; do
-    has_opt "$opt" "$@" || missing="$missing -$opt"
-  done
-fi
-if [ -n "$missing" ]; then
-  echo "缺少必填参数:$missing"
+CONFIG="${1}"
+if [ ! -f "$CONFIG" ]; then
+  echo "配置文件不存在: $CONFIG"
   usage
   exit 1
 fi
@@ -74,4 +46,4 @@ if [ ! -f "$JAR" ]; then
   mvn -q -f "$DIR/generator/pom.xml" -DskipTests package
 fi
 
-exec java -jar "$JAR" "$@" -c "$DIR/generator.properties"
+exec java -Dcgt.templateRepo="$DIR" -jar "$JAR" "$CONFIG"

@@ -40,13 +40,17 @@ public final class SkeletonGenerator {
                 Path relative = skeleton.relativize(source);
                 String targetRel = replace(relative.toString().replace('\\', '/'));
                 Path target = cfg.outputDir.resolve(targetRel);
+                if (Files.exists(target)) {
+                    System.out.println("[gen] 跳过(已存在): " + targetRel);
+                    continue;
+                }
                 Files.createDirectories(target.getParent());
                 String content = replace(Files.readString(source, StandardCharsets.UTF_8));
                 Files.writeString(target, content, StandardCharsets.UTF_8);
                 System.out.println("[gen] 生成 " + targetRel);
             }
         }
-        System.out.println("[gen] 项目初始化完成 -> " + cfg.outputDir);
+        System.out.println("[gen] 项目骨架初始化完成(已存在文件跳过) -> " + cfg.outputDir);
     }
 
     /** 跳过构建产物/IDE 目录（target、.git、.idea、out）。 */

@@ -1,0 +1,57 @@
+# ============================================================
+# generate.yaml — code-generate-template 生成配置模板
+# 用法: ./gen.sh <本文件路径>
+# 所有配置都从本文件读取,不再使用命令行参数。
+# ============================================================
+
+# ---------------- 项目命名(全部必填,无默认值) ----------------
+
+# 项目前缀(驼峰,用于启动类名),如 AiProd -> AiProdApplication
+# 必填;约束: 驼峰字母/数字,如 AiProd
+projectPrefix: AiProd
+
+# 工具类/异常/常量前缀(驼峰,由你自己指定,代码不做转换)
+# 必填;约束: 驼峰字母/数字,如 AiProd(AiProdInvoker/AiProdException/AiProdTemplate)
+toolPrefix: AiProd
+
+# Maven groupId
+# 必填;约束: 如 com.jakt
+groupId: com.jakt
+
+# artifactId/包名后缀
+# 必填;约束: 小写字母/数字,如 aiprod。Java 包名不允许连字符,
+# 如需连字符项目名(如 ai-prod)请生成后自行调整 artifactId
+projectArtifactPrefix: aiprod
+
+# ---------------- 数据库(只要配置了 tables 就必填) ----------------
+jdbc:
+  # 数据库连接串;必填(配置了 tables 时)
+  url: jdbc:mysql://localhost:3306/aiplatform?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  # 数据库用户名;必填(配置了 tables 时)
+  username: root
+  # 数据库密码;必填(配置了 tables 时)
+  password: "123456"
+
+# 生成输出根目录(项目骨架 init 与表级 CRUD 的落点)
+# 必填;约束: 绝对或相对路径
+outputDir: /Users/jakt/IdeaProjects/AiProd
+
+# ---------------- tables(可选,不配置则不生成表) ----------------
+# 要生成的表列表,每一项是一个对象:
+#   db_table_name : 数据库表名(必填),如 sys_user
+#   model_name    : 映射到 Java 的对象名(必填),如 User。
+#                   直接指定,替代旧的"表名前缀剥离"逻辑;
+#                   例: sys_user -> User、member -> Member
+#   force_create  : 是否强制覆盖该表已存在的文件(可选,默认 false)
+#                   - false(默认): 若目标项目已存在该表的 DO
+#                     (通过 common/dal/.../dataobject/{model_name}DO.java 判断),
+#                     跳过该表,防止覆盖已经写好的文件
+#                   - true: 强制覆盖该表所有 16 个文件
+#                     ⚠️ 危险: 会覆盖你手动修改过的代码,且不可恢复,谨慎使用!
+tables:
+  - db_table_name: sys_dept
+    model_name: Dept
+    force_create: false
+  - db_table_name: member
+    model_name: Member
+    force_create: false
