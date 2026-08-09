@@ -30,7 +30,7 @@ public final class CrudGenerator {
         TEMPLATES.put("{Class}QueryParam.java.ftl", "core/model/src/main/java/{pkg}/core/model/param/{Class}QueryParam.java");
         TEMPLATES.put("{Class}Repository.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/{Class}Repository.java");
         TEMPLATES.put("{Class}RepositoryImpl.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/impl/{Class}RepositoryImpl.java");
-        TEMPLATES.put("{Class}RepositoryAssembler.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/assembler/{Class}Assembler.java");
+        TEMPLATES.put("{Class}Convertor.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/convertor/{Class}Convertor.java");
         TEMPLATES.put("{Class}DomainService.java.ftl", "core/service/src/main/java/{pkg}/core/service/{Class}DomainService.java");
         TEMPLATES.put("{Class}DomainServiceTest.java.ftl", "core/service/src/test/java/{pkg}/core/service/{Class}DomainServiceTest.java");
         TEMPLATES.put("{Class}Manager.java.ftl", "biz/service-impl/src/main/java/{pkg}/biz/service/{Class}Manager.java");

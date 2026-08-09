@@ -1,4 +1,4 @@
-package ${basePackage}.core.repository.assembler;
+package ${basePackage}.core.repository.convertor;
 
 import ${basePackage}.common.dal.dataobject.${className}DO;
 import ${basePackage}.core.model.domain.${className};
@@ -7,9 +7,9 @@ import org.springframework.beans.BeanUtils;
 /**
  * ${tableComment} DO 与领域模型互转，只存在于 repository。
  */
-public final class ${className}Assembler {
+public final class ${className}Convertor {
 
-    private ${className}Assembler() {
+    private ${className}Convertor() {
     }
 
     /**

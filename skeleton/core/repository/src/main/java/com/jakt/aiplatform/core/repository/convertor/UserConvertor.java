@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.core.repository.assembler;
+package com.jakt.aiplatform.core.repository.convertor;
 
 import com.jakt.aiplatform.common.dal.dataobject.UserDO;
 import com.jakt.aiplatform.core.model.domain.User;
@@ -7,9 +7,9 @@ import org.springframework.beans.BeanUtils;
 /**
  * 用户信息表 DO 与领域模型互转，只存在于 repository。
  */
-public final class UserAssembler {
+public final class UserConvertor {
 
-    private UserAssembler() {
+    private UserConvertor() {
     }
 
     /**
