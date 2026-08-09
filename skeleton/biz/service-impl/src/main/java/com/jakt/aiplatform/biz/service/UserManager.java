@@ -7,29 +7,29 @@ import com.jakt.aiplatform.core.model.result.PageResult;
 import java.util.List;
 
 /**
- * 用户信息表 Manager：用例编排，输入输出都是领域模型，不做前端格式转换。
- * 实现类为 UserManagerImpl（biz.service.impl 包），web 层依赖本接口。
+ * 用户管理类接口定义
+ * 
  */
 public interface UserManager {
 
     /**
-     * 创建用户信息。
+     * 创建用户
      *
-     * @param user 用户信息
-     * @return 创建成功后的用户信息
+     * @param user 用户
+     * @return 创建成功后的用户
      */
     User createUser(User user);
 
     /**
-     * 按 ID 查询用户信息。
+     * 按 ID 查询用户
      *
-     * @param id 用户信息 ID
-     * @return 用户信息
+     * @param id 用户 ID
+     * @return 用户
      */
     User getUser(Long id);
 
     /**
-     * 分页查询用户信息。
+     * 分页查询用户
      *
      * @param query 查询参数
      * @return 分页结果
@@ -37,35 +37,31 @@ public interface UserManager {
     PageResult<User> pageUsers(UserQueryParam query);
 
     /**
-     * 列表查询用户信息。
-     * 预留能力：web 未接线，业务方按需暴露。
+     * 列表查询用户
      *
      * @param query 查询参数
-     * @return 用户信息列表
+     * @return 用户列表
      */
     List<User> listUsers(UserQueryParam query);
 
     /**
-     * 更新用户信息（全量）。
-     * 注意：PUT 为全量覆盖，未传字段会被置 NULL；部分更新请用 {@link #updateByCondition}。
+     * 更新用户（全量）。
      *
-     * @param user 用户信息（含主键）
-     * @return 更新后的用户信息
+     * @param user 用户（含主键）
      */
-    User updateUser(User user);
+    void updateUser(User user);
 
     /**
-     * 按条件更新用户信息（只更新传入的非空字段）。
-     * 预留能力：web 未接线，业务方按需暴露。
+     * 按条件更新用户（只更新传入的非空字段）。
      *
-     * @param user 用户信息（至少含主键）
+     * @param user 用户（至少含主键）
      */
     void updateByCondition(User user);
 
     /**
-     * 删除用户信息。
+     * 删除用户。
      *
-     * @param id 用户信息 ID
+     * @param id 用户 ID
      */
     void deleteUser(Long id);
 }

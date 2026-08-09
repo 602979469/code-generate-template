@@ -3,7 +3,7 @@ package com.jakt.aiplatform.core.model.enums;
 import lombok.Getter;
 
 /**
- * 日志文件枚举：与日志配置中的 Logger/文件名称对应，新增日志文件在此登记。
+ * 日志文件枚举
  */
 @Getter
 public enum LogFileEnum {

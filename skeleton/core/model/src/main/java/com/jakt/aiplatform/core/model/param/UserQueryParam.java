@@ -6,12 +6,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * 用户信息表查询参数。
+ * 用户查询参数。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-public class UserQueryParam extends BaseQueryParam {
+public class UserQueryParam extends PageParam {
+
     /** 部门ID。 */
     private Long deptId;
 
@@ -56,5 +56,17 @@ public class UserQueryParam extends BaseQueryParam {
 
     /** 备注。 */
     private String remark;
+
+    /** 创建时间起。 */
+    private LocalDateTime createTimeBegin;
+
+    /** 创建时间止。 */
+    private LocalDateTime createTimeEnd;
+
+    /** 更新时间起。 */
+    private LocalDateTime updateTimeBegin;
+
+    /** 更新时间止。 */
+    private LocalDateTime updateTimeEnd;
 
 }

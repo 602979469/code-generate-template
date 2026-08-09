@@ -16,12 +16,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * 用户信息表仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
+ * 用户仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
  */
 @Repository
 public class UserRepositoryImpl implements UserRepository {
 
-    /** 用户信息表 Mapper。 */
+    /** 用户 Mapper。 */
     private final UserMapper userMapper;
 
     public UserRepositoryImpl(UserMapper userMapper) {
@@ -54,17 +54,18 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User update(User user) {
+    public void update(User user) {
         UserDO userDO = UserConvertor.toDO(user);
         int affected = userMapper.update(userDO);
         AiPlatformLoggerUtil.info(LogFileEnum.BIZ_SERVICE, "UserRepository.update id={} 影响行数={}", user.getId(), affected);
         AiPlatformInvoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.UPDATE_FAILED, "更新失败：记录不存在或已被修改");
-        return UserConvertor.toModel(userDO);
     }
 
     @Override
     public void updateByCondition(User user) {
-        userMapper.updateByCondition(UserConvertor.toDO(user));
+        int affected = userMapper.updateByCondition(UserConvertor.toDO(user));
+        AiPlatformLoggerUtil.info(LogFileEnum.BIZ_SERVICE, "UserRepository.updateByCondition id={} 影响行数={}", user.getId(), affected);
+        AiPlatformInvoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.UPDATE_FAILED, "更新失败：记录不存在或已被修改");
     }
 
     @Override

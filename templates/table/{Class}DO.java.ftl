@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * ${tableComment}数据对象，与 ${tableName} 表结构一一对应。
+ * ${entityName} DO对象
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

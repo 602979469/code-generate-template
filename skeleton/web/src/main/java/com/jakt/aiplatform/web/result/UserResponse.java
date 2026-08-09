@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * 用户信息表响应 DTO。
+ * 用户响应 DTO。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

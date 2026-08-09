@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * ${tableComment}响应 DTO。
+ * ${entityName}响应 DTO。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -31,10 +31,11 @@ public final class CrudGenerator {
         TEMPLATES.put("{Class}Repository.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/{Class}Repository.java");
         TEMPLATES.put("{Class}RepositoryImpl.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/impl/{Class}RepositoryImpl.java");
         TEMPLATES.put("{Class}Convertor.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/convertor/{Class}Convertor.java");
-        TEMPLATES.put("{Class}DomainService.java.ftl", "core/service/src/main/java/{pkg}/core/service/{Class}DomainService.java");
-        TEMPLATES.put("{Class}DomainServiceImpl.java.ftl", "core/service/src/main/java/{pkg}/core/service/impl/{Class}DomainServiceImpl.java");
+        TEMPLATES.put("{Class}Service.java.ftl", "core/service/src/main/java/{pkg}/core/service/{Class}Service.java");
+        TEMPLATES.put("{Class}ServiceImpl.java.ftl", "core/service/src/main/java/{pkg}/core/service/impl/{Class}ServiceImpl.java");
         TEMPLATES.put("{Class}Manager.java.ftl", "biz/service-impl/src/main/java/{pkg}/biz/service/{Class}Manager.java");
         TEMPLATES.put("{Class}ManagerImpl.java.ftl", "biz/service-impl/src/main/java/{pkg}/biz/service/impl/{Class}ManagerImpl.java");
+        TEMPLATES.put("{Class}ParamChecker.java.ftl", "web/src/main/java/{pkg}/web/checker/{Class}ParamChecker.java");
         TEMPLATES.put("{Class}Controller.java.ftl", "web/src/main/java/{pkg}/web/controller/{Class}Controller.java");
         TEMPLATES.put("{Class}CreateRequest.java.ftl", "web/src/main/java/{pkg}/web/param/{Class}CreateRequest.java");
         TEMPLATES.put("{Class}UpdateRequest.java.ftl", "web/src/main/java/{pkg}/web/param/{Class}UpdateRequest.java");
@@ -78,7 +79,32 @@ public final class CrudGenerator {
             for (Map.Entry<String, String> entry : TEMPLATES.entrySet()) {
                 render(meta, entry.getKey(), entry.getValue(), model, table.forceCreate);
             }
+            generateTableSql(table, table.forceCreate);
         }
+    }
+
+    /**
+     * 每张配置的表生成一个独立 SQL 文件（sql/{db_table_name}.sql），内容为该表的 SHOW CREATE TABLE 真实 DDL。
+     * 已存在的文件默认跳过（force_create=true 时覆盖），不会产生重复内容。
+     */
+    private void generateTableSql(GeneratorConfig.TableConfig table, boolean force) throws IOException {
+        String ddl = DbMetaReader.readCreateTable(cfg, table);
+        if (ddl == null || ddl.isBlank()) {
+            System.out.println("[gen] 跳过 sql/" + table.dbTableName + ".sql: 读取建表语句失败");
+            return;
+        }
+        Path sqlFile = cfg.outputDir.resolve("sql").resolve(table.dbTableName + ".sql");
+        if (Files.exists(sqlFile) && !force) {
+            System.out.println("[gen] 跳过 sql/" + table.dbTableName + ".sql: 已存在（如需覆盖请在配置中设 force_create: true）");
+            return;
+        }
+        Files.createDirectories(sqlFile.getParent());
+        String content = "-- ------------------------------------------------------------------\n"
+                + "-- 表: " + table.dbTableName + "（由 code-generate-template 按 tables 配置生成）\n"
+                + "-- ------------------------------------------------------------------\n"
+                + ddl.trim() + (ddl.trim().endsWith(";") ? "" : ";") + "\n";
+        Files.writeString(sqlFile, content, StandardCharsets.UTF_8);
+        System.out.println("[gen] 生成 sql/" + table.dbTableName + ".sql");
     }
 
     private Map<String, Object> buildModel(TableMeta meta) {
@@ -90,7 +116,6 @@ public final class CrudGenerator {
         model.put("className", meta.className);
         model.put("classNameLower", meta.classNameLower);
         model.put("tableName", meta.tableName);
-        model.put("tableComment", meta.tableComment);
         model.put("entityName", meta.entityName);
         model.put("columns", meta.columns);
         model.put("queryColumns", meta.queryColumns);

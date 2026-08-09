@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * ${tableComment}领域模型。
+ * ${entityName}领域模型。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

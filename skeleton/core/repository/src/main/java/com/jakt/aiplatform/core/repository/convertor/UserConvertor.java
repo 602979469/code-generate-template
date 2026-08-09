@@ -4,7 +4,7 @@ import com.jakt.aiplatform.common.dal.dataobject.UserDO;
 import com.jakt.aiplatform.core.model.domain.User;
 
 /**
- * 用户信息表 DO 与领域模型互转，只存在于 repository。
+ * 用户 DO 与领域模型互转，只存在于 repository。
  * 显式 get/set 赋值：DO 与 Model 字段类型允许不同（如 status 字符串转枚举），业务方按需调整。
  */
 public final class UserConvertor {
@@ -15,8 +15,8 @@ public final class UserConvertor {
     /**
      * DO → 领域模型。
      *
-     * @param userDO 用户信息表数据对象；为空返回 null
-     * @return 用户信息领域模型
+     * @param userDO 用户数据对象；为空返回 null
+     * @return 用户领域模型
      */
     public static User toModel(UserDO userDO) {
         if (userDO == null) {
@@ -47,8 +47,8 @@ public final class UserConvertor {
     /**
      * 领域模型 → DO。
      *
-     * @param user 用户信息领域模型
-     * @return 用户信息表数据对象
+     * @param user 用户领域模型
+     * @return 用户数据对象
      */
     public static UserDO toDO(User user) {
         UserDO userDO = new UserDO();

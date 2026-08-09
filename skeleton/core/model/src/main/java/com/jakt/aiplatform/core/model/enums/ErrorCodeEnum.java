@@ -3,15 +3,8 @@ package com.jakt.aiplatform.core.model.enums;
 import com.jakt.aiplatform.core.model.exception.ErrorCode;
 
 /**
- * 全局错误码枚举。新增错误码必须在此登记，禁止在业务代码中使用魔法数字或字符串。
+ * 全局错误码枚举
  *
- * <p>分段规则：
- * <ul>
- *     <li>1xxxx 系统级</li>
- *     <li>2xxxx 参数级</li>
- *     <li>3xxxx 业务级</li>
- *     <li>4xxxx 外部依赖</li>
- * </ul>
  */
 public enum ErrorCodeEnum implements ErrorCode {
 

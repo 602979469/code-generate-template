@@ -37,21 +37,29 @@ jdbc:
 outputDir: /Users/jakt/IdeaProjects/AiProd
 
 # ---------------- tables(可选,不配置则不生成表) ----------------
+# sql 跟随本配置: 每张配置的表在目标项目生成一个 sql/{db_table_name}.sql,
+# 内容为该表的真实建表语句 (SHOW CREATE TABLE); 已存在的文件默认跳过,
+# force_create: true 时覆盖。骨架不再内置任何表的 DDL。
 # 要生成的表列表,每一项是一个对象:
 #   db_table_name : 数据库表名(必填),如 sys_user
 #   model_name    : 映射到 Java 的对象名(必填),如 User。
 #                   直接指定,替代旧的"表名前缀剥离"逻辑;
 #                   例: sys_user -> User、member -> Member
+#   model_comment : 中文实体名(必填),用于生成代码的所有注释拼接
+#                   (javadoc、@Tag、日志等),不要用表注释(如"用户信息表")自动截取。
+#                   例: sys_user -> 用户、member -> 会员
 #   force_create  : 是否强制覆盖该表已存在的文件(可选,默认 false)
 #                   - false(默认): 若目标项目已存在该表的 DO
 #                     (通过 common/dal/.../dataobject/{model_name}DO.java 判断),
 #                     跳过该表,防止覆盖已经写好的文件
-#                   - true: 强制覆盖该表所有 16 个文件
+#                   - true: 强制覆盖该表所有 19 个文件
 #                     ⚠️ 危险: 会覆盖你手动修改过的代码,且不可恢复,谨慎使用!
 tables:
   - db_table_name: sys_dept
     model_name: Dept
+    model_comment: 部门
     force_create: false
   - db_table_name: member
     model_name: Member
+    model_comment: 会员
     force_create: false

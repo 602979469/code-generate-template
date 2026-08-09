@@ -11,13 +11,13 @@ SOFABoot 风格的多模块 DDD 样板：**每个叶子节点都是一个 Maven 
 ```
 aiplatform（聚合根 pom）
 ├── bootstrap/                  # aiplatform-bootstrap        启动模块：MainApplication + 扫描 + 配置
-├── web/                        # aiplatform-web              视图层：Controller、DTO、AiPlatformTemplate（统一日志/校验/异常）
+├── web/                        # aiplatform-web              视图层：Controller、DTO、ParamChecker、AiPlatformTemplate（统一日志/校验/异常）
 ├── biz/                        # aiplatform-biz              业务层聚合（空壳）
-│   └── service-impl/           # aiplatform-biz-service-impl 业务层：BizService（编排、操作领域模型）
+│   └── service-impl/           # aiplatform-biz-service-impl 业务层：XxxManager（用例编排，操作领域模型）
 ├── core/                       # aiplatform-core             核心领域层聚合
 │   ├── model/                  # aiplatform-core-model       领域模型、查询参数、异常体系（错误码枚举）
 │   ├── repository/             # aiplatform-core-repository  仓储层：封装 Mapper，DO → Model
-│   └── service/                # aiplatform-core-service     领域服务：业务规则
+│   └── service/                # aiplatform-core-service     领域服务：XxxService（业务规则）
 └── common/                     # aiplatform-common           基础结构层聚合
     ├── dal/                    # aiplatform-common-dal       数据访问：MyBatis Mapper（interface + XML）、DO
     ├── util/                   # aiplatform-common-util      工具：TraceId、RestTemplate、线程池、条件断言（AiPlatformInvoker）
@@ -40,9 +40,9 @@ web → biz-service-impl → core-service → core-repository → common-dal
 ## 请求流转
 
 ```
-UserController(web)                        # 参数校验、DTO 转换、Result 包装
+UserController(web)                        # 参数校验（UserParamChecker）、DTO 转换、Result 包装
   → UserManager/UserManagerImpl(biz)       # 用例编排（接口 + 实现）
-  → UserDomainService/UserDomainServiceImpl(core-service) # 领域规则：必填校验、存在性
+  → UserService/UserServiceImpl(core-service) # 领域服务：业务规则（当前示例为纯透传）
       → UserRepository(core-repository)    # 封装 Mapper，DO → Model
         → UserMapper(common-dal)           # MyBatis interface + XML
           → sys_user 表
@@ -52,18 +52,18 @@ UserController(web)                        # 参数校验、DTO 转换、Result 
 
 | 层 | 操作的对象 | 说明 |
 | --- | --- | --- |
-| web | DTO（`XxxRequest`/`XxxResponse`） | 前端相关对象只在这里定义 |
-| biz-service-impl | 领域模型（core-model） | BizService 输入输出都是 Model，不做前端格式转换 |
-| core-service | 领域模型 | 只写业务规则，不碰持久化细节 |
+| web | DTO（`XxxRequest`/`XxxResponse`）+ `XxxParamChecker` | 前端相关对象只在这里定义；参数校验集中在 checker |
+| biz-service-impl | 领域模型（core-model） | Manager 输入输出都是 Model，不做前端格式转换 |
+| core-service | 领域模型 | XxxService 只写业务规则，不碰持久化细节 |
 | core-repository | Model（出）/ DO（内部） | 封装 Mapper，DO→Model，可组合多个 Mapper 返回一个 Model |
 | common-dal | DO | MyBatis 直接操作对象，与表结构一一对应 |
 
 ## 快速开始
 
-1. 初始化数据库（本机 MySQL，root/123456）：
+1. 初始化数据库（本机 MySQL，root/123456；sql 目录由生成器按 tables 配置每表一个文件）：
 
    ```bash
-   mysql -uroot -p123456 < sql/init.sql
+   mysql -uroot -p123456 < sql/sys_user.sql
    ```
 
 2. 启动：
@@ -81,7 +81,7 @@ UserController(web)                        # 参数校验、DTO 转换、Result 
 
 1. 全局替换包名 `com.jakt` → 你的公司域名倒写；
 2. 全局替换 `aiplatform` → 你的项目名；
-3. 新增业务模块请直接用 code-generate-template 的表级生成器，或让 AI 照着 `User` 模块复制一份。
+3. 新增业务模块：在 `generate.yaml` 的 `tables` 里配置（`db_table_name` / `model_name` / `model_comment`），运行 code-generate-template 的表级生成器；或让 AI 照着 `User` 模块复制一份。
 
 给 AI 开发代理的指引见 [AGENTS.md](AGENTS.md)。
 

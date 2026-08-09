@@ -9,7 +9,7 @@ import com.jakt.aiplatform.core.model.domain.User;
 import com.jakt.aiplatform.core.model.param.UserQueryParam;
 
 /**
- * 用户信息表对象组装器：DTO 与领域模型互转，只存在于 web。
+ * 用户对象组装器：DTO 与领域模型互转，只存在于 web。
  */
 public final class UserAssembler {
 
@@ -19,8 +19,8 @@ public final class UserAssembler {
     /**
      * 创建请求 DTO → 领域模型。
      *
-     * @param request 创建用户信息请求 DTO
-     * @return 用户信息领域模型
+     * @param request 创建用户请求 DTO
+     * @return 用户领域模型
      */
     public static User toModel(UserCreateRequest request) {
         User user = new User();
@@ -45,9 +45,9 @@ public final class UserAssembler {
     /**
      * 更新请求 DTO + 路径 ID → 领域模型。
      *
-     * @param request 更新用户信息请求 DTO
-     * @param id      路径中的用户信息 ID
-     * @return 用户信息领域模型
+     * @param request 更新用户请求 DTO
+     * @param id      路径中的用户 ID
+     * @return 用户领域模型
      */
     public static User toModel(UserUpdateRequest request, Long id) {
         User user = new User();
@@ -73,8 +73,8 @@ public final class UserAssembler {
     /**
      * 查询请求 DTO → 查询参数。
      *
-     * @param request 用户信息查询请求 DTO
-     * @return 用户信息查询参数
+     * @param request 用户查询请求 DTO
+     * @return 用户查询参数
      */
     public static UserQueryParam toQueryParam(UserQueryRequest request) {
         UserQueryParam param = new UserQueryParam();
@@ -104,10 +104,10 @@ public final class UserAssembler {
     }
 
     /**
-     * 领域模型 → 响应 DTO。
+     * 领域模型 → 响应 VO。
      *
-     * @param user 用户信息领域模型
-     * @return 用户信息响应 DTO
+     * @param user 用户领域模型
+     * @return 用户响应 VO
      */
     public static UserResponse toResponse(User user) {
         UserResponse response = new UserResponse();

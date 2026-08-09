@@ -33,11 +33,13 @@ public final class GeneratorConfig {
      * 表配置项。
      *
      * <p>db_table_name：数据库表名（必填）；model_name：映射的 Java 对象名（必填，替代表名前缀剥离）；
+     * model_comment：中文实体名（必填，如 sys_user -> 用户），生成代码的所有注释都用它拼接；
      * force_create：默认 false，true 时强制覆盖该表已存在文件（危险，会覆盖手动修改的代码）。
      */
     public static final class TableConfig {
         public String dbTableName;
         public String modelName;
+        public String modelComment;
         public boolean forceCreate;
     }
 
@@ -104,6 +106,7 @@ public final class GeneratorConfig {
                 TableConfig table = new TableConfig();
                 table.dbTableName = str(m.get("db_table_name"));
                 table.modelName = str(m.get("model_name"));
+                table.modelComment = str(m.get("model_comment"));
                 Object force = m.get("force_create");
                 table.forceCreate = force != null && Boolean.parseBoolean(String.valueOf(force));
                 cfg.tables.add(table);
@@ -154,6 +157,10 @@ public final class GeneratorConfig {
                 }
                 if (!table.modelName.matches("[A-Za-z][A-Za-z0-9]*")) {
                     throw new IllegalArgumentException("model_name 需为合法 Java 类名(如 User),当前: " + table.modelName);
+                }
+                if (isBlank(table.modelComment)) {
+                    throw new IllegalArgumentException("tables 中存在缺少 model_comment 的配置项(表: " + table.dbTableName
+                            + ")。model_comment 为中文实体名(如 sys_user -> 用户),生成代码的所有注释都用它拼接");
                 }
             }
         }

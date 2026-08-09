@@ -7,7 +7,7 @@ import ${basePackage}.core.model.result.PageResult;
 import java.util.List;
 
 /**
- * ${tableComment}仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
+ * ${entityName}仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
  */
 public interface ${className}Repository {
 
@@ -47,9 +47,8 @@ public interface ${className}Repository {
      * 更新。
      *
      * @param ${classNameLower} ${entityName}
-     * @return 更新后的${entityName}
      */
-    ${className} update(${className} ${classNameLower});
+    void update(${className} ${classNameLower});
 
     /**
      * 按条件更新：只更新传入的非空字段（部分更新）。

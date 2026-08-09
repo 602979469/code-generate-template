@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 /**
- * 用户信息表 Mapper。SQL 全部在 resources/mapper/UserMapper.xml 中。
+ * 用户 Mapper。SQL 全部在 resources/mapper/UserMapper.xml 中。
  */
 @Mapper
 public interface UserMapper {
@@ -16,7 +16,7 @@ public interface UserMapper {
      * 按主键查询。
      *
      * @param id 主键
-     * @return 用户信息表数据对象
+     * @return 用户数据对象
      */
     UserDO selectById(Long id);
 

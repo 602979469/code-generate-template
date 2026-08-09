@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 用户信息表数据对象，与 sys_user 表结构一一对应。
+ * 用户 DO对象
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

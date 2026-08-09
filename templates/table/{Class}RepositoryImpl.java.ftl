@@ -16,12 +16,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * ${tableComment}仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
+ * ${entityName}仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
  */
 @Repository
 public class ${className}RepositoryImpl implements ${className}Repository {
 
-    /** ${tableComment} Mapper。 */
+    /** ${entityName} Mapper。 */
     private final ${className}Mapper ${classNameLower}Mapper;
 
     public ${className}RepositoryImpl(${className}Mapper ${classNameLower}Mapper) {
@@ -54,17 +54,18 @@ public class ${className}RepositoryImpl implements ${className}Repository {
     }
 
     @Override
-    public ${className} update(${className} ${classNameLower}) {
+    public void update(${className} ${classNameLower}) {
         ${className}DO ${classNameLower}DO = ${className}Convertor.toDO(${classNameLower});
         int affected = ${classNameLower}Mapper.update(${classNameLower}DO);
         ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.update id={} 影响行数={}", ${classNameLower}.getId(), affected);
         ${toolPrefix}Invoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.UPDATE_FAILED, "更新失败：记录不存在或已被修改");
-        return ${className}Convertor.toModel(${classNameLower}DO);
     }
 
     @Override
     public void updateByCondition(${className} ${classNameLower}) {
-        ${classNameLower}Mapper.updateByCondition(${className}Convertor.toDO(${classNameLower}));
+        int affected = ${classNameLower}Mapper.updateByCondition(${className}Convertor.toDO(${classNameLower}));
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.updateByCondition id={} 影响行数={}", ${classNameLower}.getId(), affected);
+        ${toolPrefix}Invoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.UPDATE_FAILED, "更新失败：记录不存在或已被修改");
     }
 
     @Override

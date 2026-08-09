@@ -6,7 +6,7 @@
 
 ```
 code-generate-template/
-├── generator.properties   # 生成配置（项目前缀、包名、jdbc、表名前缀）
+├── generate.yaml.example  # 生成配置模板（项目命名、jdbc、tables）
 ├── gen.sh                 # 命令行入口
 ├── generator/             # 生成器本体（Java + Freemarker + MySQL，打成 fat jar）
 ├── skeleton/              # 项目初始化样板（新项目 = 复制 + 改名）
@@ -25,7 +25,7 @@ code-generate-template/
 
 > 所有配置都通过 YAML 配置文件提供（[generate.yaml.example](generate.yaml.example) 为模板），不再使用命令行参数。
 > 项目命名（`projectPrefix`/`toolPrefix`/`groupId`/`projectArtifactPrefix`）全部必填、无默认值；
-> `tables` 为对象列表（`db_table_name` 数据库表名、`model_name` Java 对象名、`force_create` 是否强制覆盖），
+> `tables` 为对象列表（`db_table_name` 数据库表名、`model_name` Java 对象名、`model_comment` 中文实体名（用于所有注释拼接）、`force_create` 是否强制覆盖），
 > 已存在 DO 的表默认跳过（防覆盖），`force_create: true` 会覆盖该表所有文件（危险）。
 
 ## 占位符与改名规则
@@ -39,6 +39,7 @@ code-generate-template/
 | `${basePackage}` | 基础包名（= groupId.artifactId） | com.jakt.aiprod |
 | `${className}` | 表对应的类名（去掉 tablePrefix） | sys_dept -> Dept |
 | `${tableName}` | 表名 | sys_dept |
+| `${entityName}` | 中文实体名（来自 tables 配置的 model_comment），所有 javadoc/日志注释用它拼接 | 用户 |
 | `${columns}` / `${queryColumns}` / `${requiredColumns}` | 字段元信息（由表结构自动解析） | - |
 | `${selectColumns}` / `${insertColumns}` / `${updateSet}` | SQL 片段（自动拼装） | - |
 
@@ -61,10 +62,11 @@ skeleton 是"能编译的真实代码"，生成时按顺序做 token 替换，�
 - 强约束：表必须包含 `id` / `create_time` / `update_time`（对应 BaseDO / BaseModel）；`create_by` / `update_by` / `del_flag` 为保留审计列，当前不生成，后续由 BizDO 扩展。
 - 字段类型映射：bigint->Long、int/tinyint->Integer、varchar/char/text->String、datetime->LocalDateTime、decimal->BigDecimal。
 - 查询条件：当前全部等值 `=`（含 varchar）；LIKE 属于业务需求，无法从建表语句推导，后续按需求/配置扩展。
-- 必填校验：NOT NULL 且无默认值的列进入 DomainService 的 `throwErrWhenBlank/throwErrWhenNull` 校验。
-- 输出 18 个文件：DO、Mapper、Mapper.xml、Model、QueryParam、Repository、RepositoryImpl、仓储 Convertor（convertor 包）、DomainService 接口 + DomainServiceImpl（core.service / core.service.impl）、Manager 接口 + ManagerImpl（biz.service / biz.service.impl）、Controller（web/controller，走 ${toolPrefix}Template）、4 个 DTO（web/param、web/result）、web Assembler。
+- 必填校验：NOT NULL 且无默认值的列在 DTO 上生成 `@NotBlank/@NotNull/@Size` 注解，Controller 的 beforeService 经 `${className}ParamChecker`（web/checker）统一校验。
+- sql 目录跟随 tables 配置：每张配置的表生成一个 `sql/{db_table_name}.sql`，内容为该表的 `SHOW CREATE TABLE` 真实 DDL（已存在的文件默认跳过，`force_create: true` 覆盖）。
+- 输出 19 个文件：DO、Mapper、Mapper.xml、Model、QueryParam、Repository、RepositoryImpl、仓储 Convertor（convertor 包）、Service 接口 + ServiceImpl（core.service / core.service.impl）、Manager 接口 + ManagerImpl（biz.service / biz.service.impl）、Controller（web/controller，走 ${toolPrefix}Template）、ParamChecker（web/checker）、4 个 DTO（web/param、web/result）、web Assembler。
 - 日志统一走 `${toolPrefix}LoggerUtil`（core.model.util），禁止直接使用 LoggerFactory；本项目不生成单元测试（后期独立测试模块 + 真实数据库）。
-- web 层：返回体统一 `${toolPrefix}Result`（web/result）；Controller 用 `${toolPrefix}Template.execute + Callback`，参数校验在 beforeService 调 `${toolPrefix}ParamValidator`。
+- web 层：返回体统一 `${toolPrefix}Result`（web/result）；Controller 用 `${toolPrefix}Template.execute + Callback`（无返回值用 executeWithoutResult + CallbackWithoutResult），参数校验在 beforeService 调 `${className}ParamChecker`。
 
 ## 维护约定
 

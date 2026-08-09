@@ -28,35 +28,6 @@ public class AiPlatformExceptionHandler {
     /** 单一入口：按异常类型分类转换。 */
     @ExceptionHandler(Exception.class)
     public AiPlatformResult<Void> handleException(Exception e) {
-        if (e instanceof HttpMessageNotReadableException) {
-            AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "请求体格式错误 {}", e.getMessage());
-            return AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "请求体格式错误");
-        }
-        if (e instanceof MethodArgumentNotValidException) {
-            AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "参数校验失败 {}", e.getMessage());
-            return AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "参数校验失败");
-        }
-        if (e instanceof MethodArgumentTypeMismatchException typeMismatch) {
-            AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "参数类型错误 name={}", typeMismatch.getName());
-            return AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "参数类型错误: " + typeMismatch.getName());
-        }
-        if (e instanceof MissingServletRequestParameterException missingParam) {
-            AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "缺少参数 name={}", missingParam.getParameterName());
-            return AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "缺少参数: " + missingParam.getParameterName());
-        }
-        if (e instanceof DataIntegrityViolationException) {
-            AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "数据完整性冲突 {}", e.getMessage());
-            return AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "数据冲突：违反唯一约束或非空约束");
-        }
-        if (e instanceof NoResourceFoundException || e instanceof NoHandlerFoundException) {
-            return AiPlatformResult.fail(ErrorCodeEnum.RESOURCE_NOT_FOUND, "接口不存在");
-        }
-        if (e instanceof HttpRequestMethodNotSupportedException) {
-            return AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "请求方法不支持");
-        }
-        if (e instanceof HttpMediaTypeNotSupportedException) {
-            return AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "请求媒体类型不支持");
-        }
         AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "系统异常", e);
         return AiPlatformResult.fail(ErrorCodeEnum.SYSTEM_ERROR);
     }

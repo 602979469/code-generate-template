@@ -2,24 +2,18 @@ package ${basePackage}.web.param;
 
 import java.time.LocalDateTime;
 <#if hasLocalDate>import java.time.LocalDate;
-</#if>
-import jakarta.validation.constraints.Max;
+</#if>import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 /**
- * ${tableComment}查询请求。
+ * ${entityName}查询请求。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class ${className}QueryRequest extends BaseRequest {
+
 <#list queryColumns as c>
     /** ${c.comment}。 */
     private ${c.javaType} ${c.propertyName};

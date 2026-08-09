@@ -9,7 +9,7 @@ import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.param.${className}QueryParam;
 
 /**
- * ${tableComment}对象组装器：DTO 与领域模型互转，只存在于 web。
+ * ${entityName}对象组装器：DTO 与领域模型互转，只存在于 web。
  */
 public final class ${className}Assembler {
 
@@ -64,10 +64,10 @@ public final class ${className}Assembler {
     }
 
     /**
-     * 领域模型 → 响应 DTO。
+     * 领域模型 → 响应 VO。
      *
      * @param ${classNameLower} ${entityName}领域模型
-     * @return ${entityName}响应 DTO
+     * @return ${entityName}响应 VO
      */
     public static ${className}Response toResponse(${className} ${classNameLower}) {
         ${className}Response response = new ${className}Response();

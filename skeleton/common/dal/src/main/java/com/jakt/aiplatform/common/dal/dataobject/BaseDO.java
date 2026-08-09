@@ -7,10 +7,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 数据对象基类：强约束字段。
+ * DO对象基类
  *
- * <p>所有表必须包含 id / create_time / update_time 三列，业务字段留在各自 DO 中；
- * 创建者/更新者等审计字段后续由 BizDO extends BaseDO 扩展，本次不处理。
  */
 @Data
 public class BaseDO implements Serializable {

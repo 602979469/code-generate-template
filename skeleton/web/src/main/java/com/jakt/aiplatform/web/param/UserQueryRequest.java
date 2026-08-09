@@ -3,21 +3,16 @@ package com.jakt.aiplatform.web.param;
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 /**
- * 用户信息表查询请求。
+ * 用户查询请求。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class UserQueryRequest extends BaseRequest {
+
     /** 主键ID。 */
     private Long id;
 

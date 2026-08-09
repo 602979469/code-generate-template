@@ -4,7 +4,7 @@ import ${basePackage}.common.dal.dataobject.${className}DO;
 import ${basePackage}.core.model.domain.${className};
 
 /**
- * ${tableComment} DO 与领域模型互转，只存在于 repository。
+ * ${entityName} DO 与领域模型互转，只存在于 repository。
  * 显式 get/set 赋值：DO 与 Model 字段类型允许不同（如 status 字符串转枚举），业务方按需调整。
  */
 public final class ${className}Convertor {
@@ -15,7 +15,7 @@ public final class ${className}Convertor {
     /**
      * DO → 领域模型。
      *
-     * @param ${classNameLower}DO ${tableComment}数据对象；为空返回 null
+     * @param ${classNameLower}DO ${entityName}数据对象；为空返回 null
      * @return ${entityName}领域模型
      */
     public static ${className} toModel(${className}DO ${classNameLower}DO) {
@@ -35,7 +35,7 @@ public final class ${className}Convertor {
      * 领域模型 → DO。
      *
      * @param ${classNameLower} ${entityName}领域模型
-     * @return ${tableComment}数据对象
+     * @return ${entityName}数据对象
      */
     public static ${className}DO toDO(${className} ${classNameLower}) {
         ${className}DO ${classNameLower}DO = new ${className}DO();

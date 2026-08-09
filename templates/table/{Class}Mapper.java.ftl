@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 /**
- * ${tableComment} Mapper。SQL 全部在 resources/mapper/${className}Mapper.xml 中。
+ * ${entityName} Mapper。SQL 全部在 resources/mapper/${className}Mapper.xml 中。
  */
 @Mapper
 public interface ${className}Mapper {
@@ -16,7 +16,7 @@ public interface ${className}Mapper {
      * 按主键查询。
      *
      * @param id 主键
-     * @return ${tableComment}数据对象
+     * @return ${entityName}数据对象
      */
     ${className}DO selectById(Long id);
 

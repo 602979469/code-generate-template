@@ -3,7 +3,7 @@ package com.jakt.aiplatform.core.model.exception;
 import lombok.Getter;
 
 /**
- * 业务异常。领域服务发现规则被违反时抛出，由 web 层 AiPlatformTemplate 统一转换。
+ * 业务异常
  */
 @Getter
 public class AiPlatformException extends RuntimeException {

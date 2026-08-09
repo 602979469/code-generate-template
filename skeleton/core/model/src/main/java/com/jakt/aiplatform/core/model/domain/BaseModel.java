@@ -10,12 +10,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 领域模型基类：统一提供 toString/equals/hashCode（Lombok @Data）与序列化能力。
+ * 领域模型基类
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class BaseModel implements Serializable {
 
     @Serial

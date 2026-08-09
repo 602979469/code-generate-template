@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 用户信息表领域模型。
+ * 用户领域模型。
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

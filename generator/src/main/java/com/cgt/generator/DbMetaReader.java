@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ public final class DbMetaReader {
         meta.tableName = table.dbTableName;
         meta.className = table.modelName;
         meta.classNameLower = toLowerCamel(table.modelName);
+        meta.entityName = table.modelComment;
 
         try (Connection conn = DriverManager.getConnection(cfg.jdbcUrl, cfg.jdbcUsername, cfg.jdbcPassword)) {
             String schema = conn.getCatalog();
@@ -62,14 +64,28 @@ public final class DbMetaReader {
             }
             // 查询条件 = id + 全部业务字段 + 创建/更新时间，程序员按需删减
             buildQueryColumns(meta);
-            meta.tableComment = readTableComment(conn, schema, table.dbTableName);
-            meta.entityName = meta.tableComment.replaceAll("表$", "");
         } catch (SQLException e) {
             throw new IllegalStateException("读取表结构失败: " + table.dbTableName, e);
         }
 
         buildSqlFragments(meta);
         return meta;
+    }
+
+    /** 读取表的真实建表语句（SHOW CREATE TABLE），用于按 tables 配置追加到项目 init.sql。 */
+    public static String readCreateTable(GeneratorConfig cfg, GeneratorConfig.TableConfig table) {
+        try (Connection conn = DriverManager.getConnection(cfg.jdbcUrl, cfg.jdbcUsername, cfg.jdbcPassword)) {
+            String schema = conn.getCatalog();
+            String sql = "SHOW CREATE TABLE `" + schema + "`.`" + table.dbTableName + "`";
+            try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+                if (rs.next()) {
+                    return rs.getString("Create Table");
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("读取建表语句失败: " + table.dbTableName, e);
+        }
+        return null;
     }
 
     private static ColumnMeta parseColumn(ResultSet rs) throws SQLException {
@@ -128,21 +144,6 @@ public final class DbMetaReader {
         List<ColumnMeta> updateCols = cols.stream().filter(c -> !c.auto && !c.pk).collect(Collectors.toList());
         table.updateSet = updateCols.stream().map(c -> c.columnName + " = #{" + c.propertyName + "}")
                 .collect(Collectors.joining(",\n            "));
-    }
-
-    private static String readTableComment(Connection conn, String schema, String tableName) throws SQLException {
-        String sql = "SELECT table_comment FROM information_schema.tables WHERE table_schema = ? AND table_name = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, schema);
-            ps.setString(2, tableName);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    String comment = rs.getString(1);
-                    return comment == null || comment.isBlank() ? tableName : comment;
-                }
-            }
-        }
-        return tableName;
     }
 
     private static String mapJavaType(String dataType) {
