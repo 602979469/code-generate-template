@@ -14,7 +14,19 @@
             <if test="${c.propertyName} != null<#if c.string> and ${c.propertyName} != ''</#if>">
                 AND ${c.columnName} <#if c.queryType == "LIKE">LIKE CONCAT('%', #{${c.propertyName}}, '%')<#else>= #{${c.propertyName}}</#if>
             </if>
-</#list>        </where>
+</#list>            <if test="createTimeBegin != null">
+                AND create_time &gt;= #{createTimeBegin}
+            </if>
+            <if test="createTimeEnd != null">
+                AND create_time &lt;= #{createTimeEnd}
+            </if>
+            <if test="updateTimeBegin != null">
+                AND update_time &gt;= #{updateTimeBegin}
+            </if>
+            <if test="updateTimeEnd != null">
+                AND update_time &lt;= #{updateTimeEnd}
+            </if>
+        </where>
     </sql>
 
     <select id="selectById" resultType="${basePackage}.common.dal.dataobject.${className}DO">

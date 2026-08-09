@@ -74,9 +74,11 @@ public final class UserAssembler {
         param.setLoginDate(request.getLoginDate());
         param.setPwdUpdateDate(request.getPwdUpdateDate());
         param.setRemark(request.getRemark());
-        param.setCreateTime(request.getCreateTime());
-        param.setUpdateTime(request.getUpdateTime());
         param.setPageNum(request.getPageNum() == null ? 1 : request.getPageNum());
+        param.setCreateTimeBegin(request.getCreateTimeBegin());
+        param.setCreateTimeEnd(request.getCreateTimeEnd());
+        param.setUpdateTimeBegin(request.getUpdateTimeBegin());
+        param.setUpdateTimeEnd(request.getUpdateTimeEnd());
         param.setPageSize(request.getPageSize() == null ? 10 : request.getPageSize());
         return param;
     }

@@ -58,11 +58,17 @@
             <if test="remark != null and remark != ''">
                 AND remark = #{remark}
             </if>
-            <if test="createTime != null">
-                AND create_time = #{createTime}
+            <if test="createTimeBegin != null">
+                AND create_time &gt;= #{createTimeBegin}
             </if>
-            <if test="updateTime != null">
-                AND update_time = #{updateTime}
+            <if test="createTimeEnd != null">
+                AND create_time &lt;= #{createTimeEnd}
+            </if>
+            <if test="updateTimeBegin != null">
+                AND update_time &gt;= #{updateTimeBegin}
+            </if>
+            <if test="updateTimeEnd != null">
+                AND update_time &lt;= #{updateTimeEnd}
             </if>
         </where>
     </sql>

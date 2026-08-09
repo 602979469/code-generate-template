@@ -98,8 +98,6 @@ public final class DbMetaReader {
     private static void buildQueryColumns(TableMeta table) {
         addQueryColumn(table, "id", "id", "Long", "主键ID");
         table.queryColumns.addAll(table.columns);
-        addQueryColumn(table, "create_time", "createTime", "LocalDateTime", "创建时间");
-        addQueryColumn(table, "update_time", "updateTime", "LocalDateTime", "更新时间");
     }
 
     private static void addQueryColumn(TableMeta table, String columnName, String propertyName,

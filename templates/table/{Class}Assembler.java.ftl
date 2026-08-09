@@ -35,6 +35,10 @@ public final class ${className}Assembler {
 <#list queryColumns as c>
         param.set${c.propertyName?cap_first}(request.get${c.propertyName?cap_first}());
 </#list>        param.setPageNum(request.getPageNum() == null ? 1 : request.getPageNum());
+        param.setCreateTimeBegin(request.getCreateTimeBegin());
+        param.setCreateTimeEnd(request.getCreateTimeEnd());
+        param.setUpdateTimeBegin(request.getUpdateTimeBegin());
+        param.setUpdateTimeEnd(request.getUpdateTimeEnd());
         param.setPageSize(request.getPageSize() == null ? 10 : request.getPageSize());
         return param;
     }

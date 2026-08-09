@@ -58,11 +58,17 @@ public class UserQueryRequest {
     /** 备注。 */
     private String remark;
 
-    /** 创建时间。 */
-    private LocalDateTime createTime;
+    /** 创建时间起。 */
+    private LocalDateTime createTimeBegin;
 
-    /** 更新时间。 */
-    private LocalDateTime updateTime;
+    /** 创建时间止。 */
+    private LocalDateTime createTimeEnd;
+
+    /** 更新时间起。 */
+    private LocalDateTime updateTimeBegin;
+
+    /** 更新时间止。 */
+    private LocalDateTime updateTimeEnd;
 
     /** 页码，从 1 开始。 */
     @Min(value = 1, message = "页码不能小于 1")
@@ -201,20 +207,36 @@ public class UserQueryRequest {
         this.remark = remark;
     }
 
-    public LocalDateTime getCreateTime() {
-        return createTime;
+    public LocalDateTime getCreateTimeBegin() {
+        return createTimeBegin;
     }
 
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
+    public void setCreateTimeBegin(LocalDateTime createTimeBegin) {
+        this.createTimeBegin = createTimeBegin;
     }
 
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
+    public LocalDateTime getCreateTimeEnd() {
+        return createTimeEnd;
     }
 
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
+    public void setCreateTimeEnd(LocalDateTime createTimeEnd) {
+        this.createTimeEnd = createTimeEnd;
+    }
+
+    public LocalDateTime getUpdateTimeBegin() {
+        return updateTimeBegin;
+    }
+
+    public void setUpdateTimeBegin(LocalDateTime updateTimeBegin) {
+        this.updateTimeBegin = updateTimeBegin;
+    }
+
+    public LocalDateTime getUpdateTimeEnd() {
+        return updateTimeEnd;
+    }
+
+    public void setUpdateTimeEnd(LocalDateTime updateTimeEnd) {
+        this.updateTimeEnd = updateTimeEnd;
     }
 
     public Integer getPageNum() {

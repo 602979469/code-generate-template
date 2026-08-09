@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 /**
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserQueryParam extends PageParam {
+public class UserQueryParam extends BaseQueryParam {
     /** 主键ID。 */
     private Long id;
 
@@ -62,11 +61,5 @@ public class UserQueryParam extends PageParam {
 
     /** 备注。 */
     private String remark;
-
-    /** 创建时间。 */
-    private LocalDateTime createTime;
-
-    /** 更新时间。 */
-    private LocalDateTime updateTime;
 
 }

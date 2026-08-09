@@ -17,6 +17,18 @@ public class ${className}QueryRequest {
     private ${c.javaType} ${c.propertyName};
 
 </#list>
+    /** 创建时间起。 */
+    private LocalDateTime createTimeBegin;
+
+    /** 创建时间止。 */
+    private LocalDateTime createTimeEnd;
+
+    /** 更新时间起。 */
+    private LocalDateTime updateTimeBegin;
+
+    /** 更新时间止。 */
+    private LocalDateTime updateTimeEnd;
+
     /** 页码，从 1 开始。 */
     @Min(value = 1, message = "页码不能小于 1")
     private Integer pageNum = 1;
@@ -35,7 +47,40 @@ public class ${className}QueryRequest {
         this.${c.propertyName} = ${c.propertyName};
     }
 
-</#list>    public Integer getPageNum() {
+</#list>
+    public LocalDateTime getCreateTimeBegin() {
+        return createTimeBegin;
+    }
+
+    public void setCreateTimeBegin(LocalDateTime createTimeBegin) {
+        this.createTimeBegin = createTimeBegin;
+    }
+
+    public LocalDateTime getCreateTimeEnd() {
+        return createTimeEnd;
+    }
+
+    public void setCreateTimeEnd(LocalDateTime createTimeEnd) {
+        this.createTimeEnd = createTimeEnd;
+    }
+
+    public LocalDateTime getUpdateTimeBegin() {
+        return updateTimeBegin;
+    }
+
+    public void setUpdateTimeBegin(LocalDateTime updateTimeBegin) {
+        this.updateTimeBegin = updateTimeBegin;
+    }
+
+    public LocalDateTime getUpdateTimeEnd() {
+        return updateTimeEnd;
+    }
+
+    public void setUpdateTimeEnd(LocalDateTime updateTimeEnd) {
+        this.updateTimeEnd = updateTimeEnd;
+    }
+
+    public Integer getPageNum() {
         return pageNum;
     }
 
