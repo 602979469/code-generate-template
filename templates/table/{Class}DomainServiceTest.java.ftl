@@ -1,7 +1,7 @@
 package ${basePackage}.core.service;
 
 import ${basePackage}.core.model.domain.${className};
-import ${basePackage}.core.model.exception.AiPlatformException;
+import ${basePackage}.core.model.exception.${toolPrefix}Exception;
 import ${basePackage}.core.repository.${className}Repository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +36,7 @@ class ${className}DomainServiceTest {
         ${className} ${classNameLower} = new ${className}();
 
         assertThatThrownBy(() -> ${classNameLower}DomainService.create${className}(${classNameLower}))
-                .isInstanceOf(AiPlatformException.class);
+                .isInstanceOf(${toolPrefix}Exception.class);
     }
 
     @Test
@@ -62,7 +62,7 @@ class ${className}DomainServiceTest {
         when(${classNameLower}Repository.findById(999L)).thenReturn(null);
 
         assertThatThrownBy(() -> ${classNameLower}DomainService.get${className}(999L))
-                .isInstanceOf(AiPlatformException.class)
+                .isInstanceOf(${toolPrefix}Exception.class)
                 .hasMessageContaining("资源不存在");
     }
 
@@ -71,7 +71,7 @@ class ${className}DomainServiceTest {
         when(${classNameLower}Repository.findById(999L)).thenReturn(null);
 
         assertThatThrownBy(() -> ${classNameLower}DomainService.delete${className}(999L))
-                .isInstanceOf(AiPlatformException.class)
+                .isInstanceOf(${toolPrefix}Exception.class)
                 .hasMessageContaining("资源不存在");
     }
 }
