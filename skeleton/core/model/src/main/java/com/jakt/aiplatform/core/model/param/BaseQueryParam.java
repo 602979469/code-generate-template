@@ -1,6 +1,5 @@
 package com.jakt.aiplatform.core.model.param;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,6 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@AllArgsConstructor
 public class BaseQueryParam extends PageParam {
 
     /** 创建时间起。 */

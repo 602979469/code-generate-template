@@ -4,9 +4,10 @@
 
     <!-- 与 ${tableName} 表一一对应，id/create_time/update_time 由 BaseDO 承载；
          create_by/update_by/del_flag 等审计字段后续由 BizDO 启用，当前不映射 -->
-    <sql id="selectColumns">
+    <!-- CDATA 包裹：避免 IDEA 把列片段当完整 SQL 语句标红 -->
+    <sql id="selectColumns"><![CDATA[
         ${selectColumns}
-    </sql>
+    ]]></sql>
 
     <sql id="queryConditions">
         <where>

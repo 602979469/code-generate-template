@@ -1,8 +1,8 @@
 package com.jakt.aiplatform.web.exception;
 
-import com.jakt.aiplatform.common.util.enums.LogFileEnum;
-import com.jakt.aiplatform.common.util.tools.AiPlatformLoggerUtil;
 import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
+import com.jakt.aiplatform.core.model.enums.LogFileEnum;
+import com.jakt.aiplatform.core.model.util.AiPlatformLoggerUtil;
 import com.jakt.aiplatform.web.result.AiPlatformResult;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;

@@ -53,10 +53,11 @@ aiplatform-bootstrap → web → biz-service-impl → core-service → core-repo
 3. 判空/判 blank 统一用 Hutool（`StrUtil`/`CollUtil`/`ArrayUtil`/`ObjectUtil`），禁止手写 null/empty 判断。
 4. 事务：禁止 `@Transactional` 注解。当前阶段项目不使用 TransactionTemplate（已移除），单表操作直接调 Mapper；后续出现跨表复杂用例时再引入事务工具。
 5. 参数校验：DTO 注解 + `AiPlatformParamValidator`（Controller 的 beforeService 中调用）；业务规则在 `core-service` 编码校验后抛 `AiPlatformException`。
-6. 日志：禁止业务代码手写 try-catch 打日志；关键节点 `logger.info`；traceId 自动写入 MDC。
-7. 命名：`XxxController`（web/controller）、`XxxManager`（biz.service 接口）/ `XxxManagerImpl`（biz.service.impl）、`XxxDomainService`、`XxxRepository`、`XxxMapper`、`XxxDO`（common-dal）、`Xxx` Model（core-model）、`XxxRequest`（web/param）、`XxxResponse`（web/result）、仓储层 `XxxConvertor`（core/repository/convertor）。
-8. 代码风格：构造器注入 + `final` 字段；DTO 用 class + Lombok（`@Data`/`@Builder`），请求继承 `BaseRequest`、响应继承 `BaseResult`；领域模型用 Lombok `@Data`。
-9. 方法注释：有接口的接口加注释；实现类（implements 接口）方法不注释；不实现接口的类（Controller/Assembler/DomainService/Manager）方法统一加标准 javadoc。
+6. 日志：统一通过 `${toolPrefix}LoggerUtil` 打日志（按 `LogFileEnum` 分文件），禁止业务代码直接使用 `LoggerFactory`；禁止手写 try-catch 打日志；traceId 自动写入 MDC。
+7. 命名：`XxxController`（web/controller）、`XxxManager`（biz.service 接口）/ `XxxManagerImpl`（biz.service.impl）、`XxxDomainService`（core.service 接口）/ `XxxDomainServiceImpl`（core.service.impl）、`XxxRepository`、`XxxMapper`、`XxxDO`（common-dal）、`Xxx` Model（core-model）、`XxxRequest`（web/param）、`XxxResponse`（web/result）、仓储层 `XxxConvertor`（core/repository/convertor）。
+8. 代码风格：构造器注入 + `final` 字段；DTO 用 class + Lombok（`@Data`/`@Builder`），请求继承 `BaseRequest`、响应继承 `BaseResult`；领域模型用 Lombok `@Data`；查询参数继承链 `XxxQueryParam → BaseQueryParam → PageParam → BaseModel`（公共字段由基类提供）。
+9. 方法注释：有接口的接口加注释；实现类（implements 接口）方法不注释；不实现接口的类（Controller/Assembler/Manager 等）方法统一加标准 javadoc。
+10. 测试：本项目不生成单元测试；后期测试集中到独立测试模块，走真实测试数据库一路打到 Mapper。
 10. 敏感字段：生成器输出与表结构全字段对齐（含 password/salt 等）。敏感字段的响应剔除、查询暴露与日志脱敏属于业务二开职责，禁止打印密码、token 等敏感信息（见禁止模式）。
 11. 分页参数 `pageNum`/`pageSize` 的 `@Min`/`@Max` 是通用约定，不属于字段级特殊校验；`BizTemplate` 为工具类模板、当前未接线，业务入口统一走 `${toolPrefix}Template`，禁止模仿调用 BizTemplate。
 

@@ -1,27 +1,16 @@
 package com.jakt.aiplatform.core.service;
 
-import com.jakt.aiplatform.common.util.tools.AiPlatformInvoker;
 import com.jakt.aiplatform.core.model.domain.User;
-import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
 import com.jakt.aiplatform.core.model.param.UserQueryParam;
 import com.jakt.aiplatform.core.model.result.PageResult;
-import com.jakt.aiplatform.core.repository.UserRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
  * 用户信息表领域服务：承载用户信息表相关的业务规则。只写规则，不碰持久化细节。
+ * 实现类为 UserDomainServiceImpl（core.service.impl 包）。
  */
-@Service
-public class UserDomainService {
-
-    /** 用户信息表仓储。 */
-    private final UserRepository userRepository;
-
-    public UserDomainService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+public interface UserDomainService {
 
     /**
      * 创建用户信息：必填字段校验后入库。
@@ -30,27 +19,15 @@ public class UserDomainService {
      * @param user 用户信息
      * @return 创建后的用户信息（主键已回填）
      */
-    public User createUser(User user) {
-        AiPlatformInvoker.throwErrWhenBlank(
-                user.getLoginName(),
-                ErrorCodeEnum.PARAM_INVALID,
-                "登录账号不能为空");
-        return userRepository.insert(user);
-    }
+    User createUser(User user);
 
     /**
      * 更新用户信息（全量）：存在性校验后更新。
-     * updateTime 由数据库 ON UPDATE CURRENT_TIMESTAMP 自动维护。
      *
      * @param user 用户信息（含主键）
      * @return 更新后的用户信息
      */
-    public User updateUser(User user) {
-        AiPlatformInvoker.throwErrWhenNull(
-                userRepository.findById(user.getId()),
-                ErrorCodeEnum.RESOURCE_NOT_FOUND);
-        return userRepository.update(user);
-    }
+    User updateUser(User user);
 
     /**
      * 按条件更新用户信息（只更新传入的非空字段）。
@@ -58,28 +35,14 @@ public class UserDomainService {
      *
      * @param user 用户信息（至少含主键）
      */
-    public void updateByCondition(User user) {
-        AiPlatformInvoker.throwErrWhenNull(
-                userRepository.findById(user.getId()),
-                ErrorCodeEnum.RESOURCE_NOT_FOUND);
-        // 全部业务字段均为空时跳过更新，避免产生空 SQL
-        if (user.getDeptId() == null && user.getLoginName() == null && user.getUserName() == null && user.getUserType() == null && user.getEmail() == null && user.getPhonenumber() == null && user.getSex() == null && user.getAvatar() == null && user.getPassword() == null && user.getSalt() == null && user.getStatus() == null && user.getLoginIp() == null && user.getLoginDate() == null && user.getPwdUpdateDate() == null && user.getRemark() == null) {
-            return;
-        }
-        userRepository.updateByCondition(user);
-    }
+    void updateByCondition(User user);
 
     /**
      * 删除用户信息：存在性校验后删除。
      *
      * @param id 用户信息 ID
      */
-    public void deleteUser(Long id) {
-        AiPlatformInvoker.throwErrWhenNull(
-                userRepository.findById(id),
-                ErrorCodeEnum.RESOURCE_NOT_FOUND);
-        userRepository.deleteById(id);
-    }
+    void deleteUser(Long id);
 
     /**
      * 按 ID 获取用户信息：不存在时抛业务异常。
@@ -87,13 +50,7 @@ public class UserDomainService {
      * @param id 用户信息 ID
      * @return 用户信息
      */
-    public User getUser(Long id) {
-        User user = userRepository.findById(id);
-        AiPlatformInvoker.throwErrWhenNull(
-                user,
-                ErrorCodeEnum.RESOURCE_NOT_FOUND);
-        return user;
-    }
+    User getUser(Long id);
 
     /**
      * 分页查询用户信息：纯查询，无规则。
@@ -101,9 +58,7 @@ public class UserDomainService {
      * @param query 查询参数
      * @return 分页结果
      */
-    public PageResult<User> findPage(UserQueryParam query) {
-        return userRepository.findPage(query);
-    }
+    PageResult<User> findPage(UserQueryParam query);
 
     /**
      * 列表查询用户信息：纯查询，无规则。
@@ -111,7 +66,5 @@ public class UserDomainService {
      * @param query 查询参数
      * @return 用户信息列表
      */
-    public List<User> findList(UserQueryParam query) {
-        return userRepository.findList(query);
-    }
+    List<User> findList(UserQueryParam query);
 }

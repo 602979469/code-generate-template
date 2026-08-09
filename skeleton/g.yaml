@@ -34,7 +34,7 @@ jdbc:
 
 # 生成输出根目录(项目骨架 init 与表级 CRUD 的落点)
 # 必填;约束: 绝对或相对路径
-outputDir: /tmp/skO.ItNXL0
+outputDir: /tmp/skQ.E3qAJJ
 
 # ---------------- tables(可选,不配置则不生成表) ----------------
 # 要生成的表列表,每一项是一个对象:

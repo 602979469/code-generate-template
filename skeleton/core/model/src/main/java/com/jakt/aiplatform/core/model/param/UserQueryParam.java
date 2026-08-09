@@ -1,7 +1,6 @@
 package com.jakt.aiplatform.core.model.param;
 
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -12,11 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@AllArgsConstructor
 public class UserQueryParam extends BaseQueryParam {
-    /** 主键ID。 */
-    private Long id;
-
     /** 部门ID。 */
     private Long deptId;
 

@@ -2,11 +2,11 @@ package com.jakt.aiplatform.biz.service.impl;
 
 import com.jakt.aiplatform.biz.service.UserManager;
 import com.jakt.aiplatform.core.model.domain.User;
+import com.jakt.aiplatform.core.model.enums.LogFileEnum;
 import com.jakt.aiplatform.core.model.param.UserQueryParam;
 import com.jakt.aiplatform.core.model.result.PageResult;
+import com.jakt.aiplatform.core.model.util.AiPlatformLoggerUtil;
 import com.jakt.aiplatform.core.service.UserDomainService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,8 +16,6 @@ import java.util.List;
  */
 @Service
 public class UserManagerImpl implements UserManager {
-
-    private static final Logger log = LoggerFactory.getLogger(UserManagerImpl.class);
 
     /** 用户信息表领域服务。 */
     private final UserDomainService userDomainService;
@@ -29,7 +27,7 @@ public class UserManagerImpl implements UserManager {
     @Override
     public User createUser(User user) {
         User created = userDomainService.createUser(user);
-        log.info("创建用户信息成功 id={}", created.getId());
+        AiPlatformLoggerUtil.info(LogFileEnum.BIZ_SERVICE, "创建用户信息成功 id={}", created.getId());
         return created;
     }
 
@@ -51,19 +49,19 @@ public class UserManagerImpl implements UserManager {
     @Override
     public User updateUser(User user) {
         User updated = userDomainService.updateUser(user);
-        log.info("更新用户信息成功 id={}", updated.getId());
+        AiPlatformLoggerUtil.info(LogFileEnum.BIZ_SERVICE, "更新用户信息成功 id={}", updated.getId());
         return updated;
     }
 
     @Override
     public void updateByCondition(User user) {
         userDomainService.updateByCondition(user);
-        log.info("按条件更新用户信息成功 id={}", user.getId());
+        AiPlatformLoggerUtil.info(LogFileEnum.BIZ_SERVICE, "按条件更新用户信息成功 id={}", user.getId());
     }
 
     @Override
     public void deleteUser(Long id) {
         userDomainService.deleteUser(id);
-        log.info("删除用户信息成功 id={}", id);
+        AiPlatformLoggerUtil.info(LogFileEnum.BIZ_SERVICE, "删除用户信息成功 id={}", id);
     }
 }

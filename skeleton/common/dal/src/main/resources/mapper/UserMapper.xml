@@ -4,9 +4,10 @@
 
     <!-- 与 sys_user 表一一对应，id/create_time/update_time 由 BaseDO 承载；
          create_by/update_by/del_flag 等审计字段后续由 BizDO 启用，当前不映射 -->
-    <sql id="selectColumns">
+    <!-- CDATA 包裹：避免 IDEA 把列片段当完整 SQL 语句标红 -->
+    <sql id="selectColumns"><![CDATA[
         id, dept_id, login_name, user_name, user_type, email, phonenumber, sex, avatar, password, salt, status, login_ip, login_date, pwd_update_date, remark, create_time, update_time
-    </sql>
+    ]]></sql>
 
     <sql id="queryConditions">
         <where>

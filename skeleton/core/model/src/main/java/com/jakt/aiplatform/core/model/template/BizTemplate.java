@@ -3,9 +3,9 @@ package com.jakt.aiplatform.core.model.template;
 import com.jakt.aiplatform.core.model.exception.AiPlatformException;
 import com.jakt.aiplatform.core.model.exception.ErrorCode;
 import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
+import com.jakt.aiplatform.core.model.enums.LogFileEnum;
 import com.jakt.aiplatform.core.model.result.Result;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jakt.aiplatform.core.model.util.AiPlatformLoggerUtil;
 
 /**
  * 业务模板：统一捕获异常并组装返回结果。
@@ -18,8 +18,6 @@ import org.slf4j.LoggerFactory;
  * </ul>
  */
 public class BizTemplate {
-
-    private static final Logger log = LoggerFactory.getLogger(BizTemplate.class);
 
     private BizTemplate() {
     }
@@ -40,7 +38,7 @@ public class BizTemplate {
         } catch (AiPlatformException e) {
             // 业务异常：success=false + 错误码 + message
             ErrorCode errorCode = e.getErrorCode();
-            log.warn("业务异常 code={} message={}", errorCode.getCode(), e.getMessage());
+            AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "业务异常 code={} message={}", errorCode.getCode(), e.getMessage());
             Result<R> result = new Result<>();
             result.setSuccess(false);
             if (errorCode instanceof ErrorCodeEnum errorCodeEnum) {
@@ -52,7 +50,7 @@ public class BizTemplate {
             return result;
         } catch (Exception e) {
             // 系统异常：记录 error 日志，返回系统错误
-            log.error("系统异常", e);
+            AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "系统异常", e);
             Result<R> result = new Result<>();
             result.setSuccess(false);
             result.setErrorCodeEnum(ErrorCodeEnum.SYSTEM_ERROR);

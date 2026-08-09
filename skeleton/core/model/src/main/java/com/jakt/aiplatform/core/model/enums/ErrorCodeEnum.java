@@ -27,6 +27,12 @@ public enum ErrorCodeEnum implements ErrorCode {
     /** 资源不存在。 */
     RESOURCE_NOT_FOUND(30001, "资源不存在"),
 
+    /** 更新失败：记录不存在或已被修改。 */
+    UPDATE_FAILED(30002, "更新失败"),
+
+    /** 删除失败：记录不存在或已被删除。 */
+    DELETE_FAILED(30003, "删除失败"),
+
     /** 外部服务调用失败。 */
     EXTERNAL_ERROR(40000, "外部服务调用失败");
 

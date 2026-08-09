@@ -32,7 +32,7 @@ public final class CrudGenerator {
         TEMPLATES.put("{Class}RepositoryImpl.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/impl/{Class}RepositoryImpl.java");
         TEMPLATES.put("{Class}Convertor.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/convertor/{Class}Convertor.java");
         TEMPLATES.put("{Class}DomainService.java.ftl", "core/service/src/main/java/{pkg}/core/service/{Class}DomainService.java");
-        TEMPLATES.put("{Class}DomainServiceTest.java.ftl", "core/service/src/test/java/{pkg}/core/service/{Class}DomainServiceTest.java");
+        TEMPLATES.put("{Class}DomainServiceImpl.java.ftl", "core/service/src/main/java/{pkg}/core/service/impl/{Class}DomainServiceImpl.java");
         TEMPLATES.put("{Class}Manager.java.ftl", "biz/service-impl/src/main/java/{pkg}/biz/service/{Class}Manager.java");
         TEMPLATES.put("{Class}ManagerImpl.java.ftl", "biz/service-impl/src/main/java/{pkg}/biz/service/impl/{Class}ManagerImpl.java");
         TEMPLATES.put("{Class}Controller.java.ftl", "web/src/main/java/{pkg}/web/controller/{Class}Controller.java");

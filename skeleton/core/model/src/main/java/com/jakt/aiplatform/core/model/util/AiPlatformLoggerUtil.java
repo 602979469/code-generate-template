@@ -1,6 +1,6 @@
-package com.jakt.aiplatform.common.util.tools;
+package com.jakt.aiplatform.core.model.util;
 
-import com.jakt.aiplatform.common.util.enums.LogFileEnum;
+import com.jakt.aiplatform.core.model.enums.LogFileEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 日志工具：按 {@link LogFileEnum} 获取对应 Logger，统一日志输出。
+ * 业务代码一律通过本类打日志，禁止直接使用 LoggerFactory。
  */
 public final class AiPlatformLoggerUtil {
 

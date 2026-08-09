@@ -1,11 +1,11 @@
 package com.jakt.aiplatform.web.template;
 
 import com.jakt.aiplatform.web.result.AiPlatformResult;
-import com.jakt.aiplatform.common.util.enums.LogFileEnum;
-import com.jakt.aiplatform.common.util.tools.AiPlatformLoggerUtil;
 import com.jakt.aiplatform.common.util.tools.AiPlatformParamValidator;
 import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
+import com.jakt.aiplatform.core.model.enums.LogFileEnum;
 import com.jakt.aiplatform.core.model.exception.AiPlatformException;
+import com.jakt.aiplatform.core.model.util.AiPlatformLoggerUtil;
 import jakarta.validation.ValidationException;
 
 import java.time.LocalDateTime;

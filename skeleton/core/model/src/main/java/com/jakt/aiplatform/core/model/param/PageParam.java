@@ -1,18 +1,18 @@
 package com.jakt.aiplatform.core.model.param;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.jakt.aiplatform.core.model.domain.BaseModel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * 分页查询参数基类：页码与每页条数，统一提供 SQL LIMIT 偏移量。
+ * 分页查询参数基类：继承 {@link com.jakt.aiplatform.core.model.domain.BaseModel} 的公共字段，
+ * 统一提供页码、每页条数与 SQL LIMIT 偏移量。
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class PageParam {
+public class PageParam extends BaseModel {
 
     /** 页码，从 1 开始。 */
     private int pageNum = 1;

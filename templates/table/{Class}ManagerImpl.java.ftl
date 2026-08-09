@@ -2,11 +2,11 @@ package ${basePackage}.biz.service.impl;
 
 import ${basePackage}.biz.service.${className}Manager;
 import ${basePackage}.core.model.domain.${className};
+import ${basePackage}.core.model.enums.LogFileEnum;
 import ${basePackage}.core.model.param.${className}QueryParam;
 import ${basePackage}.core.model.result.PageResult;
+import ${basePackage}.core.model.util.${toolPrefix}LoggerUtil;
 import ${basePackage}.core.service.${className}DomainService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,8 +16,6 @@ import java.util.List;
  */
 @Service
 public class ${className}ManagerImpl implements ${className}Manager {
-
-    private static final Logger log = LoggerFactory.getLogger(${className}ManagerImpl.class);
 
     /** ${tableComment}领域服务。 */
     private final ${className}DomainService ${classNameLower}DomainService;
@@ -29,7 +27,7 @@ public class ${className}ManagerImpl implements ${className}Manager {
     @Override
     public ${className} create${className}(${className} ${classNameLower}) {
         ${className} created = ${classNameLower}DomainService.create${className}(${classNameLower});
-        log.info("创建${entityName}成功 id={}", created.getId());
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "创建${entityName}成功 id={}", created.getId());
         return created;
     }
 
@@ -51,19 +49,19 @@ public class ${className}ManagerImpl implements ${className}Manager {
     @Override
     public ${className} update${className}(${className} ${classNameLower}) {
         ${className} updated = ${classNameLower}DomainService.update${className}(${classNameLower});
-        log.info("更新${entityName}成功 id={}", updated.getId());
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "更新${entityName}成功 id={}", updated.getId());
         return updated;
     }
 
     @Override
     public void updateByCondition(${className} ${classNameLower}) {
         ${classNameLower}DomainService.updateByCondition(${classNameLower});
-        log.info("按条件更新${entityName}成功 id={}", ${classNameLower}.getId());
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "按条件更新${entityName}成功 id={}", ${classNameLower}.getId());
     }
 
     @Override
     public void delete${className}(Long id) {
         ${classNameLower}DomainService.delete${className}(id);
-        log.info("删除${entityName}成功 id={}", id);
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "删除${entityName}成功 id={}", id);
     }
 }
