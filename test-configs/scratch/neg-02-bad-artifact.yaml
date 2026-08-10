@@ -1,0 +1,13 @@
+projectPrefix: AiTest
+toolPrefix: AiTest
+groupId: com.jakt
+projectArtifactPrefix: ai-prod
+jdbc:
+  url: jdbc:mysql://localhost:3306/aitest?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  username: root
+  password: "123456"
+outputDir: /tmp/aitest-tests/neg-02
+tables:
+  - db_table_name: sys_dept
+    model_name: Dept
+    model_comment: 部门

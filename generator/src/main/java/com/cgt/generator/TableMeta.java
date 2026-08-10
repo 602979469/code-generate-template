@@ -33,4 +33,13 @@ public final class TableMeta {
     public boolean hasRequiredNonString;
     /** 是否存在字符串列（决定 DTO 是否导入 @Size）。 */
     public boolean hasString;
+
+    /** 逻辑删除是否启用（配置生效且列存在）。 */
+    public boolean logicDeleteEnabled;
+    /** 逻辑删除列名。 */
+    public String logicDeleteColumn;
+    /** 未删除值（SQL 字面量，字符串列已加引号）。 */
+    public String logicDeleteNormal;
+    /** 已删除值（SQL 字面量）。 */
+    public String logicDeleteDelete;
 }

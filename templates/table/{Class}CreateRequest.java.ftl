@@ -5,7 +5,7 @@ package ${basePackage}.web.param;
 </#if><#if hasString>import jakarta.validation.constraints.Size;
 </#if><#if hasRequiredString>import jakarta.validation.constraints.NotBlank;
 </#if><#if hasRequiredNonString>import jakarta.validation.constraints.NotNull;
-</#if>import lombok.Data;
+</#if>${dtoImports}import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
@@ -18,17 +18,17 @@ public class ${className}CreateRequest extends BaseRequest {
 
 <#list columns as c>
     /** ${c.comment}。 */
-<#if c.required && c.string>    @NotBlank(message = "${c.comment}不能为空")
-    @Size(max = ${c.length}, message = "${c.comment}长度不能超过 ${c.length}")
-    private String ${c.propertyName};
+<#if c.required && c.modelString>    @NotBlank(message = "${c.comment}不能为空")
+<#if c.length gt 0>    @Size(max = ${c.length}, message = "${c.comment}长度不能超过 ${c.length}")
+</#if>    private ${c.modelType} ${c.propertyName};
 
 <#elseif c.required>    @NotNull(message = "${c.comment}不能为空")
-    private ${c.javaType} ${c.propertyName};
+    private ${c.modelType} ${c.propertyName};
 
-<#elseif c.string>    @Size(max = ${c.length}, message = "${c.comment}长度不能超过 ${c.length}")
-    private String ${c.propertyName};
+<#elseif c.modelString><#if c.length gt 0>    @Size(max = ${c.length}, message = "${c.comment}长度不能超过 ${c.length}")
+</#if>    private ${c.modelType} ${c.propertyName};
 
-<#else>    private ${c.javaType} ${c.propertyName};
+<#else>    private ${c.modelType} ${c.propertyName};
 
 </#if>
 </#list>}

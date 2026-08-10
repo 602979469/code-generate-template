@@ -18,4 +18,13 @@ public class PageParam extends BaseModel {
     /** 每页条数。 */
     private int pageSize = 10;
 
+    /**
+     * SQL LIMIT 偏移量 = (页码 - 1) * 每页条数。
+     *
+     * @return 偏移量
+     */
+    public int getOffset() {
+        return (pageNum - 1) * pageSize;
+    }
+
 }

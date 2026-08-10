@@ -45,7 +45,7 @@ UserController(web)                        # 参数校验（UserParamChecker）�
   → UserService/UserServiceImpl(core-service) # 领域服务：业务规则（当前示例为纯透传）
       → UserRepository(core-repository)    # 封装 Mapper，DO → Model
         → UserMapper(common-dal)           # MyBatis interface + XML
-          → sys_user 表
+          → user 表
 ```
 
 ## 分层对象约定
@@ -63,7 +63,7 @@ UserController(web)                        # 参数校验（UserParamChecker）�
 1. 初始化数据库（本机 MySQL，root/123456；sql 目录由生成器按 tables 配置每表一个文件）：
 
    ```bash
-   mysql -uroot -p123456 < sql/sys_user.sql
+   mysql -uroot -p123456 < sql/user.sql
    ```
 
 2. 启动：

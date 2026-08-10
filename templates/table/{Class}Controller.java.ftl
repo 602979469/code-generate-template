@@ -10,7 +10,9 @@ import ${basePackage}.web.param.${className}UpdateRequest;
 import ${basePackage}.web.result.${className}Response;
 import ${basePackage}.web.result.${toolPrefix}Result;
 import ${basePackage}.web.template.${toolPrefix}Template;
+import ${basePackage}.common.util.tools.${toolPrefix}Invoker;
 import ${basePackage}.core.model.domain.${className};
+import ${basePackage}.core.model.enums.ErrorCodeEnum;
 import ${basePackage}.core.model.result.PageResult;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,8 +23,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.sql.ParameterMetaData;
 
 /**
  * ${entityName}管理接口。Controller 只做参数校验、DTO 转换与结果包装，不含业务规则；
@@ -84,7 +84,9 @@ public class ${className}Controller {
 
             @Override
             public ${className}Response execute(Long param) {
-                return ${className}Assembler.toResponse(${classNameLower}Manager.get${className}(param));
+                ${className} ${classNameLower} = ${classNameLower}Manager.get${className}(param);
+                ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}, ErrorCodeEnum.RESOURCE_NOT_FOUND, "${entityName}不存在");
+                return ${className}Assembler.toResponse(${classNameLower});
             }
 
             @Override

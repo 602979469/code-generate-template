@@ -1,0 +1,17 @@
+projectPrefix: AiTest
+toolPrefix: AiTest
+groupId: com.jakt
+projectArtifactPrefix: aitest
+jdbc:
+  url: jdbc:mysql://localhost:3306/aitest?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  username: root
+  password: "123456"
+outputDir: /tmp/aitest-tests/neg-07
+tables:
+  - db_table_name: json_test
+    model_name: JsonTest
+    model_comment: JSON测试
+    columns:
+      payload:
+        type: jsonObject
+        javaObject: String

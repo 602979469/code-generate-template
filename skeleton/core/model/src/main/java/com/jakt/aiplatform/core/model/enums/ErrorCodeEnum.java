@@ -26,6 +26,9 @@ public enum ErrorCodeEnum implements ErrorCode {
     /** 删除失败：记录不存在或已被删除。 */
     DELETE_FAILED(30003, "删除失败"),
 
+    /** 枚举值未匹配。 */
+    ENUM_NOT_MATCHED(30004, "枚举值未匹配"),
+
     /** 外部服务调用失败。 */
     EXTERNAL_ERROR(40000, "外部服务调用失败");
 

@@ -1,0 +1,9 @@
+projectPrefix: AiTest
+toolPrefix: AiTest
+groupId: com.jakt
+projectArtifactPrefix: aitest
+outputDir: /tmp/aitest-tests/neg-09
+tables:
+  - db_table_name: sys_dept
+    model_name: Dept
+    model_comment: 部门

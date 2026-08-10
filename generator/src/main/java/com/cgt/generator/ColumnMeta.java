@@ -7,6 +7,8 @@ public final class ColumnMeta {
 
     public String columnName;
     public String propertyName;
+    /** 数据库原始类型（json / varchar / bigint …），用于 json 语义校验。 */
+    public String dbType;
     public String javaType;
     public String comment;
     public boolean pk;
@@ -18,6 +20,27 @@ public final class ColumnMeta {
     /** 字段长度（varchar 等），用于 DTO @Size。 */
     public int length;
     public boolean string;
+
+    /** Model/DTO 层类型（默认与 javaType 一致；枚举/jsonArray/强制转换后不同）。 */
+    public String modelType;
+    /** 是否枚举列。 */
+    public boolean enumColumn;
+    /** 枚举类名（enumColumn 时）。 */
+    public String enumClassName;
+    /** 转换策略：NONE / ENUM / JSON / JSON_ARRAY / JSON_OBJECT / COERCE。 */
+    public String conversion = "NONE";
+    /** jsonArray 元素类型 / jsonObject 目标类型（全限定名或泛型）。 */
+    public String jsonElementType;
+    /** 枚举 code 类型（Integer/String/Long）。 */
+    public String enumCodeType;
+    /** 枚举值（Freemarker 渲染枚举模板用）。 */
+    public java.util.List<GeneratorConfig.EnumValue> enumValues = new java.util.ArrayList<>();
+    /** DO → Model 的转换表达式（右值）。 */
+    public String toModelExpr;
+    /** Model → DO 的转换表达式（右值）。 */
+    public String toDoExpr;
+    /** Model 类型是否为 String（决定 @Size/@NotBlank 与导入）。 */
+    public boolean modelString;
 
     public String getColumnName() {
         return columnName;
@@ -49,5 +72,45 @@ public final class ColumnMeta {
 
     public boolean isRequired() {
         return required;
+    }
+
+    public String getModelType() {
+        return modelType;
+    }
+
+    public boolean isEnumColumn() {
+        return enumColumn;
+    }
+
+    public String getConversion() {
+        return conversion;
+    }
+
+    public String getJsonElementType() {
+        return jsonElementType;
+    }
+
+    public String getToModelExpr() {
+        return toModelExpr;
+    }
+
+    public String getToDoExpr() {
+        return toDoExpr;
+    }
+
+    public boolean isModelString() {
+        return modelString;
+    }
+
+    public String getEnumClassName() {
+        return enumClassName;
+    }
+
+    public String getEnumCodeType() {
+        return enumCodeType;
+    }
+
+    public java.util.List<GeneratorConfig.EnumValue> getEnumValues() {
+        return enumValues;
     }
 }

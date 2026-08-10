@@ -2,6 +2,7 @@ package ${basePackage}.web.param;
 
 import java.time.LocalDateTime;
 <#if hasLocalDate>import java.time.LocalDate;
+</#if><#if hasBigDecimal>import java.math.BigDecimal;
 </#if>import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;

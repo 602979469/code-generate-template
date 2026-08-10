@@ -1,0 +1,26 @@
+# 场景：枚举冲突（首次生成 → 删除 DO → 重跑应整表跳过）
+projectPrefix: DictTest
+toolPrefix: DictTest
+groupId: com.jakt
+projectArtifactPrefix: dicttest
+
+jdbc:
+  url: jdbc:mysql://localhost:3306/aitest?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  username: root
+  password: "123456"
+
+outputDir: /tmp/aitest-tests/dictitem
+
+tables:
+  - db_table_name: dict_item
+    model_name: DictItem
+    model_comment: 字典项
+    columns:
+      dict_type:
+        type: enum
+        enum:
+          className: DictTypeEnum
+          codeType: Integer
+          values:
+            - { code: 0, name: SYSTEM_DICT, desc: 系统字典 }
+            - { code: 1, name: BIZ_DICT, desc: 业务字典 }

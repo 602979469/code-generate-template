@@ -10,17 +10,32 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 表级 CRUD 生成：按配置的 tables 读表结构 -> 渲染 templates/table/*.ftl -> 写入目标项目。
- * 已存在 DO 的表默认跳过（防止覆盖），force_create=true 时强制覆盖。
+ * 每张表独立判定 成功/跳过/强制覆盖；结束时输出执行报告框。
  */
 public final class CrudGenerator {
 
     /** 模板文件名 -> 目标相对路径（{pkg} 为包路径，{Class} 为类名）。 */
     private static final Map<String, String> TEMPLATES = new LinkedHashMap<>();
+
+    /** generateController: false 时不生成的 web 专属模板。 */
+    private static final Set<String> WEB_TEMPLATES = Set.of(
+            "{Class}Controller.java.ftl",
+            "{Class}CreateRequest.java.ftl",
+            "{Class}UpdateRequest.java.ftl",
+            "{Class}QueryRequest.java.ftl",
+            "{Class}Response.java.ftl",
+            "{Class}Assembler.java.ftl",
+            "{Class}ParamChecker.java.ftl"
+    );
 
     static {
         TEMPLATES.put("{Class}DO.java.ftl", "common/dal/src/main/java/{pkg}/common/dal/dataobject/{Class}DO.java");
@@ -51,6 +66,8 @@ public final class CrudGenerator {
         this.cfg = cfg;
         this.freemarker = new Configuration(Configuration.VERSION_2_3_33);
         this.freemarker.setDefaultEncoding("UTF-8");
+        // 数字不输出千分位（如 2000 而非 2,000），避免生成 @Size(max = 2,000) 这类非法 Java 代码
+        this.freemarker.setNumberFormat("0");
         // 只启用 ${} 插值，MyBatis 的 #{...} 原样输出
         this.freemarker.setInterpolationSyntax(Configuration.DOLLAR_INTERPOLATION_SYNTAX);
         this.freemarker.setDirectoryForTemplateLoading(cfg.tableTemplatesDir().toFile());
@@ -63,39 +80,125 @@ public final class CrudGenerator {
             System.out.println("[gen] 未配置 tables，跳过表级生成");
             return;
         }
+        System.out.println("[gen] 开始生成 " + cfg.tables.size() + " 张表");
+
+        int success = 0;
+        int skipped = 0;
+        int warned = 0;
+        List<String> skipReasons = new ArrayList<>();
+        List<String> warnReasons = new ArrayList<>();
+
         for (GeneratorConfig.TableConfig table : cfg.tables) {
             TableMeta meta = DbMetaReader.read(cfg, table);
+            String display = table.example ? table.dbTableName + "(示例)" : table.dbTableName;
 
-            // 跳过已创建的表：以 DO 文件是否存在判断，防止覆盖已经写好的文件
+            // 表级跳过判定：DO 已存在 / 枚举已存在（未 force_create）
+            String skipReason = null;
             Path doPath = cfg.outputDir.resolve("common/dal/src/main/java/" + cfg.packagePath()
                     + "/common/dal/dataobject/" + meta.className + "DO.java");
             if (Files.exists(doPath) && !table.forceCreate) {
-                System.out.println("[gen] 跳过表 " + table.dbTableName + ": 已存在 "
-                        + meta.className + "DO.java（如需覆盖请在配置中设 force_create: true，注意会覆盖手动修改的代码）");
+                skipReason = "DO 已存在";
+            }
+            if (skipReason == null) {
+                String enumFile = firstExistingEnumFile(meta);
+                if (enumFile != null && !table.forceCreate) {
+                    skipReason = "枚举 " + enumFile + " 已存在";
+                }
+            }
+            if (skipReason != null) {
+                System.out.println("[gen] " + display + " 表已存在，跳过（" + skipReason
+                        + "；如需覆盖请配置 force_create: true）");
+                skipped++;
+                skipReasons.add(display + ": " + skipReason);
                 continue;
             }
 
-            Map<String, Object> model = buildModel(meta);
-            for (Map.Entry<String, String> entry : TEMPLATES.entrySet()) {
-                render(meta, entry.getKey(), entry.getValue(), model, table.forceCreate);
+            boolean overwriting = table.forceCreate && (Files.exists(doPath) || firstExistingEnumFile(meta) != null);
+            if (overwriting) {
+                System.out.println("[gen] ⚠️ " + display + " 表存在，强制覆盖（会覆盖手动修改的代码！）");
+                warned++;
+                warnReasons.add(display + ": 已存在，force_create 强制覆盖");
             }
+
+            Map<String, Object> model = buildModel(meta);
+            int fileCount = 0;
+            for (Map.Entry<String, String> entry : TEMPLATES.entrySet()) {
+                if (!table.generateController && WEB_TEMPLATES.contains(entry.getKey())) {
+                    continue;
+                }
+                if (render(meta, entry.getKey(), entry.getValue(), model, table.forceCreate)) {
+                    fileCount++;
+                }
+            }
+            fileCount += renderEnums(meta, table.forceCreate);
             generateTableSql(table, table.forceCreate);
+
+            System.out.println("[gen] " + display + " 表代码生成成功（" + fileCount + " 个文件）");
+            success++;
         }
+
+        if (skipped > 0 || warned > 0) {
+            printReport(success, skipped, warned, skipReasons, warnReasons);
+        } else {
+            System.out.println("[gen] 全部 " + cfg.tables.size() + " 张表生成成功");
+        }
+    }
+
+    private String firstExistingEnumFile(TableMeta meta) {
+        for (ColumnMeta c : meta.columns) {
+            if (c.enumColumn) {
+                Path p = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
+                        + "/core/model/enums/" + c.enumClassName + ".java");
+                if (Files.exists(p)) {
+                    return c.enumClassName;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** 渲染枚举模板，返回生成/覆盖的文件数（已存在且非 force 时跳过）。 */
+    private int renderEnums(TableMeta meta, boolean force) throws IOException, TemplateException {
+        Set<String> seen = new LinkedHashSet<>();
+        int count = 0;
+        for (ColumnMeta c : meta.columns) {
+            if (!c.enumColumn || !seen.add(c.enumClassName)) {
+                continue;
+            }
+            Map<String, Object> enumModel = new LinkedHashMap<>();
+            enumModel.put("basePackage", cfg.basePackage());
+            enumModel.put("entityName", meta.entityName);
+            enumModel.put("enumDesc", c.comment);
+            enumModel.put("enumClassName", c.enumClassName);
+            enumModel.put("enumCodeType", c.enumCodeType);
+            enumModel.put("enumValues", c.enumValues);
+
+            Template template = freemarker.getTemplate("{EnumName}.java.ftl");
+            StringWriter writer = new StringWriter();
+            template.process(enumModel, writer);
+            Path target = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
+                    + "/core/model/enums/" + c.enumClassName + ".java");
+            if (Files.exists(target) && !force) {
+                continue;
+            }
+            Files.createDirectories(target.getParent());
+            Files.writeString(target, writer.toString(), StandardCharsets.UTF_8);
+            count++;
+        }
+        return count;
     }
 
     /**
      * 每张配置的表生成一个独立 SQL 文件（sql/{db_table_name}.sql），内容为该表的 SHOW CREATE TABLE 真实 DDL。
-     * 已存在的文件默认跳过（force_create=true 时覆盖），不会产生重复内容。
+     * 已存在的文件静默跳过（force_create=true 时覆盖）。
      */
     private void generateTableSql(GeneratorConfig.TableConfig table, boolean force) throws IOException {
         String ddl = DbMetaReader.readCreateTable(cfg, table);
         if (ddl == null || ddl.isBlank()) {
-            System.out.println("[gen] 跳过 sql/" + table.dbTableName + ".sql: 读取建表语句失败");
             return;
         }
         Path sqlFile = cfg.outputDir.resolve("sql").resolve(table.dbTableName + ".sql");
         if (Files.exists(sqlFile) && !force) {
-            System.out.println("[gen] 跳过 sql/" + table.dbTableName + ".sql: 已存在（如需覆盖请在配置中设 force_create: true）");
             return;
         }
         Files.createDirectories(sqlFile.getParent());
@@ -104,7 +207,6 @@ public final class CrudGenerator {
                 + "-- ------------------------------------------------------------------\n"
                 + ddl.trim() + (ddl.trim().endsWith(";") ? "" : ";") + "\n";
         Files.writeString(sqlFile, content, StandardCharsets.UTF_8);
-        System.out.println("[gen] 生成 sql/" + table.dbTableName + ".sql");
     }
 
     private Map<String, Object> buildModel(TableMeta meta) {
@@ -130,11 +232,80 @@ public final class CrudGenerator {
         model.put("hasRequiredString", meta.hasRequiredString);
         model.put("hasRequiredNonString", meta.hasRequiredNonString);
         model.put("hasString", meta.hasString);
+        model.put("logicDeleteEnabled", meta.logicDeleteEnabled);
+        model.put("logicDeleteColumn", meta.logicDeleteColumn);
+        model.put("logicDeleteNormal", meta.logicDeleteNormal);
+        model.put("logicDeleteDelete", meta.logicDeleteDelete);
+        model.put("modelImports", buildModelImports(meta));
+        model.put("dtoImports", buildModelImports(meta));
+        model.put("convertorImports", buildConvertorImports(meta));
         return model;
     }
 
-    private void render(TableMeta meta, String templateName, String outputPattern,
-                        Map<String, Object> model, boolean force) throws IOException, TemplateException {
+    private String buildModelImports(TableMeta meta) {
+        StringBuilder sb = new StringBuilder();
+        boolean list = false;
+        boolean map = false;
+        for (ColumnMeta c : meta.columns) {
+            if (c.enumColumn) {
+                sb.append("import ").append(cfg.basePackage()).append(".core.model.enums.").append(c.enumClassName).append(";\n");
+            }
+            if (c.modelType != null && c.modelType.contains("List<")) {
+                list = true;
+            }
+            if (c.modelType != null && c.modelType.contains("Map<")) {
+                map = true;
+            }
+        }
+        if (list) {
+            sb.append("import java.util.List;\n");
+        }
+        if (map) {
+            sb.append("import java.util.Map;\n");
+        }
+        return sb.toString();
+    }
+
+    private String buildConvertorImports(TableMeta meta) {
+        StringBuilder sb = new StringBuilder();
+        boolean convert = false;
+        boolean objectUtil = false;
+        boolean jsonUtil = false;
+        boolean typeRef = false;
+        for (ColumnMeta c : meta.columns) {
+            if (c.enumColumn) {
+                sb.append("import ").append(cfg.basePackage()).append(".core.model.enums.").append(c.enumClassName).append(";\n");
+            }
+            if ("ENUM".equals(c.conversion)) {
+                objectUtil = true;
+            }
+            if ("COERCE".equals(c.conversion)) {
+                convert = true;
+            }
+            if ("JSON_ARRAY".equals(c.conversion) || "JSON_OBJECT".equals(c.conversion)) {
+                jsonUtil = true;
+                if (c.toModelExpr != null && c.toModelExpr.contains("TypeReference")) {
+                    typeRef = true;
+                }
+            }
+        }
+        if (convert) {
+            sb.append("import cn.hutool.core.convert.Convert;\n");
+        }
+        if (objectUtil) {
+            sb.append("import cn.hutool.core.util.ObjectUtil;\n");
+        }
+        if (jsonUtil) {
+            sb.append("import ").append(cfg.basePackage()).append(".common.util.tools.JsonUtil;\n");
+        }
+        if (typeRef) {
+            sb.append("import com.fasterxml.jackson.core.type.TypeReference;\n");
+        }
+        return sb.toString();
+    }
+
+    private boolean render(TableMeta meta, String templateName, String outputPattern,
+                           Map<String, Object> model, boolean force) throws IOException, TemplateException {
         Template template = freemarker.getTemplate(templateName);
         StringWriter writer = new StringWriter();
         template.process(model, writer);
@@ -144,11 +315,25 @@ public final class CrudGenerator {
                 .replace("{Class}", meta.className);
         Path target = cfg.outputDir.resolve(targetRel);
         if (Files.exists(target) && !force) {
-            System.out.println("[gen] 跳过(已存在): " + targetRel);
-            return;
+            return false;
         }
         Files.createDirectories(target.getParent());
         Files.writeString(target, writer.toString(), StandardCharsets.UTF_8);
-        System.out.println("[gen] 生成 " + targetRel);
+        return true;
+    }
+
+    private void printReport(int success, int skipped, int warned,
+                             List<String> skipReasons, List<String> warnReasons) {
+        System.out.println("[gen]");
+        System.out.println("[gen] ┌─────────────────── 执行报告 ───────────────────┐");
+        System.out.println("[gen] │ 成功: " + success + "    跳过: " + skipped + "    警告: " + warned + "                    │");
+        System.out.println("[gen] ├────────────────────────────────────────────────┤");
+        for (String reason : skipReasons) {
+            System.out.println("[gen] │ [跳过] " + reason);
+        }
+        for (String reason : warnReasons) {
+            System.out.println("[gen] │ [警告] " + reason);
+        }
+        System.out.println("[gen] └────────────────────────────────────────────────┘");
     }
 }

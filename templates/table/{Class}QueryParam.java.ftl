@@ -2,6 +2,7 @@ package ${basePackage}.core.model.param;
 
 import java.time.LocalDateTime;
 <#if hasLocalDate>import java.time.LocalDate;
+</#if><#if hasBigDecimal>import java.math.BigDecimal;
 </#if>import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

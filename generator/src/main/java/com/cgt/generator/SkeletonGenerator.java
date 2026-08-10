@@ -33,6 +33,8 @@ public final class SkeletonGenerator {
         }
         Files.createDirectories(cfg.outputDir);
 
+        int generated = 0;
+        int skipped = 0;
         try (Stream<Path> walk = Files.walk(skeleton)) {
             for (Path source : walk.filter(Files::isRegularFile)
                     .filter(p -> !isSkipped(skeleton.relativize(p)))
@@ -41,16 +43,16 @@ public final class SkeletonGenerator {
                 String targetRel = replace(relative.toString().replace('\\', '/'));
                 Path target = cfg.outputDir.resolve(targetRel);
                 if (Files.exists(target)) {
-                    System.out.println("[gen] 跳过(已存在): " + targetRel);
+                    skipped++;
                     continue;
                 }
                 Files.createDirectories(target.getParent());
                 String content = replace(Files.readString(source, StandardCharsets.UTF_8));
                 Files.writeString(target, content, StandardCharsets.UTF_8);
-                System.out.println("[gen] 生成 " + targetRel);
+                generated++;
             }
         }
-        System.out.println("[gen] 项目骨架初始化完成(已存在文件跳过) -> " + cfg.outputDir);
+        System.out.println("[gen] 项目骨架初始化完成（生成 " + generated + " 个文件，跳过 " + skipped + " 个） -> " + cfg.outputDir);
     }
 
     /** 跳过构建产物/IDE 目录（target、.git、.idea、out）。 */

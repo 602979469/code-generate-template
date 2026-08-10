@@ -4,6 +4,22 @@
 # 所有配置都从本文件读取,不再使用命令行参数。
 # ============================================================
 
+# ---------------- 示例代码（可选，默认不开启） ----------------
+
+# 是否生成 example 示例代码：true 时后台创建 example 表（CREATE TABLE IF NOT EXISTS）
+# 并生成完整示例模块（含枚举 / jsonArray / jsonObject / 强制类型转换 / 逻辑删除演示）。
+# 示例代码已存在则跳过（无强制覆盖选项）。
+generateExample: false
+
+# ---------------- 全局逻辑删除（可选，默认不开启） ----------------
+# enable: true 时 column_name / normal_value / delete_value 三项必填（前置校验）；
+# 表级 tables[].logicDelete 可覆盖全局（见下方示例）。
+# globalLogicDelete:
+#   enable: true
+#   column_name: del_flag
+#   normal_value: 0
+#   delete_value: 1
+
 # ---------------- 项目命名(全部必填,无默认值) ----------------
 
 # 项目前缀(驼峰,用于启动类名),如 AiProd -> AiProdApplication
@@ -54,12 +70,31 @@ outputDir: /Users/jakt/IdeaProjects/AiProd
 #                     跳过该表,防止覆盖已经写好的文件
 #                   - true: 强制覆盖该表所有 19 个文件
 #                     ⚠️ 危险: 会覆盖你手动修改过的代码,且不可恢复,谨慎使用!
+#   generateController: 是否生成 Controller 及 web 专属文件(可选,默认 true)
+#                   false = 内部表,只生成 DO/Mapper/Model/QueryParam/Repository/Service/Manager
+#   logicDelete    : 表级逻辑删除配置(可选,覆盖全局 globalLogicDelete),字段同全局
+#   columns        : 列级转换配置(可选,键为数据库列名),未配置的列按默认映射
+#                    列配置项:
+#                      type        : enum / json / jsonArray / jsonObject / Java 类型(如 Integer)
+#                                    - type: enum      -> 枚举转换,配 enum 块
+#                                    - type: json      -> 原始 JSON 字符串
+#                                    - type: jsonArray -> 数组,配 javaObject(可选) 元素类型
+#                                    - type: jsonObject-> 对象,配 javaObject(可选) 目标类型
+#                                    - type: Integer   -> 强制类型转换(风险自负)
+#                      javaObject  : jsonArray 元素类型 / jsonObject 目标类型(全限定类名,可选)
+#                      enum        : 枚举配置(className/codeType/values)
 tables:
-  - db_table_name: sys_dept
-    model_name: Dept
-    model_comment: 部门
+  - db_table_name: sys_job_log
+    model_name: JobLog
+    model_comment: 任务日志
     force_create: false
-  - db_table_name: member
-    model_name: Member
-    model_comment: 会员
-    force_create: false
+    generateController: false
+    columns:
+      user_type:
+        type: enum
+        enum:
+          className: UserTypeEnum
+          codeType: Integer
+          values:
+            - { code: 0, name: SYSTEM_USER, desc: 系统用户 }
+            - { code: 1, name: NORMAL_USER, desc: 普通用户 }

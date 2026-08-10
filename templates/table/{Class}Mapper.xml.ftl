@@ -12,7 +12,9 @@
             <if test="${c.propertyName} != null<#if c.string> and ${c.propertyName} != ''</#if>">
                 AND ${c.columnName} <#if c.queryType == "LIKE">LIKE CONCAT('%', #{${c.propertyName}}, '%')<#else>= #{${c.propertyName}}</#if>
             </if>
-</#list>            <if test="createTimeBegin != null">
+</#list><#if logicDeleteEnabled>
+            AND ${logicDeleteColumn} = ${logicDeleteNormal}
+</#if>            <if test="createTimeBegin != null">
                 AND create_time &gt;= #{createTimeBegin}
             </if>
             <if test="createTimeEnd != null">
@@ -31,6 +33,9 @@
         SELECT <include refid="selectColumns"/>
         FROM ${tableName}
         WHERE id = #{id}
+<#if logicDeleteEnabled>
+        AND ${logicDeleteColumn} = ${logicDeleteNormal}
+</#if>
     </select>
 
     <select id="selectPage" resultType="${basePackage}.common.dal.dataobject.${className}DO">
@@ -64,6 +69,9 @@
         UPDATE ${tableName}
         SET ${updateSet}
         WHERE id = #{id}
+<#if logicDeleteEnabled>
+        AND ${logicDeleteColumn} = ${logicDeleteNormal}
+</#if>
     </update>
 
     <update id="updateByCondition" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
@@ -76,10 +84,21 @@
             </if>
 </#list>        </set>
             WHERE id = #{id}
+<#if logicDeleteEnabled>
+            AND ${logicDeleteColumn} = ${logicDeleteNormal}
+</#if>
         </if>
     </update>
 
+<#if logicDeleteEnabled>
+    <update id="deleteById" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
+        UPDATE ${tableName}
+        SET ${logicDeleteColumn} = ${logicDeleteDelete}
+        WHERE id = #{id} AND ${logicDeleteColumn} = ${logicDeleteNormal}
+    </update>
+<#else>
     <delete id="deleteById">
         DELETE FROM ${tableName} WHERE id = #{id}
     </delete>
+</#if>
 </mapper>

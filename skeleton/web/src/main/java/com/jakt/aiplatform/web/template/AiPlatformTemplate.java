@@ -7,6 +7,7 @@ import com.jakt.aiplatform.core.model.enums.LogFileEnum;
 import com.jakt.aiplatform.core.model.exception.AiPlatformException;
 import com.jakt.aiplatform.core.model.util.AiPlatformLoggerUtil;
 import jakarta.validation.ValidationException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -61,6 +62,10 @@ public final class AiPlatformTemplate {
                     AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "业务异常 接口信息={} errorCode={} message={}",
                             caller, e.getErrorCode().getCode(), e.getMessage());
                     result = AiPlatformResult.fail(e.getErrorCode(), e.getMessage());
+                } catch (DataIntegrityViolationException e) {
+                    AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "数据约束异常 接口信息={} message={}",
+                            caller, e.getMessage());
+                    result = AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "数据不合法：必填字段缺失或违反数据约束");
                 } catch (Exception e) {
                     AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "执行" + caller + "业务逻辑时抛出异常", e);
                     result = AiPlatformResult.fail(ErrorCodeEnum.SYSTEM_ERROR);

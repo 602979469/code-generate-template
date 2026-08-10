@@ -6,19 +6,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 读取 information_schema 表结构，生成类名/字段/查询条件/SQL 片段。
+ * 读取 information_schema 表结构，合并列级配置，生成类名/字段/查询条件/SQL 片段与转换表达式。
  */
 public final class DbMetaReader {
 
     /** BaseDO 强约束字段，不生成到 DO。 */
     private static final Set<String> BASE_COLUMNS = Set.of("id", "create_time", "update_time");
 
-    /** 保留审计字段，后续 BizDO 启用，当前不生成。 */
+    /** 保留审计字段，后续 BizDO 启用，当前不生成（逻辑删除列除外，由 SQL 层管理）。 */
     private static final Set<String> RESERVED = Set.of("create_by", "update_by", "del_flag");
 
     private DbMetaReader() {
@@ -31,8 +33,24 @@ public final class DbMetaReader {
         meta.classNameLower = toLowerCamel(table.modelName);
         meta.entityName = table.modelComment;
 
+        // 原始列名 -> 数据类型（含 id/审计列，用于逻辑删除列存在性与 SQL 字面量引号判断）
+        Map<String, String> rawColumns = new LinkedHashMap<>();
+
         try (Connection conn = DriverManager.getConnection(cfg.jdbcUrl, cfg.jdbcUsername, cfg.jdbcPassword)) {
             String schema = conn.getCatalog();
+            // 表存在性前置校验：避免先落半成品文件再报错
+            try (PreparedStatement existsPs = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = ? AND table_name = ?")) {
+                existsPs.setString(1, schema);
+                existsPs.setString(2, table.dbTableName);
+                try (ResultSet existsRs = existsPs.executeQuery()) {
+                    existsRs.next();
+                    if (existsRs.getInt(1) == 0) {
+                        throw new IllegalStateException("表不存在: " + table.dbTableName
+                                + "（请先建表或在配置中修正 db_table_name）");
+                    }
+                }
+            }
             String sql = """
                     SELECT column_name, data_type, character_maximum_length, column_comment,
                            is_nullable, column_key, column_default, extra
@@ -46,19 +64,14 @@ public final class DbMetaReader {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         ColumnMeta column = parseColumn(rs);
+                        rawColumns.put(column.columnName, rs.getString("data_type"));
                         if (BASE_COLUMNS.contains(column.columnName) || RESERVED.contains(column.columnName)) {
                             continue;
                         }
                         meta.columns.add(column);
-                        if (column.required) {
-                            meta.requiredColumns.add(column);
-                            meta.hasRequiredString |= column.string;
-                            meta.hasRequiredNonString |= !column.string;
-                        }
                         meta.hasLocalDateTime |= "LocalDateTime".equals(column.javaType);
                         meta.hasLocalDate |= "LocalDate".equals(column.javaType);
                         meta.hasBigDecimal |= "BigDecimal".equals(column.javaType);
-                        meta.hasString |= column.string;
                     }
                 }
             }
@@ -68,6 +81,8 @@ public final class DbMetaReader {
             throw new IllegalStateException("读取表结构失败: " + table.dbTableName, e);
         }
 
+        applyColumnConfigs(meta, table);
+        resolveLogicDelete(meta, cfg, table, rawColumns);
         buildSqlFragments(meta);
         return meta;
     }
@@ -92,9 +107,13 @@ public final class DbMetaReader {
         ColumnMeta c = new ColumnMeta();
         c.columnName = rs.getString("column_name");
         c.propertyName = toLowerCamel(c.columnName);
-        c.javaType = mapJavaType(rs.getString("data_type"));
+        c.dbType = rs.getString("data_type");
+        c.javaType = mapJavaType(c.dbType);
         c.string = "String".equals(c.javaType);
-        c.length = rs.getInt("character_maximum_length");
+        // blob/text 等类型 CHARACTER_MAXIMUM_LENGTH 为 4294967295，超出 int 范围；
+        // 超长字段不生成 @Size 校验（length 置 0），仅 varchar/char 等有限长字段使用。
+        long rawLength = rs.getLong("character_maximum_length");
+        c.length = rawLength > Integer.MAX_VALUE ? 0 : (int) rawLength;
         c.comment = rs.getString("column_comment");
         String key = rs.getString("column_key");
         c.pk = "PRI".equals(key);
@@ -114,6 +133,197 @@ public final class DbMetaReader {
         return "EQ";
     }
 
+    /**
+     * 合并列级配置：type 显式声明转换逻辑；未配置的列按默认映射（modelType = javaType，直接赋值）。
+     */
+    private static void applyColumnConfigs(TableMeta meta, GeneratorConfig.TableConfig table) {
+        Set<String> realColumns = meta.columns.stream().map(c -> c.columnName).collect(Collectors.toSet());
+        for (String key : table.columns.keySet()) {
+            if (!realColumns.contains(key)) {
+                throw new IllegalStateException("列 " + key + " 不存在于表 " + table.dbTableName);
+            }
+        }
+
+        meta.hasString = false;
+        meta.hasRequiredString = false;
+        meta.hasRequiredNonString = false;
+
+        for (ColumnMeta c : meta.columns) {
+            GeneratorConfig.ColumnConfig cc = table.columns.get(c.columnName);
+            c.modelType = c.javaType;
+            c.modelString = "String".equals(c.modelType);
+            if (cc != null) {
+                applyColumnConfig(meta, c, cc);
+            }
+            if (c.toModelExpr == null) {
+                c.toModelExpr = "{do}.get" + cap(c.propertyName) + "()";
+            }
+            if (c.toDoExpr == null) {
+                c.toDoExpr = "{model}.get" + cap(c.propertyName) + "()";
+            }
+            meta.hasString |= c.modelString && c.length > 0;
+            if (c.required) {
+                if (c.modelString) {
+                    meta.hasRequiredString = true;
+                } else {
+                    meta.hasRequiredNonString = true;
+                }
+            }
+        }
+    }
+
+    private static void applyColumnConfig(TableMeta meta, ColumnMeta c, GeneratorConfig.ColumnConfig cc) {
+        String type = normalizeJavaType(cc.type);
+        String getter = "get" + cap(c.propertyName) + "()";
+        switch (type) {
+            case "enum" -> applyEnumConfig(meta, c, cc, getter);
+            case "json" -> {
+                c.conversion = "JSON";
+                c.modelType = "String";
+            }
+            case "jsonArray" -> applyJsonArrayConfig(meta, c, cc, getter);
+            case "jsonObject" -> applyJsonObjectConfig(meta, c, cc, getter);
+            default -> applyCoerceConfig(c, type, getter);
+        }
+        c.modelString = "String".equals(c.modelType);
+    }
+
+    private static void applyEnumConfig(TableMeta meta, ColumnMeta c, GeneratorConfig.ColumnConfig cc, String getter) {
+        if (cc.enumConfig == null || cc.enumConfig.values.isEmpty()) {
+            throw new IllegalStateException("列 " + c.columnName + " type: enum 时必须配置 enum 块");
+        }
+        String codeType = cc.enumConfig.codeType;
+        if (codeType == null) {
+            codeType = switch (c.javaType) {
+                case "Integer" -> "Integer";
+                case "Long" -> "Long";
+                default -> "String";
+            };
+        }
+        for (GeneratorConfig.EnumValue v : cc.enumConfig.values) {
+            if ("Integer".equals(codeType)) {
+                try {
+                    Integer.parseInt(v.code);
+                } catch (NumberFormatException e) {
+                    throw new IllegalStateException("列 " + c.columnName + " 枚举 codeType=Integer 但 code 无法解析: " + v.code);
+                }
+            } else if ("Long".equals(codeType)) {
+                try {
+                    Long.parseLong(v.code);
+                } catch (NumberFormatException e) {
+                    throw new IllegalStateException("列 " + c.columnName + " 枚举 codeType=Long 但 code 无法解析: " + v.code);
+                }
+            }
+            v.codeLiteral = "String".equals(codeType)
+                    ? "\"" + v.code.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+                    : "Long".equals(codeType) ? v.code + "L" : v.code;
+        }
+        c.enumColumn = true;
+        c.enumClassName = cc.enumConfig.className;
+        c.enumCodeType = codeType;
+        c.enumValues = cc.enumConfig.values;
+        c.modelType = c.enumClassName;
+        c.conversion = "ENUM";
+        c.toModelExpr = c.enumClassName + ".fromCode({do}." + getter + ")";
+        c.toDoExpr = "ObjectUtil.isNull({model}." + getter + ") ? null : {model}." + getter + ".getCode()";
+    }
+
+    private static void applyJsonArrayConfig(TableMeta meta, ColumnMeta c, GeneratorConfig.ColumnConfig cc, String getter) {
+        if (!"json".equals(c.dbType)) {
+            throw new IllegalStateException("列 " + c.columnName + " type: jsonArray 只适用于 json 类型列");
+        }
+        String element = cc.javaObject == null ? "Object" : cc.javaObject;
+        c.conversion = "JSON_ARRAY";
+        c.jsonElementType = element;
+        c.modelType = "List<" + element + ">";
+        c.toDoExpr = "JsonUtil.toJson({model}." + getter + ")";
+        c.toModelExpr = element.contains("<")
+                ? "JsonUtil.parseArray({do}." + getter + ", new TypeReference<java.util.List<" + element + ">>() {})"
+                : "JsonUtil.parseArray({do}." + getter + ", " + element + ".class)";
+    }
+
+    private static void applyJsonObjectConfig(TableMeta meta, ColumnMeta c, GeneratorConfig.ColumnConfig cc, String getter) {
+        if (!"json".equals(c.dbType)) {
+            throw new IllegalStateException("列 " + c.columnName + " type: jsonObject 只适用于 json 类型列");
+        }
+        if ("String".equals(cc.javaObject)) {
+            throw new IllegalStateException("列 " + c.columnName + " type: jsonObject 需要对象类型(POJO/Map)，原始字符串请用 type: json");
+        }
+        c.conversion = "JSON_OBJECT";
+        c.toDoExpr = "JsonUtil.toJson({model}." + getter + ")";
+        if (cc.javaObject == null) {
+            c.modelType = "Map<String, Object>";
+            c.toModelExpr = "JsonUtil.parseMap({do}." + getter + ")";
+        } else if (cc.javaObject.contains("<")) {
+            c.modelType = cc.javaObject;
+            c.jsonElementType = cc.javaObject;
+            c.toModelExpr = "JsonUtil.parseObject({do}." + getter + ", new TypeReference<" + cc.javaObject + ">() {})";
+        } else {
+            c.modelType = cc.javaObject;
+            c.jsonElementType = cc.javaObject;
+            c.toModelExpr = "JsonUtil.parseObject({do}." + getter + ", " + cc.javaObject + ".class)";
+        }
+    }
+
+    private static void applyCoerceConfig(ColumnMeta c, String type, String getter) {
+        if ("String".equals(type) || "Integer".equals(type) || "Long".equals(type) || "BigDecimal".equals(type)) {
+            if (type.equals(c.javaType)) {
+                // 同类型强制声明，直接赋值
+                c.modelType = type;
+                c.conversion = "NONE";
+                return;
+            }
+            c.modelType = type;
+            c.conversion = "COERCE";
+            c.toModelExpr = convertCall(type) + "({do}." + getter + ")";
+            c.toDoExpr = convertCall(c.javaType) + "({model}." + getter + ")";
+            return;
+        }
+        if (type.equals(c.javaType)) {
+            c.modelType = type;
+            c.conversion = "NONE";
+            return;
+        }
+        throw new IllegalStateException("不支持 " + c.javaType + "→" + type + " 转换（列 " + c.columnName
+                + "），仅支持 Integer/Long/BigDecimal/String 之间的强制转换与枚举/json 转换");
+    }
+
+    private static String convertCall(String type) {
+        return switch (type) {
+            case "Integer" -> "Convert.toInt";
+            case "Long" -> "Convert.toLong";
+            case "BigDecimal" -> "Convert.toBigDecimal";
+            default -> "Convert.toStr";
+        };
+    }
+
+    /**
+     * 解析逻辑删除：表级 > 全局；enable 且列真实存在才启用；字符串列的值加引号。
+     */
+    private static void resolveLogicDelete(TableMeta meta, GeneratorConfig cfg,
+                                           GeneratorConfig.TableConfig table, Map<String, String> rawColumns) {
+        GeneratorConfig.LogicDeleteConfig ld = table.logicDelete != null ? table.logicDelete : cfg.globalLogicDelete;
+        if (ld == null || !ld.enable) {
+            return;
+        }
+        String rawType = rawColumns.get(ld.columnName);
+        if (rawType == null) {
+            return;
+        }
+        boolean stringColumn = "String".equals(mapJavaType(rawType));
+        meta.logicDeleteEnabled = true;
+        meta.logicDeleteColumn = ld.columnName;
+        meta.logicDeleteNormal = sqlLiteral(ld.normalValue, stringColumn);
+        meta.logicDeleteDelete = sqlLiteral(ld.deleteValue, stringColumn);
+    }
+
+    private static String sqlLiteral(String value, boolean quote) {
+        if (value == null) {
+            return "0";
+        }
+        return quote ? "'" + value.replace("'", "''") + "'" : value;
+    }
+
     private static void buildQueryColumns(TableMeta table) {
         addQueryColumn(table, "id", "id", "Long", "主键ID");
         table.queryColumns.addAll(table.columns);
@@ -125,6 +335,8 @@ public final class DbMetaReader {
         c.columnName = columnName;
         c.propertyName = propertyName;
         c.javaType = javaType;
+        c.modelType = javaType;
+        c.modelString = "String".equals(javaType);
         c.comment = comment;
         c.string = "String".equals(javaType);
         c.queryType = queryType(c);
@@ -146,6 +358,21 @@ public final class DbMetaReader {
                 .collect(Collectors.joining(",\n            "));
     }
 
+    /** 原生基础类型归一化为包装类型（int→Integer 等），其余原样返回。 */
+    private static String normalizeJavaType(String type) {
+        return switch (type) {
+            case "int" -> "Integer";
+            case "long" -> "Long";
+            case "boolean" -> "Boolean";
+            case "double" -> "Double";
+            case "float" -> "Float";
+            case "short" -> "Short";
+            case "byte" -> "Byte";
+            case "char" -> "Character";
+            default -> type;
+        };
+    }
+
     private static String mapJavaType(String dataType) {
         return switch (dataType) {
             case "bigint" -> "Long";
@@ -156,8 +383,13 @@ public final class DbMetaReader {
             case "decimal", "numeric" -> "BigDecimal";
             case "double", "float" -> "Double";
             case "bit", "boolean", "bool" -> "Boolean";
+            case "json" -> "String";
             default -> "String";
         };
+    }
+
+    private static String cap(String name) {
+        return name.isEmpty() ? name : Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
     public static String stripPrefix(String tableName, String prefix) {
