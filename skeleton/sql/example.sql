@@ -23,3 +23,30 @@ CREATE TABLE IF NOT EXISTS `example` (
 
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='示例表';
+
+-- ------------------------------------------------------------------
+-- 样例数据（幂等：显式主键 + INSERT IGNORE，重复执行不会重复插入）
+-- 覆盖场景：
+--   id=1 正常行：int 枚举(0 SYSTEM_USER) + varchar 枚举(ENABLED) + jsonObject/jsonArray/json 全有内容
+--   id=2 正常行：int 枚举(1 NORMAL_USER) + varchar 枚举(DISABLED) + 可空字段全空(NULL)
+--   id=3 逻辑删除行：del_flag=1（查询默认过滤，演示逻辑删除）
+--   id=4 正常行：int 枚举(1) + jsonArray 有内容 + jsonObject 为空
+-- ------------------------------------------------------------------
+INSERT IGNORE INTO `example`
+  (`id`, `user_name`, `password`, `nick_name`, `age`, `level`, `login_count`, `balance`,
+   `user_type`, `status`, `profile`, `tags`, `extra`, `del_flag`)
+VALUES
+  (1, 'alice', 'secret-1', '爱丽丝', 18, 2, 5, 99.50, 0, 'ENABLED',
+   '{"nickName":"爱丽丝","email":"alice@example.com"}',
+   '[{"name":"标签A"},{"name":"标签B"}]',
+   '{"source":"seed"}', 0),
+  (2, 'bob', 'secret-2', NULL, NULL, 1, 0, 0.00, 1, 'DISABLED',
+   NULL, NULL, NULL, 0),
+  (3, 'deleted-user', 'secret-3', '已删除用户', 30, 3, 10, 200.00, 0, 'ENABLED',
+   '{"nickName":"已删除用户","email":"del@example.com"}',
+   '[{"name":"旧标签"}]',
+   NULL, 1),
+  (4, 'carol', 'secret-4', '卡罗尔', 25, 1, 8, 66.66, 1, 'ENABLED',
+   NULL,
+   '[{"name":"标签C"},{"name":"标签D"}]',
+   '{"level":"vip"}', 0);

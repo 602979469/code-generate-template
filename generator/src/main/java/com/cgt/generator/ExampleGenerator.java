@@ -19,15 +19,15 @@ import java.util.Map;
 
 /**
  * generateExample 示例流程：
- * 1. 执行 skeleton/sql/example.sql 后台创建 example 表（CREATE TABLE IF NOT EXISTS）；
+ * 1. 执行 skeleton/sql/example.sql 后台创建 example 表（CREATE TABLE IF NOT EXISTS，用户无需自己建表）；
  * 2. 生成 Tag / Profile 两个示例 POJO（jsonArray / jsonObject 绑定用，保证开箱可编译）；
- * 3. 提供内置 example 表配置，注入普通表生成链路。
+ * 3. 提供内置 example 表配置（全量功能：枚举 / json / jsonArray / jsonObject / 强制转换 / 逻辑删除），
+ *    注入普通表生成链路，只生成一个 Example 类。
  */
 public final class ExampleGenerator {
 
-    private static final String TABLE = "example";
-    private static final String MODEL = "Example";
-    private static final String COMMENT = "示例";
+    /** 内置示例表名（generateExample 自动建表并生成，用户 tables 中不可重复配置）。 */
+    public static final String DEMO_TABLE = "example";
 
     private ExampleGenerator() {
     }
@@ -86,9 +86,9 @@ public final class ExampleGenerator {
     /** 内置示例表配置：表结构见 skeleton/sql/example.sql，列配置覆盖全部演示点。 */
     public static GeneratorConfig.TableConfig exampleTableConfig(String basePackage) {
         GeneratorConfig.TableConfig t = new GeneratorConfig.TableConfig();
-        t.dbTableName = TABLE;
-        t.modelName = MODEL;
-        t.modelComment = COMMENT;
+        t.dbTableName = DEMO_TABLE;
+        t.modelName = "Example";
+        t.modelComment = "示例";
         t.example = true;
         t.generateController = true;
 

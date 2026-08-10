@@ -211,14 +211,14 @@ tables:
   - common-dal：`BaseDO`、pom；
   - core-model：`BaseModel`、`BaseEnum`（新增）、`ErrorCodeEnum`（含 `ENUM_NOT_MATCHED`）、`AiPlatformException`、`ErrorCode`、`Result` / `PageResult`、`BizTemplate`、常量、工具类；
   - common-util / common-integration / core-repository / core-service / biz-service-impl / web / bootstrap：全部为通用设施，无业务类。
-- **sql 目录**：`skeleton/sql/example.sql` 内置示例表 DDL（§4 完整版），随项目初始化复制到目标项目 `sql/example.sql`。
+- **sql 目录**：`skeleton/sql/example.sql` 内置示例表 DDL（§4 完整版），随项目初始化复制到目标项目 `sql/` 目录，`gen.sh` 交互时也会复制一份 `example.sql` 到当前目录；`generateExample: true` 时由生成器自动执行建表，**用户首次操作只需配置 jdbc，无需自己准备表与 SQL（也不允许/不需要手工建表）**。
 - skeleton 的 README / AGENTS.md 同步改写：不再以 User 模块讲解分层，改为"示例代码由 `generateExample` 生成"。
 
 #### generateExample 生成流程
 
 `generateExample: true` 时，生成器按固定顺序执行：
 
-1. **后台建表**：连接 jdbc，执行 `skeleton/sql/example.sql`（`CREATE TABLE IF NOT EXISTS`），确保 `example` 表存在且结构满足 §4；已存在则跳过（无强制重建）；
+1. **后台建表**：连接 jdbc，执行 `skeleton/sql/example.sql`（`CREATE TABLE IF NOT EXISTS`），自动创建 `example` 表并写入 4 条样例数据（覆盖不同枚举值、逻辑删除行、可空字段为空、jsonObject/jsonArray 有内容；显式主键 + `INSERT IGNORE`，重复执行幂等）；已存在则跳过（无强制重建）；
 2. **读取元数据**：走标准 DbMetaReader 读表结构；
 3. **按内置列配置生成示例模块**：`example` 表 + 内置配置（见下表），复用普通表生成链路产出 19 个文件 + 2 个枚举 + 2 个示例 POJO（`Tag` / `Profile`，供 jsonArray / jsonObject 绑定，保证开箱可编译）；示例代码已存在则整表跳过（**无强制覆盖选项**，创建过就跳过）；
 4. **输出与报告**：示例表与其他表一起进入执行报告。
@@ -284,12 +284,14 @@ columns:
 
 示例表**强制配置逻辑删除**（§8 行为全链路演示：查询带 `del_flag = 0`、删除变 `UPDATE del_flag = 1`、更新/计数同样带条件）。示例即本设计文档 §4 / §5 的活演示：生成后可直接观察 DO 原始类型 vs Model 枚举类型、Convertor 转换代码、枚举 JSON 序列化对象形态、逻辑删除 SQL。
 
+> 示例**只生成一个 Example 类**，全量功能（枚举 / jsonObject / jsonArray / 强制类型转换 / 逻辑删除）全部收在这个类里，不引入任何测试表。
+
 #### 校验与冲突
 
 - `generateExample: true` 时必须提供 jdbc（建表与读元数据都需要），否则配置校验报错；
 - 建表失败（无写权限等）→ fail-fast 报错退出；
 - 示例表/示例代码已存在 → 跳过（`CREATE TABLE IF NOT EXISTS` + DO/枚举存在即跳过），进报告，无强制覆盖选项；
-- 若用户同时在 `tables` 里配置了 `example` 表：以内置示例配置为准，重复配置报错提示。
+- 若用户同时在 `tables` 里配置了 `example` 表：报错提示，请从 `tables` 移除。
 
 ## 6. 类型映射规则
 

@@ -26,9 +26,9 @@ public final class Main {
             // 2. generateExample：后台建表 + 示例 POJO + 注入内置示例表配置
             if (config.generateExample) {
                 for (GeneratorConfig.TableConfig table : config.tables) {
-                    if ("example".equalsIgnoreCase(table.dbTableName)) {
-                        throw new IllegalArgumentException("tables 中重复配置了 example 表：示例表由 generateExample 内置生成，"
-                                + "请从 tables 中移除 db_table_name: example");
+                    if (ExampleGenerator.DEMO_TABLE.equalsIgnoreCase(table.dbTableName)) {
+                        throw new IllegalArgumentException("tables 中重复配置了 example 表：示例表由 generateExample 内置生成"
+                                + "（自动建表），请从 tables 中移除 db_table_name: example");
                     }
                 }
                 ExampleGenerator.createTable(config);
