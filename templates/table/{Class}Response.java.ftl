@@ -19,6 +19,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ${className}Response extends BaseResult {
+    /** 主键。 */
+    private ${pkJavaType} ${pkPropertyName};
+
 <#list columns as c>
     /** ${c.comment}。 */
     private ${c.modelType} ${c.propertyName};

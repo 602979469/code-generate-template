@@ -24,6 +24,9 @@ public final class ${className}Assembler {
      */
     public static ${className} toModel(${className}CreateRequest request) {
         ${className} ${classNameLower} = new ${className}();
+<#if !pkAuto>
+        ${classNameLower}.set${pkPropertyName?cap_first}(request.get${pkPropertyName?cap_first}());
+</#if>
 <#list columns as c>
         ${classNameLower}.set${c.propertyName?cap_first}(request.get${c.propertyName?cap_first}());
 </#list>        return ${classNameLower};
@@ -36,9 +39,9 @@ public final class ${className}Assembler {
      * @param id      路径中的${entityName} ID
      * @return ${entityName}领域模型
      */
-    public static ${className} toModel(${className}UpdateRequest request, Long id) {
+    public static ${className} toModel(${className}UpdateRequest request, ${pkJavaType} id) {
         ${className} ${classNameLower} = new ${className}();
-        ${classNameLower}.setId(id);
+        ${classNameLower}.set${pkPropertyName?cap_first}(id);
 <#list columns as c>
         ${classNameLower}.set${c.propertyName?cap_first}(request.get${c.propertyName?cap_first}());
 </#list>        return ${classNameLower};
@@ -71,7 +74,7 @@ public final class ${className}Assembler {
      */
     public static ${className}Response toResponse(${className} ${classNameLower}) {
         ${className}Response response = new ${className}Response();
-        response.setId(${classNameLower}.getId());
+        response.set${pkPropertyName?cap_first}(${classNameLower}.get${pkPropertyName?cap_first}());
 <#list columns as c>
         response.set${c.propertyName?cap_first}(${classNameLower}.get${c.propertyName?cap_first}());
 </#list>        response.setCreateTime(${classNameLower}.getCreateTime());

@@ -1,0 +1,27 @@
+# 场景：json 列额外配置 type: Double
+# 对照：当前实现是否报错？（SUPPORTED_TYPES 与转换矩阵均无 Double）
+projectPrefix: AiTest
+toolPrefix: AiTest
+groupId: com.jakt
+projectArtifactPrefix: aitest
+
+jdbc:
+  url: jdbc:mysql://localhost:3306/aitest?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  username: root
+  password: "123456"
+
+outputDir: /tmp/cgt-tests/json-coerce-double
+
+tables:
+  - db_table_name: example
+    model_name: Example
+    model_comment: 示例
+    columns:
+      login_count:
+        type: Integer
+      tags:
+        type: String
+      profile:
+        type: Integer
+      extra:
+        type: Double                # 当前应不支持

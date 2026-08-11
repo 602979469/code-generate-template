@@ -74,23 +74,23 @@ public class ${className}Controller {
      * @return ${entityName}信息
      */
     @GetMapping("/{id}")
-    public ${toolPrefix}Result<${className}Response> get(@PathVariable Long id) {
+    public ${toolPrefix}Result<${className}Response> get(@PathVariable ${pkJavaType} id) {
         return ${toolPrefix}Template.execute(id, new ${toolPrefix}Template.Callback<>() {
 
             @Override
-            public void beforeService(Long param) {
+            public void beforeService(${pkJavaType} param) {
                 ${className}ParamChecker.checkId(param);
             }
 
             @Override
-            public ${className}Response execute(Long param) {
+            public ${className}Response execute(${pkJavaType} param) {
                 ${className} ${classNameLower} = ${classNameLower}Manager.get${className}(param);
                 ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}, ErrorCodeEnum.RESOURCE_NOT_FOUND, "${entityName}不存在");
                 return ${className}Assembler.toResponse(${classNameLower});
             }
 
             @Override
-            public void afterService(Long param, ${className}Response result) {
+            public void afterService(${pkJavaType} param, ${className}Response result) {
             }
         });
     }
@@ -130,7 +130,7 @@ public class ${className}Controller {
      * @return 更新后的${entityName}信息
      */
     @PutMapping("/{id}")
-    public ${toolPrefix}Result<Void> update(@PathVariable Long id, @RequestBody ${className}UpdateRequest request) {
+    public ${toolPrefix}Result<Void> update(@PathVariable ${pkJavaType} id, @RequestBody ${className}UpdateRequest request) {
         return ${toolPrefix}Template.executeWithoutResult(request, new ${toolPrefix}Template.CallbackWithoutResult<>() {
 
             @Override
@@ -153,16 +153,16 @@ public class ${className}Controller {
      * @return 删除结果
      */
     @DeleteMapping("/{id}")
-    public ${toolPrefix}Result<Void> delete(@PathVariable Long id) {
+    public ${toolPrefix}Result<Void> delete(@PathVariable ${pkJavaType} id) {
         return ${toolPrefix}Template.executeWithoutResult(id, new ${toolPrefix}Template.CallbackWithoutResult<>() {
 
             @Override
-            public void beforeService(Long id) {
+            public void beforeService(${pkJavaType} id) {
                 ${className}ParamChecker.checkId(id);
             }
 
             @Override
-            public void execute(Long id) {
+            public void execute(${pkJavaType} id) {
                 ${classNameLower}Manager.delete${className}(id);
             }
         });

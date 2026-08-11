@@ -1,0 +1,48 @@
+# ============================================================
+# AiProd 项目生成配置（白盒功能验证）
+# 用法: ./gen.sh test-configs/generate.aiprod.yaml
+# 覆盖点：
+#   - generateExample: true（示例表全功能：枚举/json/逻辑删除）
+#   - sys_dept  dept_id 主键（非 id 主键）+ del_flag char 逻辑删除（字符串字面量加引号）
+#   - sys_user  user_id 主键（大表多字段回归）
+#   - sys_config config_id int 主键 + generateController: false（内部表 12 文件）
+# ============================================================
+
+projectPrefix: AiProd
+toolPrefix: AiProd
+groupId: com.jakt
+projectArtifactPrefix: aiprod
+
+jdbc:
+  url: jdbc:mysql://localhost:3306/ai_prod?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  username: root
+  password: "123456"
+
+outputDir: /Users/jakt/IdeaProjects/AiProd
+
+generateExample: true
+
+globalLogicDelete:
+  enable: true
+  column_name: del_flag
+  normal_value: 0
+  delete_value: 1
+
+tables:
+  - db_table_name: sys_dept
+    model_name: Dept
+    model_comment: 部门
+    logicDelete:
+      enable: true
+      column_name: del_flag
+      normal_value: "0"
+      delete_value: "2"
+
+  - db_table_name: sys_user
+    model_name: User
+    model_comment: 用户
+
+  - db_table_name: sys_config
+    model_name: Config
+    model_comment: 参数配置
+    generateController: false

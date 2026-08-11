@@ -38,12 +38,12 @@ public class ${className}ServiceImpl implements ${className}Service {
     }
 
     @Override
-    public void delete${className}(Long id) {
+    public void delete${className}(${pkJavaType} id) {
         ${classNameLower}Repository.deleteById(id);
     }
 
     @Override
-    public ${className} get${className}(Long id) {
+    public ${className} get${className}(${pkJavaType} id) {
         return ${classNameLower}Repository.findById(id);
     }
 

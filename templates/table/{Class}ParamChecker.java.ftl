@@ -41,7 +41,7 @@ public class ${className}ParamChecker {
      *
      * @param id ${entityName} ID
      */
-    public static void checkId(Long id) {
+    public static void checkId(${pkJavaType} id) {
         ${toolPrefix}Invoker.throwErrWhenNull(id, ErrorCodeEnum.PARAM_INVALID, "${entityName}ID不能为空");
     }
 

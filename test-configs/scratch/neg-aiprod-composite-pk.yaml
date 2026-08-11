@@ -1,0 +1,16 @@
+projectPrefix: AiProd
+toolPrefix: AiProd
+groupId: com.jakt
+projectArtifactPrefix: aiprod
+
+jdbc:
+  url: jdbc:mysql://localhost:3306/ai_prod?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  username: root
+  password: "123456"
+
+outputDir: /Users/jakt/IdeaProjects/AiProd
+
+tables:
+  - db_table_name: sys_role_menu
+    model_name: RoleMenu
+    model_comment: 角色菜单

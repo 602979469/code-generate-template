@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 public class ${className}QueryParam extends PageParam {
 
-<#list queryColumns as c><#if c.propertyName != "id">
+<#list queryColumns as c>
     /** ${c.comment}。 */
     private ${c.javaType} ${c.propertyName};
 
-</#if></#list>
+</#list>
     /** 创建时间起。 */
     private LocalDateTime createTimeBegin;
 

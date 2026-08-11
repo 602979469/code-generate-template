@@ -32,7 +32,7 @@
     <select id="selectById" resultType="${basePackage}.common.dal.dataobject.${className}DO">
         SELECT <include refid="selectColumns"/>
         FROM ${tableName}
-        WHERE id = #{id}
+        WHERE ${pkColumnName} = #{id}
 <#if logicDeleteEnabled>
         AND ${logicDeleteColumn} = ${logicDeleteNormal}
 </#if>
@@ -42,7 +42,7 @@
         SELECT <include refid="selectColumns"/>
         FROM ${tableName}
         <include refid="queryConditions"/>
-        ORDER BY id DESC
+        ORDER BY ${pkColumnName} DESC
         LIMIT #{offset}, #{pageSize}
     </select>
 
@@ -50,7 +50,7 @@
         SELECT <include refid="selectColumns"/>
         FROM ${tableName}
         <include refid="queryConditions"/>
-        ORDER BY id DESC
+        ORDER BY ${pkColumnName} DESC
     </select>
 
     <select id="countByQuery" resultType="long">
@@ -59,8 +59,8 @@
         <include refid="queryConditions"/>
     </select>
 
-    <insert id="insert" parameterType="${basePackage}.common.dal.dataobject.${className}DO"
-            useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="${basePackage}.common.dal.dataobject.${className}DO"<#if pkAuto>
+            useGeneratedKeys="true" keyProperty="${pkPropertyName}"</#if>>
         INSERT INTO ${tableName} (${insertColumns})
         VALUES (${insertValues})
     </insert>
@@ -68,7 +68,7 @@
     <update id="update" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
         UPDATE ${tableName}
         SET ${updateSet}
-        WHERE id = #{id}
+        WHERE ${pkColumnName} = #{${pkPropertyName}}
 <#if logicDeleteEnabled>
         AND ${logicDeleteColumn} = ${logicDeleteNormal}
 </#if>
@@ -83,7 +83,7 @@
                 ${c.columnName} = #{${c.propertyName}},
             </if>
 </#list>        </set>
-            WHERE id = #{id}
+            WHERE ${pkColumnName} = #{${pkPropertyName}}
 <#if logicDeleteEnabled>
             AND ${logicDeleteColumn} = ${logicDeleteNormal}
 </#if>
@@ -94,11 +94,11 @@
     <update id="deleteById" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
         UPDATE ${tableName}
         SET ${logicDeleteColumn} = ${logicDeleteDelete}
-        WHERE id = #{id} AND ${logicDeleteColumn} = ${logicDeleteNormal}
+        WHERE ${pkColumnName} = #{id} AND ${logicDeleteColumn} = ${logicDeleteNormal}
     </update>
 <#else>
     <delete id="deleteById">
-        DELETE FROM ${tableName} WHERE id = #{id}
+        DELETE FROM ${tableName} WHERE ${pkColumnName} = #{id}
     </delete>
 </#if>
 </mapper>

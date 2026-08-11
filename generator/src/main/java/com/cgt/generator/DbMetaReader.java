@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
  */
 public final class DbMetaReader {
 
-    /** BaseDO 强约束字段，不生成到 DO。 */
-    private static final Set<String> BASE_COLUMNS = Set.of("id", "create_time", "update_time");
+    /** 强约束审计字段：必须存在且不生成到 DO（主键不再假设叫 id，按 PRIMARY KEY 元数据识别）。 */
+    private static final Set<String> BASE_COLUMNS = Set.of("create_time", "update_time");
 
     /** 保留审计字段，后续 BizDO 启用，当前不生成（逻辑删除列除外，由 SQL 层管理）。 */
     private static final Set<String> RESERVED = Set.of("create_by", "update_by", "del_flag");
@@ -65,7 +65,17 @@ public final class DbMetaReader {
                     while (rs.next()) {
                         ColumnMeta column = parseColumn(rs);
                         rawColumns.put(column.columnName, rs.getString("data_type"));
-                        if (BASE_COLUMNS.contains(column.columnName) || RESERVED.contains(column.columnName)) {
+                        if (column.pk) {
+                            if (meta.pkColumnName != null) {
+                                throw new IllegalStateException("表 " + table.dbTableName
+                                        + " 为复合主键，暂不支持（请使用单列主键）");
+                            }
+                            meta.pkColumnName = column.columnName;
+                            meta.pkPropertyName = column.propertyName;
+                            meta.pkJavaType = column.javaType;
+                            meta.pkAuto = column.auto;
+                        }
+                        if (column.pk || BASE_COLUMNS.contains(column.columnName) || RESERVED.contains(column.columnName)) {
                             continue;
                         }
                         meta.columns.add(column);
@@ -74,6 +84,13 @@ public final class DbMetaReader {
                         meta.hasBigDecimal |= "BigDecimal".equals(column.javaType);
                     }
                 }
+            }
+            if (meta.pkColumnName == null) {
+                throw new IllegalStateException("表 " + table.dbTableName + " 缺少主键（请设置单列 PRIMARY KEY）");
+            }
+            if (!rawColumns.containsKey("create_time") || !rawColumns.containsKey("update_time")) {
+                throw new IllegalStateException("表 " + table.dbTableName
+                        + " 缺少强约束字段 create_time / update_time（必须存在且按此命名）");
             }
             // 查询条件 = id + 全部业务字段 + 创建/更新时间，程序员按需删减
             buildQueryColumns(meta);
@@ -170,6 +187,14 @@ public final class DbMetaReader {
                 }
             }
         }
+        // 非自增主键需由前端传入（CreateRequest 必填），计入 DTO 校验注解导入
+        if (!meta.pkAuto) {
+            if ("String".equals(meta.pkJavaType)) {
+                meta.hasRequiredString = true;
+            } else {
+                meta.hasRequiredNonString = true;
+            }
+        }
     }
 
     private static void applyColumnConfig(TableMeta meta, ColumnMeta c, GeneratorConfig.ColumnConfig cc) {
@@ -235,7 +260,7 @@ public final class DbMetaReader {
         String element = cc.javaObject == null ? "Object" : cc.javaObject;
         c.conversion = "JSON_ARRAY";
         c.jsonElementType = element;
-        c.modelType = "List<" + element + ">";
+        c.modelType = "List<" + shortType(element) + ">";
         c.toDoExpr = "JsonUtil.toJson({model}." + getter + ")";
         c.toModelExpr = element.contains("<")
                 ? "JsonUtil.parseArray({do}." + getter + ", new TypeReference<java.util.List<" + element + ">>() {})"
@@ -255,18 +280,23 @@ public final class DbMetaReader {
             c.modelType = "Map<String, Object>";
             c.toModelExpr = "JsonUtil.parseMap({do}." + getter + ")";
         } else if (cc.javaObject.contains("<")) {
-            c.modelType = cc.javaObject;
+            c.modelType = shortType(cc.javaObject);
             c.jsonElementType = cc.javaObject;
             c.toModelExpr = "JsonUtil.parseObject({do}." + getter + ", new TypeReference<" + cc.javaObject + ">() {})";
         } else {
-            c.modelType = cc.javaObject;
+            c.modelType = shortType(cc.javaObject);
             c.jsonElementType = cc.javaObject;
             c.toModelExpr = "JsonUtil.parseObject({do}." + getter + ", " + cc.javaObject + ".class)";
         }
     }
 
+    /** 支持强制转换的 Java 类型（归一化后，与 GeneratorConfig.SUPPORTED_TYPES 一致）。 */
+    private static final Set<String> COERCE_TYPES = Set.of(
+            "Integer", "Long", "BigDecimal", "String",
+            "Double", "Boolean", "Float", "Short", "Byte", "Character");
+
     private static void applyCoerceConfig(ColumnMeta c, String type, String getter) {
-        if ("String".equals(type) || "Integer".equals(type) || "Long".equals(type) || "BigDecimal".equals(type)) {
+        if (COERCE_TYPES.contains(type)) {
             if (type.equals(c.javaType)) {
                 // 同类型强制声明，直接赋值
                 c.modelType = type;
@@ -285,7 +315,7 @@ public final class DbMetaReader {
             return;
         }
         throw new IllegalStateException("不支持 " + c.javaType + "→" + type + " 转换（列 " + c.columnName
-                + "），仅支持 Integer/Long/BigDecimal/String 之间的强制转换与枚举/json 转换");
+                + "），仅支持 Integer/Long/BigDecimal/String/Double/Boolean/Float/Short/Byte/Character 之间的强制转换与枚举/json 转换");
     }
 
     private static String convertCall(String type) {
@@ -293,8 +323,40 @@ public final class DbMetaReader {
             case "Integer" -> "Convert.toInt";
             case "Long" -> "Convert.toLong";
             case "BigDecimal" -> "Convert.toBigDecimal";
+            case "Double" -> "Convert.toDouble";
+            case "Boolean" -> "Convert.toBool";
+            case "Float" -> "Convert.toFloat";
+            case "Short" -> "Convert.toShort";
+            case "Byte" -> "Convert.toByte";
+            case "Character" -> "Convert.toChar";
             default -> "Convert.toStr";
         };
+    }
+
+    /**
+     * 全限定类型 → 声明用简单类型。泛型只缩短外层类型，内层保持原样，避免把内层 FQN 误拆。
+     * 例：com.foo.Tag → Tag；com.foo.Map&lt;String, Object&gt; → Map&lt;String, Object&gt;；
+     * List&lt;com.foo.Bar&gt; 外层无包名则原样返回。
+     */
+    static String shortType(String type) {
+        if (type == null || !type.contains(".")) {
+            return type;
+        }
+        int lt = type.indexOf('<');
+        String head = lt >= 0 ? type.substring(0, lt) : type;
+        String tail = lt >= 0 ? type.substring(lt) : "";
+        int dot = head.lastIndexOf('.');
+        return (dot >= 0 ? head.substring(dot + 1) : head) + tail;
+    }
+
+    /** 从全限定类型提取可 import 的外层类型（泛型只取头部）；无包名时返回 null。 */
+    static String importableType(String type) {
+        if (type == null) {
+            return null;
+        }
+        int lt = type.indexOf('<');
+        String head = lt >= 0 ? type.substring(0, lt) : type;
+        return head.contains(".") ? head : null;
     }
 
     /**
@@ -325,7 +387,7 @@ public final class DbMetaReader {
     }
 
     private static void buildQueryColumns(TableMeta table) {
-        addQueryColumn(table, "id", "id", "Long", "主键ID");
+        addQueryColumn(table, table.pkColumnName, table.pkPropertyName, table.pkJavaType, "主键");
         table.queryColumns.addAll(table.columns);
     }
 
@@ -345,13 +407,20 @@ public final class DbMetaReader {
 
     private static void buildSqlFragments(TableMeta table) {
         List<ColumnMeta> cols = table.columns;
-        table.selectColumns = "id, " + cols.stream().map(c -> c.columnName).collect(Collectors.joining(", "))
+        table.selectColumns = table.pkColumnName + ", " + cols.stream().map(c -> c.columnName).collect(Collectors.joining(", "))
                 + ", create_time, update_time";
 
         // create_time/update_time 由数据库自动维护（DEFAULT CURRENT_TIMESTAMP / ON UPDATE），不参与 INSERT/UPDATE
         List<ColumnMeta> insertCols = cols.stream().filter(c -> !c.auto).collect(Collectors.toList());
-        table.insertColumns = insertCols.stream().map(c -> c.columnName).collect(Collectors.joining(", "));
-        table.insertValues = insertCols.stream().map(c -> "#{" + c.propertyName + "}").collect(Collectors.joining(", "));
+        String insertColsSql = insertCols.stream().map(c -> c.columnName).collect(Collectors.joining(", "));
+        String insertValsSql = insertCols.stream().map(c -> "#{" + c.propertyName + "}").collect(Collectors.joining(", "));
+        // 主键自增由数据库生成；非自增主键（如 varchar）必须显式插入
+        table.insertColumns = table.pkAuto
+                ? insertColsSql
+                : table.pkColumnName + (insertColsSql.isBlank() ? "" : ", " + insertColsSql);
+        table.insertValues = table.pkAuto
+                ? insertValsSql
+                : "#{" + table.pkPropertyName + "}" + (insertValsSql.isBlank() ? "" : ", " + insertValsSql);
 
         List<ColumnMeta> updateCols = cols.stream().filter(c -> !c.auto && !c.pk).collect(Collectors.toList());
         table.updateSet = updateCols.stream().map(c -> c.columnName + " = #{" + c.propertyName + "}")

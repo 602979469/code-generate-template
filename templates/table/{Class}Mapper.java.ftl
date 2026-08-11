@@ -18,7 +18,7 @@ public interface ${className}Mapper {
      * @param id 主键
      * @return ${entityName}数据对象
      */
-    ${className}DO selectById(Long id);
+    ${className}DO selectById(${pkJavaType} id);
 
     /**
      * 分页查询：SQL 含 LIMIT #{offset}, #{pageSize}，配合 countByQuery 组装分页结果。
@@ -75,5 +75,5 @@ public interface ${className}Mapper {
      * @param id 主键
      * @return 受影响行数
      */
-    int deleteById(Long id);
+    int deleteById(${pkJavaType} id);
 }

@@ -42,4 +42,13 @@ public final class TableMeta {
     public String logicDeleteNormal;
     /** 已删除值（SQL 字面量）。 */
     public String logicDeleteDelete;
+
+    /** 主键列名（按 PRIMARY KEY 元数据识别，不假设为 id）。 */
+    public String pkColumnName;
+    /** 主键属性名（user_id -> userId）。 */
+    public String pkPropertyName;
+    /** 主键 Java 类型（bigint->Long、varchar->String...）。 */
+    public String pkJavaType;
+    /** 主键是否自增。 */
+    public boolean pkAuto;
 }

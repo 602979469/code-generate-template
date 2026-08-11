@@ -29,7 +29,7 @@ public class ${className}RepositoryImpl implements ${className}Repository {
     }
 
     @Override
-    public ${className} findById(Long id) {
+    public ${className} findById(${pkJavaType} id) {
         return ${className}Convertor.toModel(${classNameLower}Mapper.selectById(id));
     }
 
@@ -57,19 +57,19 @@ public class ${className}RepositoryImpl implements ${className}Repository {
     public void update(${className} ${classNameLower}) {
         ${className}DO ${classNameLower}DO = ${className}Convertor.toDO(${classNameLower});
         int affected = ${classNameLower}Mapper.update(${classNameLower}DO);
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.update id={} 影响行数={}", ${classNameLower}.getId(), affected);
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.update ${pkPropertyName}={} 影响行数={}", ${classNameLower}.get${pkPropertyName?cap_first}(), affected);
         ${toolPrefix}Invoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.UPDATE_FAILED, "更新失败：记录不存在或已被修改");
     }
 
     @Override
     public void updateByCondition(${className} ${classNameLower}) {
         int affected = ${classNameLower}Mapper.updateByCondition(${className}Convertor.toDO(${classNameLower}));
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.updateByCondition id={} 影响行数={}", ${classNameLower}.getId(), affected);
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.updateByCondition ${pkPropertyName}={} 影响行数={}", ${classNameLower}.get${pkPropertyName?cap_first}(), affected);
         ${toolPrefix}Invoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.UPDATE_FAILED, "更新失败：记录不存在或已被修改");
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(${pkJavaType} id) {
         int affected = ${classNameLower}Mapper.deleteById(id);
         ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.deleteById id={} 影响行数={}", id, affected);
         ${toolPrefix}Invoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.DELETE_FAILED, "删除失败：记录不存在或已被删除");

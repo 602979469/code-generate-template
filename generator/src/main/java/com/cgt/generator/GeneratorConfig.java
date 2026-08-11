@@ -372,7 +372,8 @@ public final class GeneratorConfig {
             // Java 类型覆盖：只允许转换矩阵内的类型；其余按文档口径报"不是支持的值"
             if (!SUPPORTED_TYPES.contains(cc.type)) {
                 throw new IllegalArgumentException("表 " + tableName + " 列 " + columnName
-                        + " type 不是支持的值(enum/json/jsonArray/jsonObject/Integer/Long/BigDecimal/String): " + cc.type);
+                        + " type 不是支持的值(enum/json/jsonArray/jsonObject/Integer/Long/BigDecimal/String/Double"
+                        + "/Boolean/Float/Short/Byte/Character): " + cc.type);
             }
         }
         if (cc.javaObject != null && !cc.javaObject.matches("[A-Za-z_$][A-Za-z0-9_$<>., ]*")) {
@@ -388,6 +389,7 @@ public final class GeneratorConfig {
     /** 支持直接作为 type 的 Java 类型（含归一化前的原生类型）。 */
     private static final java.util.Set<String> SUPPORTED_TYPES = java.util.Set.of(
             "Integer", "Long", "BigDecimal", "String",
+            "Double", "Boolean", "Float", "Short", "Byte", "Character",
             "int", "long", "boolean", "double", "float", "short", "byte", "char");
 
     private static boolean isCollectionType(String type) {

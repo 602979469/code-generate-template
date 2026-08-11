@@ -236,19 +236,36 @@ public final class CrudGenerator {
         model.put("logicDeleteColumn", meta.logicDeleteColumn);
         model.put("logicDeleteNormal", meta.logicDeleteNormal);
         model.put("logicDeleteDelete", meta.logicDeleteDelete);
-        model.put("modelImports", buildModelImports(meta));
-        model.put("dtoImports", buildModelImports(meta));
+        model.put("pkColumnName", meta.pkColumnName);
+        model.put("pkPropertyName", meta.pkPropertyName);
+        model.put("pkJavaType", meta.pkJavaType);
+        model.put("pkAuto", meta.pkAuto);
+        model.put("modelImports", buildModelImports(meta, true));
+        model.put("dtoImports", buildModelImports(meta, false));
         model.put("convertorImports", buildConvertorImports(meta));
         return model;
     }
 
-    private String buildModelImports(TableMeta meta) {
+    /**
+     * Model/DTO 导入块。jsonObject/jsonArray 的 javaObject 按全限定名 import，
+     * 字段声明处使用短类型（见 DbMetaReader.shortType）。
+     *
+     * @param forDomainModel true=领域模型文件（与 javaObject 同包时不写重复 import）；false=DTO（web 包，需要 import）。
+     */
+    private String buildModelImports(TableMeta meta, boolean forDomainModel) {
         StringBuilder sb = new StringBuilder();
         boolean list = false;
         boolean map = false;
+        String domainPackage = cfg.basePackage() + ".core.model.domain";
         for (ColumnMeta c : meta.columns) {
             if (c.enumColumn) {
                 sb.append("import ").append(cfg.basePackage()).append(".core.model.enums.").append(c.enumClassName).append(";\n");
+            }
+            if (c.jsonElementType != null) {
+                String importType = DbMetaReader.importableType(c.jsonElementType);
+                if (importType != null && !(forDomainModel && importType.startsWith(domainPackage + "."))) {
+                    sb.append("import ").append(importType).append(";\n");
+                }
             }
             if (c.modelType != null && c.modelType.contains("List<")) {
                 list = true;

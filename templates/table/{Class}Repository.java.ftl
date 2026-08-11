@@ -17,7 +17,7 @@ public interface ${className}Repository {
      * @param id 主键
      * @return ${entityName}领域模型
      */
-    ${className} findById(Long id);
+    ${className} findById(${pkJavaType} id);
 
     /**
      * 分页查询。
@@ -63,5 +63,5 @@ public interface ${className}Repository {
      *
      * @param id 主键
      */
-    void deleteById(Long id);
+    void deleteById(${pkJavaType} id);
 }

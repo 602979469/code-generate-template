@@ -1,0 +1,15 @@
+# 场景：generateExample 全流程（对照 aiplatform 生成方式），验证 jsonObject/jsonArray 字段
+# 生成时使用 import + 简单类名（Profile / List<Tag>），而不是全限定类名
+generateExample: true
+
+projectPrefix: AiTest
+toolPrefix: AiTest
+groupId: com.jakt
+projectArtifactPrefix: aitest
+
+jdbc:
+  url: jdbc:mysql://localhost:3306/aitest?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  username: root
+  password: "123456"
+
+outputDir: /tmp/cgt-tests/example-import

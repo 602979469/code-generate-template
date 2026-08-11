@@ -26,7 +26,7 @@ public interface ${className}Manager {
      * @param id ${entityName} ID
      * @return ${entityName}
      */
-    ${className} get${className}(Long id);
+    ${className} get${className}(${pkJavaType} id);
 
     /**
      * 分页查询${entityName}
@@ -63,5 +63,5 @@ public interface ${className}Manager {
      *
      * @param id ${entityName} ID
      */
-    void delete${className}(Long id);
+    void delete${className}(${pkJavaType} id);
 }

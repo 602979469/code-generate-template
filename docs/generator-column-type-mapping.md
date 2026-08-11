@@ -323,7 +323,7 @@ columns:
 
 **统一使用三方工具（Hutool），禁止手写判空与类型判断**：
 
-- 数值/字符串互转：`cn.hutool.core.convert.Convert`（`Convert.toInt` / `toLong` / `toBigDecimal` / `toStr`，内部已处理 null）；
+- 数值/字符串互转：`cn.hutool.core.convert.Convert`（`Convert.toInt` / `toLong` / `toBigDecimal` / `toDouble` / `toBool` / `toFloat` / `toShort` / `toByte` / `toChar` / `toStr`，内部已处理 null）；
 - 字符串是否为数字等判断：`cn.hutool.core.util.NumberUtil` / `StrUtil`（如 `NumberUtil.isNumber`、`StrUtil.isNumeric`），禁止手写正则或 `Integer.valueOf` 裸转换；
 - 判空：`ObjectUtil` / `StrUtil` / `CollUtil`，禁止手写 `x == null ? ...` 风格（枚举 `getCode()` 反向除外，见下）。
 
@@ -337,6 +337,9 @@ Convertor 生成代码示例：
 | String | Integer | `Convert.toInt(do.getX())` | `Convert.toStr(model.getX())` |
 | String | Long | `Convert.toLong(do.getX())` | `Convert.toStr(model.getX())` |
 | String | BigDecimal | `Convert.toBigDecimal(do.getX())` | `Convert.toStr(model.getX())` |
+| String | Double | `Convert.toDouble(do.getX())` | `Convert.toStr(model.getX())` |
+| String | Boolean | `Convert.toBool(do.getX())` | `Convert.toStr(model.getX())` |
+| String | Float / Short / Byte / Character | 对应 `Convert.toFloat/toShort/toByte/toChar` | `Convert.toStr(model.getX())` |
 | Integer / String / Long | 枚举 | `XxxEnum.fromCode(do.getX())`（未匹配抛异常） | `ObjectUtil.isNull(model.getX()) ? null : model.getX().getCode()` |
 | String(json) | `List<JavaObject>` | `JsonUtil.parseArray(x, JavaObject.class)` | `JsonUtil.toJson(x)` |
 | String(json) | `List<Object>` | `JsonUtil.parseArray(x)` | `JsonUtil.toJson(x)` |

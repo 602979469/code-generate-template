@@ -16,6 +16,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class ${className}CreateRequest extends BaseRequest {
 
+<#if !pkAuto>
+    /** ${pkPropertyName}。 */
+<#if pkJavaType == "String">    @NotBlank(message = "${pkPropertyName}不能为空")
+<#else>    @NotNull(message = "${pkPropertyName}不能为空")
+</#if>    private ${pkJavaType} ${pkPropertyName};
+
+</#if>
 <#list columns as c>
     /** ${c.comment}。 */
 <#if c.required && c.modelString>    @NotBlank(message = "${c.comment}不能为空")

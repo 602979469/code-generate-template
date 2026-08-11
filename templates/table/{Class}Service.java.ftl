@@ -40,7 +40,7 @@ public interface ${className}Service {
      *
      * @param id ${entityName} ID
      */
-    void delete${className}(Long id);
+    void delete${className}(${pkJavaType} id);
 
     /**
      * 按 ID 获取${entityName}
@@ -48,7 +48,7 @@ public interface ${className}Service {
      * @param id ${entityName} ID
      * @return ${entityName}
      */
-    ${className} get${className}(Long id);
+    ${className} get${className}(${pkJavaType} id);
 
     /**
      * 分页查询${entityName}

@@ -13,6 +13,9 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ${className} extends BaseModel {
+    /** 主键。 */
+    private ${pkJavaType} ${pkPropertyName};
+
 <#list columns as c>
     /** ${c.comment}。 */
     private ${c.modelType} ${c.propertyName};

@@ -24,7 +24,7 @@ public final class ${className}Convertor {
             return null;
         }
         ${className} target = new ${className}();
-        target.setId(source.getId());
+        target.set${pkPropertyName?cap_first}(source.get${pkPropertyName?cap_first}());
 <#list columns as c>
         target.set${c.propertyName?cap_first}(${c.toModelExpr?replace("{do}", "source")});
 </#list>        target.setCreateTime(source.getCreateTime());
@@ -40,7 +40,7 @@ public final class ${className}Convertor {
      */
     public static ${className}DO toDO(${className} source) {
         ${className}DO target = new ${className}DO();
-        target.setId(source.getId());
+        target.set${pkPropertyName?cap_first}(source.get${pkPropertyName?cap_first}());
 <#list columns as c>
         target.set${c.propertyName?cap_first}(${c.toDoExpr?replace("{model}", "source")});
 </#list>        target.setCreateTime(source.getCreateTime());

@@ -28,12 +28,12 @@ public class ${className}ManagerImpl implements ${className}Manager {
     @Override
     public ${className} create${className}(${className} ${classNameLower}) {
         ${className} created = ${classNameLower}Service.create${className}(${classNameLower});
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "创建${entityName}成功 id={}", created.getId());
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "创建${entityName}成功 ${pkPropertyName}={}", created.get${pkPropertyName?cap_first}());
         return created;
     }
 
     @Override
-    public ${className} get${className}(Long id) {
+    public ${className} get${className}(${pkJavaType} id) {
         return ${classNameLower}Service.get${className}(id);
     }
 
@@ -50,17 +50,17 @@ public class ${className}ManagerImpl implements ${className}Manager {
     @Override
     public void update${className}(${className} ${classNameLower}) {
         ${classNameLower}Service.update${className}(${classNameLower});
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "更新${entityName}成功 id={}", ${classNameLower}.getId());
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "更新${entityName}成功 ${pkPropertyName}={}", ${classNameLower}.get${pkPropertyName?cap_first}());
     }
 
     @Override
     public void updateByCondition(${className} ${classNameLower}) {
         ${classNameLower}Service.updateByCondition(${classNameLower});
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "按条件更新${entityName}成功 id={}", ${classNameLower}.getId());
+        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "按条件更新${entityName}成功 ${pkPropertyName}={}", ${classNameLower}.get${pkPropertyName?cap_first}());
     }
 
     @Override
-    public void delete${className}(Long id) {
+    public void delete${className}(${pkJavaType} id) {
         ${classNameLower}Service.delete${className}(id);
         ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "删除${entityName}成功 id={}", id);
     }
