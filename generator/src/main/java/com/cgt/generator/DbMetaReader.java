@@ -31,6 +31,7 @@ public final class DbMetaReader {
         meta.tableName = table.dbTableName;
         meta.className = table.modelName;
         meta.classNameLower = toLowerCamel(table.modelName);
+        // model_comment 缺省时取数据库表注释，仍为空则回退表名
         meta.entityName = table.modelComment;
 
         // 原始列名 -> 数据类型（含 id/审计列，用于逻辑删除列存在性与 SQL 字面量引号判断）
@@ -40,7 +41,8 @@ public final class DbMetaReader {
             String schema = conn.getCatalog();
             // 表存在性前置校验：避免先落半成品文件再报错
             try (PreparedStatement existsPs = conn.prepareStatement(
-                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = ? AND table_name = ?")) {
+                    "SELECT COUNT(*), MAX(table_comment) FROM information_schema.tables "
+                            + "WHERE table_schema = ? AND table_name = ?")) {
                 existsPs.setString(1, schema);
                 existsPs.setString(2, table.dbTableName);
                 try (ResultSet existsRs = existsPs.executeQuery()) {
@@ -49,7 +51,13 @@ public final class DbMetaReader {
                         throw new IllegalStateException("表不存在: " + table.dbTableName
                                 + "（请先建表或在配置中修正 db_table_name）");
                     }
+                    if (meta.entityName == null || meta.entityName.isBlank()) {
+                        meta.entityName = existsRs.getString(2);
+                    }
                 }
+            }
+            if (meta.entityName == null || meta.entityName.isBlank()) {
+                meta.entityName = table.dbTableName;
             }
             String sql = """
                     SELECT column_name, data_type, character_maximum_length, column_comment,

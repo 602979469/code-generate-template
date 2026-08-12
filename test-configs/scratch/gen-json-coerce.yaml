@@ -1,4 +1,4 @@
-# 场景：json 列配置 type: String / Integer（对照 aiplatform generate-example.yaml 的 tables 形状）
+# 场景：json 列配置 type: String / Integer
 # 预期：当前实现应可生成（String=直接映射，Integer=强制转换）
 projectPrefix: AiTest
 toolPrefix: AiTest

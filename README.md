@@ -1,75 +1,72 @@
 # code-generate-template
 
-项目样板 + 表级 CRUD 代码生成器。所有模板、生成器、工程约定都维护在本仓库，业务项目只接收生成结果。
+**项目样板 + 表级 CRUD 代码生成器**：通过一个 YAML 配置文件，初始化可编译的多模块 Spring Boot 工程，并按数据库表生成完整分层的 CRUD 代码。
+
+模板、生成器与工程约定全部维护在本仓库；业务项目只接收生成结果，不依赖本仓库运行。
+
+## 核心能力
+
+- **一键初始化工程**：复制 `skeleton/` 样板并按命名规则替换（启动类名、基础包名、工具类前缀、artifactId），产出 bootstrap / web / biz / core / common 多模块可编译工程，Maven 占位符原样保留；
+- **表级 CRUD 全分层生成**：每张表 19 个文件（DO → Mapper → Model → Repository → Service → Manager → Controller），内部表可裁剪为 12 个数据/业务层文件；
+- **类型映射**：数据库默认映射 + 列级配置（枚举 / json / jsonArray / jsonObject / 强制类型转换），DO 保持数据库原始类型，转换全部收敛在仓储 Convertor；
+- **逻辑删除**：全局 + 表级两级配置，查询/更新自动过滤、删除变 UPDATE；未配置或列不存在自动退化为物理删除；
+- **防覆盖与执行报告**：已存在文件默认跳过（重复运行幂等），`force_create` 强制覆盖并警告，结束时输出成功/跳过/警告报告；
+- **工程约定内置**：统一日志（LoggerUtil）、统一返回体与 Template 封装、参数校验、全局异常分类（404/405/400/业务错误码）；
+- **实测可用**：生成项目编译通过、可启动；CRUD / 枚举 / JSON / 逻辑删除 / 错误码全链路冒烟验证通过。
 
 ## 目录结构
 
 ```
 code-generate-template/
-├── generate.yaml.example  # 生成配置模板（项目命名、jdbc、tables）
-├── gen.sh                 # 命令行入口
-├── generator/             # 生成器本体（Java + Freemarker + MySQL，打成 fat jar）
-├── skeleton/              # 项目初始化样板（新项目 = 复制 + 改名）
-└── templates/table/       # 表级 CRUD 样板（${className}DO / Mapper / XML / ... / Controller）
+├── README.md                       # 项目介绍（本文件）
+├── 代码生成器配置文件使用说明.md     # 配置项与生成行为详解（映射逻辑为重点）
+├── generate.yaml.example           # 生成配置模板（含 3 张示例表，覆盖全部配置项）
+├── gen.sh                          # 命令行入口（首次运行自动构建生成器）
+├── generator/                      # 生成器本体（Java + Freemarker + MySQL，打成 fat jar）
+├── skeleton/                       # 项目初始化样板（新项目 = 复制 + 改名）
+│   └── sql/example.sql             # 示例表 DDL（内部表 / 逻辑删除 / 全功能表）
+└── templates/table/                # 表级 CRUD 模板（DO / Mapper / Model / ... / Controller）
 ```
 
-## 用法
+## 快速开始
+
+前置要求：JDK 17+、Maven 3.9+、可连接的 MySQL。
 
 ```bash
-# 生成/更新配置模板（当前目录 generate.yaml）
+# 1) 生成配置模板（当前目录 generate.yaml + example.sql）
 ./gen.sh
 
-# 按配置文件生成：初始化项目骨架（已存在文件跳过）+ 按 tables 生成 CRUD
+# 2) 建示例表（可选：只跑自己的业务表则跳过）
+mysql -uroot -p < ./example.sql
+
+# 3) 编辑 generate.yaml：项目命名 / jdbc / outputDir / tables
+# 4) 按配置生成：初始化骨架（已存在跳过）+ 按 tables 生成 CRUD
 ./gen.sh ./generate.yaml
 ```
 
-> 所有配置都通过 YAML 配置文件提供（[generate.yaml.example](generate.yaml.example) 为模板），不再使用命令行参数。
-> 项目命名（`projectPrefix`/`toolPrefix`/`groupId`/`projectArtifactPrefix`）全部必填、无默认值；
-> `tables` 为对象列表（`db_table_name` 数据库表名、`model_name` Java 对象名、`model_comment` 中文实体名（用于所有注释拼接）、`force_create` 是否强制覆盖），
-> 已存在 DO 的表默认跳过（防覆盖），`force_create: true` 会覆盖该表所有文件（危险）。
+所有配置项与生成行为的详细说明见 [代码生成器配置文件使用说明.md](代码生成器配置文件使用说明.md)，配置模板见 [generate.yaml.example](generate.yaml.example)。
 
-## 占位符与改名规则
+## 生成产物一览
 
-### 表级模板（Freemarker，`${}` 占位）
-
-| 变量 | 含义 | 示例 |
+| 表类型 | 文件数 | 范围 |
 | --- | --- | --- |
-| `${projectPrefix}` | 项目前缀类名（Application 等） | AiProd |
-| `${toolPrefix}` | 工具类/异常/常量前缀 | AiPlatform |
-| `${basePackage}` | 基础包名（= groupId.artifactId） | com.jakt.aiprod |
-| `${className}` | 表对应的类名（去掉 tablePrefix） | sys_dept -> Dept |
-| `${tableName}` | 表名 | sys_dept |
-| `${entityName}` | 中文实体名（来自 tables 配置的 model_comment），所有 javadoc/日志注释用它拼接 | 用户 |
-| `${columns}` / `${queryColumns}` / `${requiredColumns}` | 字段元信息（由表结构自动解析） | - |
-| `${selectColumns}` / `${insertColumns}` / `${updateSet}` | SQL 片段（自动拼装） | - |
+| 标准表 | 19 | DO / Mapper / Mapper.xml / Model / QueryParam / Repository / RepositoryImpl / Convertor / Service / ServiceImpl / Manager / ManagerImpl / Controller / ParamChecker / CreateRequest / UpdateRequest / QueryRequest / Response / Assembler |
+| 内部表（`generateController: false`） | 12 | 去掉 web 层 7 个文件 |
+| SQL | 每表 1 个 | `sql/{表名}.sql` = `SHOW CREATE TABLE` 真实 DDL |
 
-### 项目初始化（skeleton，token 替换）
+枚举列额外生成枚举类到 `core-model/enums`（`@JsonFormat(OBJECT)`，出参为 JSON 对象，入参支持标量或对象）。
 
-skeleton 是"能编译的真实代码"，生成时按顺序做 token 替换，所以 pom 里的 `${java.version}` 等 Maven 占位符原样保留：
+## 生成规则要点
 
-| token | 替换为 |
-| --- | --- |
-| `AiplatformApplication` | `${projectPrefix}Application` |
-| `com.jakt.aiplatform` | 基础包名 |
-| `AiPlatform` | `${toolPrefix}`（工具类/异常/常量） |
-| `aiplatform` | `${projectArtifactPrefix}` |
-| `com.jakt` | `${groupId}` |
-
-因此 AiPlatformException -> AiProdException、AiPlatformInvoker -> AiProdInvoker 自动完成，异常/工具类互相引用一致。
-
-## 表级生成说明
-
-- 强约束：表必须包含 `id` / `create_time` / `update_time`（对应 BaseDO / BaseModel）；`create_by` / `update_by` / `del_flag` 为保留审计列，当前不生成，后续由 BizDO 扩展。
-- 字段类型映射：bigint->Long、int/tinyint->Integer、varchar/char/text->String、datetime->LocalDateTime、decimal->BigDecimal。
-- 查询条件：当前全部等值 `=`（含 varchar）；LIKE 属于业务需求，无法从建表语句推导，后续按需求/配置扩展。
-- 必填校验：NOT NULL 且无默认值的列在 DTO 上生成 `@NotBlank/@NotNull/@Size` 注解，Controller 的 beforeService 经 `${className}ParamChecker`（web/checker）统一校验。
-- sql 目录跟随 tables 配置：每张配置的表生成一个 `sql/{db_table_name}.sql`，内容为该表的 `SHOW CREATE TABLE` 真实 DDL（已存在的文件默认跳过，`force_create: true` 覆盖）。
-- 输出 19 个文件：DO、Mapper、Mapper.xml、Model、QueryParam、Repository、RepositoryImpl、仓储 Convertor（convertor 包）、Service 接口 + ServiceImpl（core.service / core.service.impl）、Manager 接口 + ManagerImpl（biz.service / biz.service.impl）、Controller（web/controller，走 ${toolPrefix}Template）、ParamChecker（web/checker）、4 个 DTO（web/param、web/result）、web Assembler。
-- 日志统一走 `${toolPrefix}LoggerUtil`（core.model.util），禁止直接使用 LoggerFactory；本项目不生成单元测试（后期独立测试模块 + 真实数据库）。
-- web 层：返回体统一 `${toolPrefix}Result`（web/result）；Controller 用 `${toolPrefix}Template.execute + Callback`（无返回值用 executeWithoutResult + CallbackWithoutResult），参数校验在 beforeService 调 `${className}ParamChecker`。
+- 表强约束：需单列主键（按 PRIMARY KEY 元数据识别，不假设 `id`）+ `create_time` / `update_time`；`create_by` / `update_by` / `del_flag` 为保留审计列，不生成 DO 字段；
+- 支持非自增主键（如 varchar 主键）：CreateRequest 自动必填，INSERT 显式携带主键；
+- `groupId` 决定基础包名与物理包目录（点号转斜杠，如 `com.jakt` → `com/example`）；`outputDir` 决定工程根目录落点；
+- 查询条件：等值 `=`（含 varchar）+ 创建/更新时间区间 + 分页；
+- 必填校验：NOT NULL 且无默认值 → `@NotBlank` / `@NotNull`，varchar 附 `@Size(max)`；
+- 日志统一 `${toolPrefix}LoggerUtil`，禁止直接 `LoggerFactory`；返回体统一 `${toolPrefix}Result`，Controller 走 `${toolPrefix}Template` 封装。
 
 ## 维护约定
 
-- 改生成风格：只改 `templates/table/*.ftl` 或 `skeleton/`，改完跑一次生成 + git diff 评审。
-- 新增好用的工具类/依赖：加进 `skeleton/`，新项目自动继承。
-- 团队统一：模板仓库打 tag，各项目按固定 tag 生成，避免版本漂移。
+- 改生成风格：只改 `templates/table/*.ftl` 或 `skeleton/`，改完跑一次生成 + git diff 评审；
+- 新增通用工具类/依赖：加进 `skeleton/`，新项目自动继承；
+- 团队统一：本仓库打 tag，各业务项目按固定 tag 生成，避免版本漂移。

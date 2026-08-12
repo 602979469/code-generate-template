@@ -23,19 +23,7 @@ public final class Main {
 
             // 1. 初始化项目骨架(已存在文件跳过,不覆盖)
             new SkeletonGenerator(config).run();
-            // 2. generateExample：后台建表 + 示例 POJO + 注入内置示例表配置
-            if (config.generateExample) {
-                for (GeneratorConfig.TableConfig table : config.tables) {
-                    if (ExampleGenerator.DEMO_TABLE.equalsIgnoreCase(table.dbTableName)) {
-                        throw new IllegalArgumentException("tables 中重复配置了 example 表：示例表由 generateExample 内置生成"
-                                + "（自动建表），请从 tables 中移除 db_table_name: example");
-                    }
-                }
-                ExampleGenerator.createTable(config);
-                ExampleGenerator.generatePojos(config);
-                config.tables.add(0, ExampleGenerator.exampleTableConfig(config.basePackage()));
-            }
-            // 3. 按 tables 生成表级 CRUD(每张表独立判定 成功/跳过/强制覆盖)
+            // 2. 按 tables 生成表级 CRUD(每张表独立判定 成功/跳过/强制覆盖)
             new CrudGenerator(config).run();
         } catch (Exception e) {
             System.err.println("[gen] 执行失败: " + e.getMessage());

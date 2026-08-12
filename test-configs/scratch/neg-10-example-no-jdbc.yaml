@@ -1,6 +1,0 @@
-generateExample: true
-projectPrefix: AiTest
-toolPrefix: AiTest
-groupId: com.jakt
-projectArtifactPrefix: aitest
-outputDir: /tmp/aitest-tests/neg-10

@@ -15,9 +15,11 @@ public final class SkeletonGenerator {
     private static final List<String[]> TOKENS = List.of(
             new String[]{"AiplatformApplication", "APP"},
             new String[]{"com.jakt.aiplatform", "PKG"},
+            new String[]{"com/jakt/aiplatform", "PKG_PATH"},
             new String[]{"AiPlatform", "PREFIX"},
             new String[]{"aiplatform", "ARTIFACT"},
-            new String[]{"com.jakt", "GROUP"}
+            new String[]{"com.jakt", "GROUP"},
+            new String[]{"com/jakt", "GROUP_PATH"}
     );
 
     private final GeneratorConfig cfg;
@@ -70,9 +72,12 @@ public final class SkeletonGenerator {
         String out = text;
         out = out.replace(TOKENS.get(0)[0], cfg.projectPrefix + "Application");
         out = out.replace(TOKENS.get(1)[0], cfg.basePackage());
-        out = out.replace(TOKENS.get(2)[0], cfg.toolPrefix);
-        out = out.replace(TOKENS.get(3)[0], cfg.projectArtifactPrefix);
-        out = out.replace(TOKENS.get(4)[0], cfg.groupId);
+        // 目录路径用斜杠分隔，补一组路径版 token，避免 com/jakt 残留在目录结构中
+        out = out.replace(TOKENS.get(2)[0], cfg.packagePath());
+        out = out.replace(TOKENS.get(3)[0], cfg.toolPrefix);
+        out = out.replace(TOKENS.get(4)[0], cfg.projectArtifactPrefix);
+        out = out.replace(TOKENS.get(5)[0], cfg.groupId);
+        out = out.replace(TOKENS.get(6)[0], cfg.groupId.replace('.', '/'));
         return out;
     }
 }

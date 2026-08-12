@@ -28,8 +28,6 @@ public final class GeneratorConfig {
     public String jdbcUsername;
     public String jdbcPassword;
     public Path outputDir;
-    /** 是否生成 example 示例代码（建表 + 完整示例模块），默认 false。 */
-    public boolean generateExample;
     /** 全局逻辑删除配置，null 表示未配置。 */
     public LogicDeleteConfig globalLogicDelete;
     public final List<TableConfig> tables = new ArrayList<>();
@@ -50,8 +48,6 @@ public final class GeneratorConfig {
         public String modelComment;
         public boolean forceCreate;
         public boolean generateController = true;
-        /** 内置示例表（generateExample 注入），仅用于控制台展示。 */
-        public boolean example;
         public LogicDeleteConfig logicDelete;
         public final Map<String, ColumnConfig> columns = new LinkedHashMap<>();
     }
@@ -158,8 +154,6 @@ public final class GeneratorConfig {
         cfg.jdbcPassword = str(jdbc.get("password"));
         }
 
-        Object example = root.get("generateExample");
-        cfg.generateExample = example != null && Boolean.parseBoolean(String.valueOf(example));
         cfg.globalLogicDelete = parseLogicDelete(root.get("globalLogicDelete"));
 
         String outputDir = str(root.get("outputDir"));
@@ -173,7 +167,9 @@ public final class GeneratorConfig {
                 }
                 TableConfig table = new TableConfig();
                 table.dbTableName = str(m.get("db_table_name"));
-                table.modelName = str(m.get("model_name"));
+                // model_name 缺省 = 表名驼峰（如 example_inner -> ExampleInner）
+                String modelName = str(m.get("model_name"));
+                table.modelName = isBlank(modelName) ? DbMetaReader.toUpperCamel(table.dbTableName) : modelName;
                 table.modelComment = str(m.get("model_comment"));
                 Object force = m.get("force_create");
                 table.forceCreate = force != null && Boolean.parseBoolean(String.valueOf(force));
@@ -267,14 +263,9 @@ public final class GeneratorConfig {
         if (!toolPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
             throw new IllegalArgumentException("toolPrefix 需为驼峰字母/数字(如 AiProd)");
         }
-        if (generateExample) {
+        if (!tables.isEmpty()) {
             if (isBlank(jdbcUrl) || isBlank(jdbcUsername)) {
-                throw new IllegalArgumentException("generateExample: true 时需要 jdbc.url / jdbc.username（建表与读表结构都要用）");
-            }
-        }
-        if (!tables.isEmpty() || generateExample) {
-            if (isBlank(jdbcUrl) || isBlank(jdbcUsername)) {
-                throw new IllegalArgumentException("配置了 tables 或 generateExample 但缺少 jdbc.url / jdbc.username");
+                throw new IllegalArgumentException("配置了 tables 但缺少 jdbc.url / jdbc.username");
             }
         }
         validateLogicDelete("globalLogicDelete", globalLogicDelete);
@@ -283,15 +274,8 @@ public final class GeneratorConfig {
                 if (isBlank(table.dbTableName)) {
                     throw new IllegalArgumentException("tables 中存在缺少 db_table_name 的配置项");
                 }
-                if (isBlank(table.modelName)) {
-                    throw new IllegalArgumentException("tables 中存在缺少 model_name 的配置项(表: " + table.dbTableName + ")");
-                }
-                if (!table.modelName.matches("[A-Za-z][A-Za-z0-9]*")) {
+                if (!isBlank(table.modelName) && !table.modelName.matches("[A-Za-z][A-Za-z0-9]*")) {
                     throw new IllegalArgumentException("model_name 需为合法 Java 类名(如 User),当前: " + table.modelName);
-                }
-                if (isBlank(table.modelComment)) {
-                    throw new IllegalArgumentException("tables 中存在缺少 model_comment 的配置项(表: " + table.dbTableName
-                            + ")。model_comment 为中文实体名(如 sys_user -> 用户),生成代码的所有注释都用它拼接");
                 }
                 validateLogicDelete("tables[" + table.dbTableName + "].logicDelete", table.logicDelete);
                 for (Map.Entry<String, ColumnConfig> entry : table.columns.entrySet()) {

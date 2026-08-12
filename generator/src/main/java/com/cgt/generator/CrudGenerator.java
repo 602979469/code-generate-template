@@ -90,7 +90,7 @@ public final class CrudGenerator {
 
         for (GeneratorConfig.TableConfig table : cfg.tables) {
             TableMeta meta = DbMetaReader.read(cfg, table);
-            String display = table.example ? table.dbTableName + "(示例)" : table.dbTableName;
+            String display = table.dbTableName;
 
             // 表级跳过判定：DO 已存在 / 枚举已存在（未 force_create）
             String skipReason = null;

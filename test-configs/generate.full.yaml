@@ -1,9 +1,7 @@
 # ============================================================
-# 主测试场景：全功能配置（generateExample + 枚举 + json + 强制转换 + 逻辑删除 + 内部表）
+# 主测试场景：全功能配置（枚举 + json + 强制转换 + 逻辑删除 + 内部表）
 # 输出到 /Users/jakt/IdeaProjects/aitest
 # ============================================================
-generateExample: true
-
 globalLogicDelete:
   enable: true
   column_name: del_flag
