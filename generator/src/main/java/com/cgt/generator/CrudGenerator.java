@@ -37,6 +37,12 @@ public final class CrudGenerator {
             "{Class}ParamChecker.java.ftl"
     );
 
+    /** generateController: false 时不生成的 biz 专属模板（内部表无对外接口，Manager 无存在必要）。 */
+    private static final Set<String> BIZ_TEMPLATES = Set.of(
+            "{Class}Manager.java.ftl",
+            "{Class}ManagerImpl.java.ftl"
+    );
+
     static {
         TEMPLATES.put("{Class}DO.java.ftl", "common/dal/src/main/java/{pkg}/common/dal/dataobject/{Class}DO.java");
         TEMPLATES.put("{Class}Mapper.java.ftl", "common/dal/src/main/java/{pkg}/common/dal/mapper/{Class}Mapper.java");
@@ -123,7 +129,8 @@ public final class CrudGenerator {
             Map<String, Object> model = buildModel(meta);
             int fileCount = 0;
             for (Map.Entry<String, String> entry : TEMPLATES.entrySet()) {
-                if (!table.generateController && WEB_TEMPLATES.contains(entry.getKey())) {
+                if (!table.generateController
+                        && (WEB_TEMPLATES.contains(entry.getKey()) || BIZ_TEMPLATES.contains(entry.getKey()))) {
                     continue;
                 }
                 if (render(meta, entry.getKey(), entry.getValue(), model, table.forceCreate)) {

@@ -36,6 +36,9 @@ public final class DbMetaReader {
 
         // 原始列名 -> 数据类型（含 id/审计列，用于逻辑删除列存在性与 SQL 字面量引号判断）
         Map<String, String> rawColumns = new LinkedHashMap<>();
+        // 列默认值 / 额外属性（用于强约束校验 create_time/update_time 是否由数据库自动维护）
+        Map<String, String> defaultMap = new LinkedHashMap<>();
+        Map<String, String> extraMap = new LinkedHashMap<>();
 
         try (Connection conn = DriverManager.getConnection(cfg.jdbcUrl, cfg.jdbcUsername, cfg.jdbcPassword)) {
             String schema = conn.getCatalog();
@@ -73,6 +76,8 @@ public final class DbMetaReader {
                     while (rs.next()) {
                         ColumnMeta column = parseColumn(rs);
                         rawColumns.put(column.columnName, rs.getString("data_type"));
+                        defaultMap.put(column.columnName, rs.getString("column_default"));
+                        extraMap.put(column.columnName, rs.getString("extra"));
                         if (column.pk) {
                             if (meta.pkColumnName != null) {
                                 throw new IllegalStateException("表 " + table.dbTableName
@@ -100,6 +105,10 @@ public final class DbMetaReader {
                 throw new IllegalStateException("表 " + table.dbTableName
                         + " 缺少强约束字段 create_time / update_time（必须存在且按此命名）");
             }
+            requireAutoTimestamp(table.dbTableName, "create_time",
+                    defaultMap.get("create_time"), extraMap.get("create_time"), false);
+            requireAutoTimestamp(table.dbTableName, "update_time",
+                    defaultMap.get("update_time"), extraMap.get("update_time"), true);
             // 查询条件 = id + 全部业务字段 + 创建/更新时间，程序员按需删减
             buildQueryColumns(meta);
         } catch (SQLException e) {
@@ -151,6 +160,23 @@ public final class DbMetaReader {
             c.comment = c.columnName;
         }
         return c;
+    }
+
+    /**
+     * 强约束：create_time/update_time 必须由数据库自动维护（生成器 INSERT/UPDATE 不写这两个字段）。
+     * create_time 需 DEFAULT CURRENT_TIMESTAMP；update_time 还需 ON UPDATE CURRENT_TIMESTAMP。
+     */
+    private static void requireAutoTimestamp(String tableName, String column,
+                                             String defaultValue, String extra, boolean requireOnUpdate) {
+        boolean hasDefault = defaultValue != null && defaultValue.toUpperCase().contains("CURRENT_TIMESTAMP");
+        boolean hasOnUpdate = extra != null && extra.toLowerCase().contains("on update");
+        if (!hasDefault || (requireOnUpdate && !hasOnUpdate)) {
+            throw new IllegalStateException("表 " + tableName + " 的 " + column
+                    + " 必须由数据库自动维护（生成器不写该字段）：" + column + " DEFAULT CURRENT_TIMESTAMP"
+                    + (requireOnUpdate ? " ON UPDATE CURRENT_TIMESTAMP" : "")
+                    + "，当前 default=" + (defaultValue == null ? "无" : defaultValue)
+                    + "，extra=" + (extra == null ? "无" : extra));
+        }
     }
 
     private static String queryType(ColumnMeta c) {

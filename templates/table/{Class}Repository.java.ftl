@@ -36,10 +36,18 @@ public interface ${className}Repository {
     List<${className}> findList(${className}QueryParam query);
 
     /**
+     * 按条件查询单条：基于 {@code findList} 的结果集判断，不新增 Mapper 方法。
+     *
+     * @param query 查询参数
+     * @return ${entityName}领域模型；未查询到返回 null，结果多于 1 条抛「查询结果不唯一」
+     */
+    ${className} findOne(${className}QueryParam query);
+
+    /**
      * 新增。
      *
      * @param ${classNameLower} ${entityName}
-     * @return 新增后的${entityName}（主键已回填）
+     * @return 新增后的${entityName}；主键已回填到入参，返回同一对象
      */
     ${className} insert(${className} ${classNameLower});
 

@@ -7,7 +7,7 @@
 ## 核心能力
 
 - **一键初始化工程**：复制 `skeleton/` 样板并按命名规则替换（启动类名、基础包名、工具类前缀、artifactId），产出 bootstrap / web / biz / core / common 多模块可编译工程，Maven 占位符原样保留；
-- **表级 CRUD 全分层生成**：每张表 19 个文件（DO → Mapper → Model → Repository → Service → Manager → Controller），内部表可裁剪为 12 个数据/业务层文件；
+- **表级 CRUD 全分层生成**：每张表 19 个文件（DO → Mapper → Model → Repository → Service → Manager → Controller），内部表可裁剪为 10 个数据/服务层文件；
 - **类型映射**：数据库默认映射 + 列级配置（枚举 / json / jsonArray / jsonObject / 强制类型转换），DO 保持数据库原始类型，转换全部收敛在仓储 Convertor；
 - **逻辑删除**：全局 + 表级两级配置，查询/更新自动过滤、删除变 UPDATE；未配置或列不存在自动退化为物理删除；
 - **防覆盖与执行报告**：已存在文件默认跳过（重复运行幂等），`force_create` 强制覆盖并警告，结束时输出成功/跳过/警告报告；
@@ -51,14 +51,14 @@ mysql -uroot -p < ./example.sql
 | 表类型 | 文件数 | 范围 |
 | --- | --- | --- |
 | 标准表 | 19 | DO / Mapper / Mapper.xml / Model / QueryParam / Repository / RepositoryImpl / Convertor / Service / ServiceImpl / Manager / ManagerImpl / Controller / ParamChecker / CreateRequest / UpdateRequest / QueryRequest / Response / Assembler |
-| 内部表（`generateController: false`） | 12 | 去掉 web 层 7 个文件 |
+| 内部表（`generateController: false`） | 10 | 去掉 web 层 7 个文件和 biz 层 Manager/ManagerImpl |
 | SQL | 每表 1 个 | `sql/{表名}.sql` = `SHOW CREATE TABLE` 真实 DDL |
 
 枚举列额外生成枚举类到 `core-model/enums`（`@JsonFormat(OBJECT)`，出参为 JSON 对象，入参支持标量或对象）。
 
 ## 生成规则要点
 
-- 表强约束：需单列主键（按 PRIMARY KEY 元数据识别，不假设 `id`）+ `create_time` / `update_time`；`create_by` / `update_by` / `del_flag` 为保留审计列，不生成 DO 字段；
+- 表强约束：`create_time` / `update_time` 必须存在且由数据库自动维护（`DEFAULT CURRENT_TIMESTAMP` / `ON UPDATE CURRENT_TIMESTAMP`，生成前强校验，不满足不给生成）；需单列主键（按 PRIMARY KEY 元数据识别，不假设 `id`）；`create_by` / `update_by` / `del_flag` 为保留审计列，不生成 DO 字段；
 - 支持非自增主键（如 varchar 主键）：CreateRequest 自动必填，INSERT 显式携带主键；
 - `groupId` 决定基础包名与物理包目录（点号转斜杠，如 `com.jakt` → `com/example`）；`outputDir` 决定工程根目录落点；
 - 查询条件：等值 `=`（含 varchar）+ 创建/更新时间区间 + 分页；

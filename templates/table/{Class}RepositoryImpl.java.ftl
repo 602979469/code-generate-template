@@ -39,6 +39,14 @@ public class ${className}RepositoryImpl implements ${className}Repository {
     }
 
     @Override
+    public ${className} findOne(${className}QueryParam query) {
+        List<${className}DO> doList = ${classNameLower}Mapper.selectList(query);
+        ${toolPrefix}Invoker.throwErrWhenTrue(doList.size() > 1, ErrorCodeEnum.RESULT_NOT_UNIQUE,
+                "查询结果不唯一：预期 1 条，实际 " + doList.size() + " 条");
+        return doList.isEmpty() ? null : ${className}Convertor.toModel(doList.get(0));
+    }
+
+    @Override
     public PageResult<${className}> findPage(${className}QueryParam query) {
         List<${className}DO> doList = ${classNameLower}Mapper.selectPage(query);
         long total = ${classNameLower}Mapper.countByQuery(query);
@@ -50,7 +58,9 @@ public class ${className}RepositoryImpl implements ${className}Repository {
     public ${className} insert(${className} ${classNameLower}) {
         ${className}DO ${classNameLower}DO = ${className}Convertor.toDO(${classNameLower});
         ${classNameLower}Mapper.insert(${classNameLower}DO);
-        return ${className}Convertor.toModel(${classNameLower}DO);
+        // 主键回填到入参（自增主键由数据库生成），调用方直接使用原对象
+        ${classNameLower}.set${pkPropertyName?cap_first}(${classNameLower}DO.get${pkPropertyName?cap_first}());
+        return ${classNameLower};
     }
 
     @Override

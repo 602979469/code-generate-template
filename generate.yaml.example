@@ -46,7 +46,7 @@ globalLogicDelete:
 #   example_logic  -> logicDelete（逻辑删除，仅默认类型映射，不配置 columns）
 #   example        -> force_create + columns（枚举 / json / jsonArray / jsonObject / 强制类型转换）
 tables:
-  # 1) 内部表: 不提供 Controller，只生成 12 个数据/业务层文件；model_name/model_comment 显式指定
+  # 1) 内部表: 不提供 Controller 与 Manager，只生成 10 个数据/服务层文件；model_name/model_comment 显式指定
   #    force_create: true 演示"内部表 + 强制覆盖"组合（危险：会覆盖该表已存在文件）
   - db_table_name: example_inner
     model_name: ExampleInner

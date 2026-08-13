@@ -25,11 +25,15 @@ if [ $# -eq 0 ]; then
   read -r -p "未提供配置文件,是否在当前目录生成配置模板(generate.yaml + example.sql)? [y/N] " answer
   case "${answer:-N}" in
     y|Y)
-      cp "$DIR/generate.yaml.example" ./generate.yaml
+      if [ -f ./generate.yaml ]; then
+        echo "generate.yaml 已存在，为避免覆盖已定制配置，跳过生成模板。"
+        echo "如需重新生成模板，请先删除或改名 ./generate.yaml 后重试。"
+      else
+        cp "$DIR/generate.yaml.example" ./generate.yaml
+        echo "已生成 ./generate.yaml 全配置模板(含 3 张示例表:内部表/逻辑删除/全量转换)"
+      fi
       cp "$DIR/skeleton/sql/example.sql" ./example.sql
-      echo "已生成:"
-      echo "  ./generate.yaml  全配置模板(含 3 张示例表:内部表/逻辑删除/全量转换)"
-      echo "  ./example.sql    示例表 DDL,先执行建表再运行 ./gen.sh ./generate.yaml"
+      echo "已生成 ./example.sql 示例表 DDL"
       echo "建表与生成:"
       echo "  mysql -uroot -p < ./example.sql"
       echo "  ./gen.sh ./generate.yaml"
