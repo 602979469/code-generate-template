@@ -20,12 +20,12 @@
             <groupId>com.jakt</groupId>
             <artifactId>aiplatform-common-util</artifactId>
         </dependency>
-        <!-- slf4j：AiPlatformTransactionTemplate 统一异常日志 -->
+        <!-- slf4j：AiProdException/CommonException 统一异常日志 -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-        <!-- Hutool：AiPlatformTransactionTemplate 异常解析（ExceptionUtil / EnumUtil） -->
+        <!-- Hutool：异常解析（ExceptionUtil / EnumUtil） -->
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>

@@ -85,6 +85,14 @@ public class AiPlatformExceptionHandler {
         return fail(HttpStatus.OK, ErrorCodeEnum.SYSTEM_ERROR, null);
     }
 
+    /**
+     * 组装失败响应：HTTP 状态码 + 统一返回体。
+     *
+     * @param status   HTTP 状态码
+     * @param errorCode 错误码
+     * @param message  错误消息，可为 null
+     * @return 统一返回体
+     */
     private ResponseEntity<ApiResult<Void>> fail(HttpStatus status, ErrorCodeEnum errorCode, String message) {
         ApiResult<Void> result = message == null
                 ? ApiResult.fail(errorCode)

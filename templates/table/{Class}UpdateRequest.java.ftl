@@ -6,7 +6,9 @@ package ${basePackage}.web.param;
 </#if><#if hasString>import jakarta.validation.constraints.Size;
 </#if><#if hasRequiredString>import jakarta.validation.constraints.NotBlank;
 </#if><#if hasRequiredNonString>import jakarta.validation.constraints.NotNull;
-</#if>${dtoImports}import lombok.Data;
+</#if>
+${dtoImports}
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**

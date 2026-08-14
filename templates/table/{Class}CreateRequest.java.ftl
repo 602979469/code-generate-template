@@ -1,11 +1,14 @@
 package ${basePackage}.web.param;
+
 <#if hasLocalDateTime>import java.time.LocalDateTime;
 </#if><#if hasLocalDate>import java.time.LocalDate;
 </#if><#if hasBigDecimal>import java.math.BigDecimal;
 </#if><#if hasString>import jakarta.validation.constraints.Size;
 </#if><#if hasRequiredString>import jakarta.validation.constraints.NotBlank;
 </#if><#if hasRequiredNonString>import jakarta.validation.constraints.NotNull;
-</#if>${dtoImports}import lombok.Data;
+</#if>
+${dtoImports}
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**

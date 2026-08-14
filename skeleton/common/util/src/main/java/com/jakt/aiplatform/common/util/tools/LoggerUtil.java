@@ -33,6 +33,13 @@ public final class LoggerUtil {
         logger(logFile).error(message, appendThrowable(args, throwable));
     }
 
+    /**
+     * 把 Throwable 追加到日志参数末尾，供 SLF4J 异常栈输出。
+     *
+     * @param args      原日志参数
+     * @param throwable 异常
+     * @return 追加异常后的参数数组
+     */
     private static Object[] appendThrowable(Object[] args, Throwable throwable) {
         Object[] result = new Object[args.length + 1];
         System.arraycopy(args, 0, result, 0, args.length);
@@ -40,6 +47,12 @@ public final class LoggerUtil {
         return result;
     }
 
+    /**
+     * 按日志枚举取缓存 Logger。
+     *
+     * @param logFile 日志枚举
+     * @return Logger
+     */
     private static Logger logger(LogFileEnum logFile) {
         return LOGGER_CACHE.computeIfAbsent(logFile, file -> LoggerFactory.getLogger(file.getFileName()));
     }

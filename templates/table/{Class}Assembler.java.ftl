@@ -1,6 +1,7 @@
 package ${basePackage}.web.assembler;
 
 import cn.hutool.core.util.ObjectUtil;
+import ${basePackage}.common.util.constant.PageConstants;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.param.${className}QueryParam;
 import ${basePackage}.web.param.${className}CreateRequest;
@@ -75,8 +76,8 @@ public final class ${className}Assembler {
         param.setCreateTimeEnd(request.getCreateTimeEnd());
         param.setUpdateTimeBegin(request.getUpdateTimeBegin());
         param.setUpdateTimeEnd(request.getUpdateTimeEnd());
-        param.setPageNum(ObjectUtil.defaultIfNull(request.getPageNum(), 1));
-        param.setPageSize(ObjectUtil.defaultIfNull(request.getPageSize(), 10));
+        param.setPageNum(ObjectUtil.defaultIfNull(request.getPageNum(), PageConstants.DEFAULT_PAGE_NUM));
+        param.setPageSize(ObjectUtil.defaultIfNull(request.getPageSize(), PageConstants.DEFAULT_PAGE_SIZE));
         return param;
     }
 

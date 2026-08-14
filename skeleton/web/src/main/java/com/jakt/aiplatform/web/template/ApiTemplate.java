@@ -148,7 +148,8 @@ public final class ApiTemplate {
         void execute(P param);
 
         /** 业务执行后钩子：留空即可，如需清理/日志在此实现。 */
-        default void afterService(P param){};
+        default void afterService(P param) {
+        }
     }
 
     /** 解析调用方（Controller 类名.方法名），用于接口信息日志。

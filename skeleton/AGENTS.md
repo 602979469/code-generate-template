@@ -351,7 +351,7 @@ BizTemplate.execute(transactionTemplate, callback);
 - 状态/类型字段在 core-model 用枚举；
 - DO 保持数据库原始类型，Model/DTO 用枚举，Convertor 转换；
 - DalQuery 用数据库原始类型；
-- 枚举由生成器生成自己的 `findByCode`；
+- 枚举由生成器生成自己的 `fromCode` / `fromCodeJson`（`@JsonCreator` 反序列化入口）；
 - 生成器配置中枚举列必须同步 `columns.type: enum`；
 - 业务 key、默认值、角色 key、权限码等收口 `core-model.constant`；
 - 错误码集中 `ErrorCodeEnum`；

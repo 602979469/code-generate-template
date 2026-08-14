@@ -13,7 +13,7 @@
 
     <artifactId>aiplatform-common-util</artifactId>
     <name>aiplatform-common-util</name>
-    <description>基础工具：TraceId、RestTemplate、条件断言（AiPlatformInvoker）、线程池等</description>
+    <description>基础工具：TraceId、RestTemplate、条件断言（AssertUtil）、线程池等</description>
 
     <dependencies>
         <!-- Sa-Token core：ClientInfoUtil 经 SaHolder 获取请求客户端信息 -->
@@ -26,7 +26,7 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
         </dependency>
-        <!-- jakarta validation：AiPlatformParamValidator 校验注解使用（实现由 web 的 spring-boot-starter-validation 提供） -->
+        <!-- jakarta validation：ParamValidator 校验注解使用（实现由 web 的 spring-boot-starter-validation 提供） -->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>

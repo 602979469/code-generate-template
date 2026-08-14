@@ -99,7 +99,8 @@ public final class CrudGenerator {
             TableMeta meta = DbMetaReader.read(cfg, table);
             String display = table.dbTableName;
 
-            // 表级跳过判定：DO 已存在 / 枚举已存在（未 force_create）；跳过则继续下一张表
+            // 表级跳过判定：DO 已存在（未 force_create）则整表跳过；
+            // 枚举已存在只跳过该枚举文件（见 renderEnums），表其余文件照常生成
             Path doPath = cfg.outputDir.resolve("common/dal/src/main/java/" + cfg.packagePath()
                     + "/common/dal/dataobject/" + meta.className + "DO.java");
             boolean doExists = Files.exists(doPath);
@@ -108,8 +109,6 @@ public final class CrudGenerator {
             String skipReason = null;
             if (doExists && !table.forceCreate) {
                 skipReason = "DO 已存在";
-            } else if (existingEnum != null && !table.forceCreate) {
-                skipReason = "枚举 " + existingEnum + " 已存在";
             }
             if (skipReason != null) {
                 System.out.println("[gen] " + display + " 表" + skipReason + "，跳过，不覆盖"
@@ -200,6 +199,8 @@ public final class CrudGenerator {
             Path target = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
                     + "/core/model/enums/" + c.enumClassName + ".java");
             if (Files.exists(target) && !force) {
+                System.out.println("[gen]   枚举 " + c.enumClassName + " 已存在，跳过该枚举文件，不覆盖"
+                        + "（如需覆盖请配置 force_create: true）");
                 continue;
             }
             Files.createDirectories(target.getParent());

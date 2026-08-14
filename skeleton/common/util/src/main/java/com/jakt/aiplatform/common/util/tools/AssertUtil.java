@@ -85,6 +85,12 @@ public final class AssertUtil {
         throwErrWhenTrue(!isEmpty(value), errorCode, message);
     }
 
+    /**
+     * 空值判定：null / 空字符串 / 空集合 / 空 Map / 空数组。
+     *
+     * @param value 待判定对象
+     * @return 是否为空
+     */
     private static boolean isEmpty(Object value) {
         if (value == null) {
             return true;

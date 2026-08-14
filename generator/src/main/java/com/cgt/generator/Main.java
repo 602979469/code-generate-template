@@ -104,7 +104,7 @@ public final class Main {
             if (doExists && !table.forceCreate) {
                 state = "将跳过（DO 已存在，不覆盖）";
             } else if (existingEnum != null && !table.forceCreate) {
-                state = "将跳过（枚举 " + existingEnum + " 已存在，不覆盖）";
+                state = "将生成（枚举 " + existingEnum + " 已存在，跳过该枚举文件，不覆盖）";
             } else if (table.forceCreate && (doExists || existingEnum != null)) {
                 state = "将覆盖（force_create：" + (existingEnum != null ? "枚举 " + existingEnum : "DO")
                         + " 已存在，请注意会覆盖手动修改的代码）";
