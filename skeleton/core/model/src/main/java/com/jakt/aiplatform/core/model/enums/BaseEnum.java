@@ -38,7 +38,7 @@ public interface BaseEnum<T> {
                 return e;
             }
         }
-        throw new AiPlatformException(ErrorCodeEnum.ENUM_NOT_MATCHED, "枚举值未匹配: " + code);
+        throw AiPlatformException.ofThrow(ErrorCodeEnum.ENUM_NOT_MATCHED, "枚举值未匹配: " + code);
     }
 
     /**
@@ -58,7 +58,7 @@ public interface BaseEnum<T> {
                 return e;
             }
         }
-        throw new AiPlatformException(ErrorCodeEnum.ENUM_NOT_MATCHED, "枚举值未匹配: " + code);
+        throw AiPlatformException.ofThrow(ErrorCodeEnum.ENUM_NOT_MATCHED, "枚举值未匹配: " + code);
     }
 
     /**
@@ -78,7 +78,7 @@ public interface BaseEnum<T> {
                 return e;
             }
         }
-        throw new AiPlatformException(ErrorCodeEnum.ENUM_NOT_MATCHED, "枚举值未匹配: " + code);
+        throw AiPlatformException.ofThrow(ErrorCodeEnum.ENUM_NOT_MATCHED, "枚举值未匹配: " + code);
     }
 
     /** 枚举是否等于指定 code。 */

@@ -3,7 +3,7 @@ package ${basePackage}.core.model.param;
 import java.time.LocalDateTime;
 <#if hasLocalDate>import java.time.LocalDate;
 </#if><#if hasBigDecimal>import java.math.BigDecimal;
-</#if>import lombok.Data;
+</#if>${modelImports}import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +16,7 @@ public class ${className}QueryParam extends PageParam {
 
 <#list queryColumns as c>
     /** ${c.comment}。 */
-    private ${c.javaType} ${c.propertyName};
+    private ${c.modelType} ${c.propertyName};
 
 </#list>
     /** 创建时间起。 */

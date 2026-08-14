@@ -13,6 +13,12 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ${className} extends BaseModel {
+<#if compositePk>
+<#list columns as c>
+    /** ${c.comment}。 */
+    private ${c.modelType} ${c.propertyName};
+
+</#list><#else>
     /** 主键。 */
     private ${pkJavaType} ${pkPropertyName};
 
@@ -20,4 +26,4 @@ public class ${className} extends BaseModel {
     /** ${c.comment}。 */
     private ${c.modelType} ${c.propertyName};
 
-</#list>}
+</#list></#if>}

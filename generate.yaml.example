@@ -11,7 +11,8 @@
 # 项目前缀（驼峰，用于启动类名），如 AiProd -> AiProdApplication
 projectPrefix: AiProd
 
-# 工具类/异常/常量前缀（驼峰），如 AiProdInvoker/AiProdException/AiProdTemplate
+# 兼容保留（驼峰）：新架构下基础组件已统一为无前缀命名（AssertUtil/ApiTemplate/ApiResult 等），
+# 该前缀仅用于启动类（projectPrefix + Application），不再出现在工具类/返回体/模板上
 toolPrefix: AiProd
 
 # Maven groupId
@@ -37,6 +38,13 @@ globalLogicDelete:
   column_name: del_flag
   normal_value: 0
   delete_value: 1
+
+# ---------------- 全局敏感列（可选） ----------------
+# 默认按列名识别 password/pwd/token/api_key/apikey/secret/salt 并从查询参数/响应/查询条件中剔除
+# （Model/DO/创建请求仍保留，登录校验需要读取）；此处可追加自定义列名。
+sensitive_columns:
+  - id_card
+  - phone
 
 # ---------------- 业务表（每张表只需 db_table_name） ----------------
 # model_name 缺省 = 表名驼峰（如 example_logic -> ExampleLogic）

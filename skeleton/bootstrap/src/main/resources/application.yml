@@ -6,10 +6,36 @@ spring:
     name: aiplatform
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/aiplatform?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${DB_NAME:aiplatform}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: ${MYSQL_USERNAME:root}
     # 仅本地默认值，生产环境必须通过环境变量注入
     password: ${MYSQL_PASSWORD:123456}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 10s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 0
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+# Sa-Token 认证授权配置
+sa-token:
+  token-name: satoken
+  timeout: 86400            # token 有效期（秒）
+  active-timeout: -1        # 无操作过期（-1 不启用）
+  is-concurrent: false      # 同账号是否允许并发登录
+  is-share: false           # 同账号并发登录时是否共享 token
+  token-style: uuid
+  is-log: false
 
 mybatis:
   mapper-locations: classpath*:mapper/*.xml

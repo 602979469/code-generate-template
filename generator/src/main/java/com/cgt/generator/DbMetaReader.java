@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +21,12 @@ public final class DbMetaReader {
     /** 强约束审计字段：必须存在且不生成到 DO（主键不再假设叫 id，按 PRIMARY KEY 元数据识别）。 */
     private static final Set<String> BASE_COLUMNS = Set.of("create_time", "update_time");
 
-    /** 保留审计字段，后续 BizDO 启用，当前不生成（逻辑删除列除外，由 SQL 层管理）。 */
-    private static final Set<String> RESERVED = Set.of("create_by", "update_by", "del_flag");
+    /** 保留列：仅逻辑删除列由 SQL 层管理，不生成到 DO/Model；create_by/update_by 按普通业务列生成。 */
+    private static final Set<String> RESERVED = Set.of("del_flag");
+
+    /** 默认敏感列名：不进查询参数/响应/查询条件（登录校验需要读取的列仍保留在 Model/DO/创建请求）。 */
+    private static final Set<String> SENSITIVE_COLUMNS = Set.of(
+            "password", "pwd", "passwd", "token", "api_key", "apikey", "secret", "salt");
 
     private DbMetaReader() {
     }
@@ -69,6 +74,7 @@ public final class DbMetaReader {
                     WHERE table_schema = ? AND table_name = ?
                     ORDER BY ordinal_position
                     """;
+            List<ColumnMeta> allColumns = new ArrayList<>();
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1, schema);
                 ps.setString(2, table.dbTableName);
@@ -79,43 +85,51 @@ public final class DbMetaReader {
                         defaultMap.put(column.columnName, rs.getString("column_default"));
                         extraMap.put(column.columnName, rs.getString("extra"));
                         if (column.pk) {
-                            if (meta.pkColumnName != null) {
-                                throw new IllegalStateException("表 " + table.dbTableName
-                                        + " 为复合主键，暂不支持（请使用单列主键）");
+                            meta.pkColumns.add(column);
+                            if (meta.pkColumnName == null) {
+                                meta.pkColumnName = column.columnName;
+                                meta.pkPropertyName = column.propertyName;
+                                meta.pkJavaType = column.javaType;
+                                meta.pkAuto = column.auto;
                             }
-                            meta.pkColumnName = column.columnName;
-                            meta.pkPropertyName = column.propertyName;
-                            meta.pkJavaType = column.javaType;
-                            meta.pkAuto = column.auto;
                         }
-                        if (column.pk || BASE_COLUMNS.contains(column.columnName) || RESERVED.contains(column.columnName)) {
-                            continue;
-                        }
-                        meta.columns.add(column);
-                        meta.hasLocalDateTime |= "LocalDateTime".equals(column.javaType);
-                        meta.hasLocalDate |= "LocalDate".equals(column.javaType);
-                        meta.hasBigDecimal |= "BigDecimal".equals(column.javaType);
+                        allColumns.add(column);
                     }
                 }
             }
-            if (meta.pkColumnName == null) {
-                throw new IllegalStateException("表 " + table.dbTableName + " 缺少主键（请设置单列 PRIMARY KEY）");
+            if (meta.pkColumns.isEmpty()) {
+                throw new IllegalStateException("表 " + table.dbTableName + " 缺少主键（请设置 PRIMARY KEY）");
+            }
+            meta.compositePk = meta.pkColumns.size() > 1;
+            // 单主键：主键由 pkPropertyName 单独渲染，不进 columns；
+            // 复合主键（关联表模式）：主键列全部进入 columns，按原始列序参与生成
+            for (ColumnMeta column : allColumns) {
+                if (column.pk && !meta.compositePk) {
+                    continue;
+                }
+                if (BASE_COLUMNS.contains(column.columnName) || RESERVED.contains(column.columnName)) {
+                    continue;
+                }
+                meta.columns.add(column);
+                meta.hasLocalDateTime |= "LocalDateTime".equals(column.javaType);
+                meta.hasLocalDate |= "LocalDate".equals(column.javaType);
+                meta.hasBigDecimal |= "BigDecimal".equals(column.javaType);
             }
             if (!rawColumns.containsKey("create_time") || !rawColumns.containsKey("update_time")) {
                 throw new IllegalStateException("表 " + table.dbTableName
-                        + " 缺少强约束字段 create_time / update_time（必须存在且按此命名）");
+                        + " 缺少规范字段 create_time / update_time（必须存在且按此命名，用于审计时间）");
             }
-            requireAutoTimestamp(table.dbTableName, "create_time",
-                    defaultMap.get("create_time"), extraMap.get("create_time"), false);
-            requireAutoTimestamp(table.dbTableName, "update_time",
-                    defaultMap.get("update_time"), extraMap.get("update_time"), true);
-            // 查询条件 = id + 全部业务字段 + 创建/更新时间，程序员按需删减
-            buildQueryColumns(meta);
+            // 时间列是否由数据库自动维护：是则生成代码不写这两列，否则 INSERT/UPDATE 显式 NOW()
+            meta.createTimeAuto = isAutoTimestamp(defaultMap.get("create_time"), extraMap.get("create_time"), false);
+            meta.updateTimeAuto = isAutoTimestamp(defaultMap.get("update_time"), extraMap.get("update_time"), true);
         } catch (SQLException e) {
             throw new IllegalStateException("读取表结构失败: " + table.dbTableName, e);
         }
 
-        applyColumnConfigs(meta, table);
+        applyColumnConfigs(meta, cfg, table);
+        // 查询条件 = 主键 + 全部业务字段 + 创建/更新时间；必须在 applyColumnConfigs 之后，
+        // 因为敏感列标记在列级配置合并阶段才落定（敏感列不进查询参数/查询条件/响应）
+        buildQueryColumns(meta);
         resolveLogicDelete(meta, cfg, table, rawColumns);
         buildSqlFragments(meta);
         return meta;
@@ -163,20 +177,14 @@ public final class DbMetaReader {
     }
 
     /**
-     * 强约束：create_time/update_time 必须由数据库自动维护（生成器 INSERT/UPDATE 不写这两个字段）。
-     * create_time 需 DEFAULT CURRENT_TIMESTAMP；update_time 还需 ON UPDATE CURRENT_TIMESTAMP。
+     * 时间列是否由数据库自动维护：create_time 需 DEFAULT CURRENT_TIMESTAMP；
+     * update_time 需 DEFAULT CURRENT_TIMESTAMP 且 ON UPDATE CURRENT_TIMESTAMP。
+     * 不满足时生成代码在 INSERT/UPDATE 中显式写 NOW()，不阻塞生成。
      */
-    private static void requireAutoTimestamp(String tableName, String column,
-                                             String defaultValue, String extra, boolean requireOnUpdate) {
+    private static boolean isAutoTimestamp(String defaultValue, String extra, boolean requireOnUpdate) {
         boolean hasDefault = defaultValue != null && defaultValue.toUpperCase().contains("CURRENT_TIMESTAMP");
         boolean hasOnUpdate = extra != null && extra.toLowerCase().contains("on update");
-        if (!hasDefault || (requireOnUpdate && !hasOnUpdate)) {
-            throw new IllegalStateException("表 " + tableName + " 的 " + column
-                    + " 必须由数据库自动维护（生成器不写该字段）：" + column + " DEFAULT CURRENT_TIMESTAMP"
-                    + (requireOnUpdate ? " ON UPDATE CURRENT_TIMESTAMP" : "")
-                    + "，当前 default=" + (defaultValue == null ? "无" : defaultValue)
-                    + "，extra=" + (extra == null ? "无" : extra));
-        }
+        return hasDefault && (!requireOnUpdate || hasOnUpdate);
     }
 
     private static String queryType(ColumnMeta c) {
@@ -187,7 +195,8 @@ public final class DbMetaReader {
     /**
      * 合并列级配置：type 显式声明转换逻辑；未配置的列按默认映射（modelType = javaType，直接赋值）。
      */
-    private static void applyColumnConfigs(TableMeta meta, GeneratorConfig.TableConfig table) {
+    private static void applyColumnConfigs(TableMeta meta, GeneratorConfig cfg,
+                                           GeneratorConfig.TableConfig table) {
         Set<String> realColumns = meta.columns.stream().map(c -> c.columnName).collect(Collectors.toSet());
         for (String key : table.columns.keySet()) {
             if (!realColumns.contains(key)) {
@@ -206,11 +215,17 @@ public final class DbMetaReader {
             if (cc != null) {
                 applyColumnConfig(meta, c, cc);
             }
+            c.sensitive = (cc != null && cc.sensitive)
+                    || cfg.sensitiveColumns.contains(c.columnName)
+                    || SENSITIVE_COLUMNS.contains(c.columnName);
             if (c.toModelExpr == null) {
                 c.toModelExpr = "{do}.get" + cap(c.propertyName) + "()";
             }
             if (c.toDoExpr == null) {
                 c.toDoExpr = "{model}.get" + cap(c.propertyName) + "()";
+            }
+            if (c.toDalExpr == null) {
+                c.toDalExpr = "{query}.get" + cap(c.propertyName) + "()";
             }
             meta.hasString |= c.modelString && c.length > 0;
             if (c.required) {
@@ -285,6 +300,7 @@ public final class DbMetaReader {
         c.conversion = "ENUM";
         c.toModelExpr = c.enumClassName + ".fromCode({do}." + getter + ")";
         c.toDoExpr = "ObjectUtil.isNull({model}." + getter + ") ? null : {model}." + getter + ".getCode()";
+        c.toDalExpr = "ObjectUtil.isNull({query}." + getter + ") ? null : {query}." + getter + ".getCode()";
     }
 
     private static void applyJsonArrayConfig(TableMeta meta, ColumnMeta c, GeneratorConfig.ColumnConfig cc, String getter) {
@@ -404,6 +420,8 @@ public final class DbMetaReader {
         }
         String rawType = rawColumns.get(ld.columnName);
         if (rawType == null) {
+            System.err.println("[gen] 警告: 表 " + table.dbTableName + " 配置了 logicDelete（列 " + ld.columnName
+                    + "），但表中不存在该列，已退化为物理删除。请确认建表脚本包含该列。");
             return;
         }
         boolean stringColumn = "String".equals(mapJavaType(rawType));
@@ -421,8 +439,13 @@ public final class DbMetaReader {
     }
 
     private static void buildQueryColumns(TableMeta table) {
-        addQueryColumn(table, table.pkColumnName, table.pkPropertyName, table.pkJavaType, "主键");
-        table.queryColumns.addAll(table.columns);
+        // 单主键：主键列不在 columns 中，单独补进查询条件；
+        // 复合主键：主键列已进入 columns，直接复用即可，避免重复
+        if (!table.compositePk) {
+            addQueryColumn(table, table.pkColumnName, table.pkPropertyName, table.pkJavaType, "主键");
+        }
+        // 敏感列不进查询参数/查询条件/响应（password/token 等按默认名单或显式配置剔除）
+        table.columns.stream().filter(c -> !c.sensitive).forEach(table.queryColumns::add);
     }
 
     private static void addQueryColumn(TableMeta table, String columnName, String propertyName,
@@ -436,29 +459,53 @@ public final class DbMetaReader {
         c.comment = comment;
         c.string = "String".equals(javaType);
         c.queryType = queryType(c);
+        c.toDalExpr = "{query}.get" + cap(c.propertyName) + "()";
         table.queryColumns.add(c);
     }
 
     private static void buildSqlFragments(TableMeta table) {
         List<ColumnMeta> cols = table.columns;
-        table.selectColumns = table.pkColumnName + ", " + cols.stream().map(c -> c.columnName).collect(Collectors.joining(", "))
-                + ", create_time, update_time";
+        if (table.compositePk) {
+            // 关联表模式：全列（含主键列）+ 审计时间，无单独主键列
+            table.selectColumns = cols.stream().map(c -> c.columnName).collect(Collectors.joining(", "))
+                    + ", create_time, update_time";
+        } else {
+            table.selectColumns = table.pkColumnName + ", "
+                    + cols.stream().map(c -> c.columnName).collect(Collectors.joining(", "))
+                    + ", create_time, update_time";
+        }
 
-        // create_time/update_time 由数据库自动维护（DEFAULT CURRENT_TIMESTAMP / ON UPDATE），不参与 INSERT/UPDATE
         List<ColumnMeta> insertCols = cols.stream().filter(c -> !c.auto).collect(Collectors.toList());
         String insertColsSql = insertCols.stream().map(c -> c.columnName).collect(Collectors.joining(", "));
         String insertValsSql = insertCols.stream().map(c -> "#{" + c.propertyName + "}").collect(Collectors.joining(", "));
         // 主键自增由数据库生成；非自增主键（如 varchar）必须显式插入
-        table.insertColumns = table.pkAuto
-                ? insertColsSql
-                : table.pkColumnName + (insertColsSql.isBlank() ? "" : ", " + insertColsSql);
-        table.insertValues = table.pkAuto
-                ? insertValsSql
-                : "#{" + table.pkPropertyName + "}" + (insertValsSql.isBlank() ? "" : ", " + insertValsSql);
+        if (!table.compositePk && !table.pkAuto) {
+            insertColsSql = table.pkColumnName + (insertColsSql.isBlank() ? "" : ", " + insertColsSql);
+            insertValsSql = "#{" + table.pkPropertyName + "}" + (insertValsSql.isBlank() ? "" : ", " + insertValsSql);
+        }
+        // 时间列：数据库未自动维护时显式 NOW()，已自动维护则不写入
+        if (!table.createTimeAuto) {
+            insertColsSql = appendSql(insertColsSql, "create_time");
+            insertValsSql = appendSql(insertValsSql, "NOW()");
+        }
+        if (!table.updateTimeAuto) {
+            insertColsSql = appendSql(insertColsSql, "update_time");
+            insertValsSql = appendSql(insertValsSql, "NOW()");
+        }
+        table.insertColumns = insertColsSql;
+        table.insertValues = insertValsSql;
 
         List<ColumnMeta> updateCols = cols.stream().filter(c -> !c.auto && !c.pk).collect(Collectors.toList());
-        table.updateSet = updateCols.stream().map(c -> c.columnName + " = #{" + c.propertyName + "}")
+        String updateSet = updateCols.stream().map(c -> c.columnName + " = #{" + c.propertyName + "}")
                 .collect(Collectors.joining(",\n            "));
+        if (!table.updateTimeAuto) {
+            updateSet = appendSql(updateSet, "update_time = NOW()");
+        }
+        table.updateSet = updateSet;
+    }
+
+    private static String appendSql(String sql, String part) {
+        return sql.isBlank() ? part : sql + ", " + part;
     }
 
     /** 原生基础类型归一化为包装类型（int→Integer 等），其余原样返回。 */

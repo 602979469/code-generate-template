@@ -29,10 +29,10 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="${basePackage}.common.dal.dataobject.${className}DO">
+    <select id="selectBy${pkMethodName}" resultType="${basePackage}.common.dal.dataobject.${className}DO">
         SELECT <include refid="selectColumns"/>
         FROM ${tableName}
-        WHERE ${pkColumnName} = #{id}
+        WHERE ${pkWhere}
 <#if logicDeleteEnabled>
         AND ${logicDeleteColumn} = ${logicDeleteNormal}
 </#if>
@@ -42,7 +42,7 @@
         SELECT <include refid="selectColumns"/>
         FROM ${tableName}
         <include refid="queryConditions"/>
-        ORDER BY ${pkColumnName} DESC
+        ORDER BY ${pkOrderBy}
         LIMIT #{offset}, #{pageSize}
     </select>
 
@@ -50,7 +50,7 @@
         SELECT <include refid="selectColumns"/>
         FROM ${tableName}
         <include refid="queryConditions"/>
-        ORDER BY ${pkColumnName} DESC
+        ORDER BY ${pkOrderBy}
     </select>
 
     <select id="countByQuery" resultType="long">
@@ -68,7 +68,7 @@
     <update id="update" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
         UPDATE ${tableName}
         SET ${updateSet}
-        WHERE ${pkColumnName} = #{${pkPropertyName}}
+        WHERE ${pkWhere}
 <#if logicDeleteEnabled>
         AND ${logicDeleteColumn} = ${logicDeleteNormal}
 </#if>
@@ -82,8 +82,9 @@
             <if test="${c.propertyName} != null">
                 ${c.columnName} = #{${c.propertyName}},
             </if>
-</#list>        </set>
-            WHERE ${pkColumnName} = #{${pkPropertyName}}
+</#list><#if !updateTimeAuto>            update_time = NOW(),
+</#if>        </set>
+            WHERE ${pkWhere}
 <#if logicDeleteEnabled>
             AND ${logicDeleteColumn} = ${logicDeleteNormal}
 </#if>
@@ -91,14 +92,14 @@
     </update>
 
 <#if logicDeleteEnabled>
-    <update id="deleteById" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
+    <update id="deleteBy${pkMethodName}" parameterType="${basePackage}.common.dal.dataobject.${className}DO">
         UPDATE ${tableName}
         SET ${logicDeleteColumn} = ${logicDeleteDelete}
-        WHERE ${pkColumnName} = #{id} AND ${logicDeleteColumn} = ${logicDeleteNormal}
+        WHERE ${pkWhere} AND ${logicDeleteColumn} = ${logicDeleteNormal}
     </update>
 <#else>
-    <delete id="deleteById">
-        DELETE FROM ${tableName} WHERE ${pkColumnName} = #{id}
+    <delete id="deleteBy${pkMethodName}">
+        DELETE FROM ${tableName} WHERE ${pkWhere}
     </delete>
 </#if>
 </mapper>

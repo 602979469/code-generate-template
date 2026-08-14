@@ -51,4 +51,12 @@ public final class TableMeta {
     public String pkJavaType;
     /** 主键是否自增。 */
     public boolean pkAuto;
+    /** 全部主键列（单主键时 1 个；复合主键时多个，关联表模式使用）。 */
+    public final List<ColumnMeta> pkColumns = new ArrayList<>();
+    /** 是否复合主键：关联表模式，只生成 DO/Mapper/Mapper.xml。 */
+    public boolean compositePk;
+    /** create_time 是否由数据库自动维护（DEFAULT CURRENT_TIMESTAMP）。 */
+    public boolean createTimeAuto;
+    /** update_time 是否由数据库自动维护（DEFAULT CURRENT_TIMESTAMP + ON UPDATE）。 */
+    public boolean updateTimeAuto;
 }

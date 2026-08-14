@@ -1,10 +1,14 @@
 package com.jakt.aiplatform.web.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
+import com.jakt.aiplatform.common.util.error.CommonErrorCode;
+import com.jakt.aiplatform.common.util.error.CommonException;
 import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
-import com.jakt.aiplatform.core.model.enums.LogFileEnum;
-import com.jakt.aiplatform.core.model.exception.AiPlatformException;
-import com.jakt.aiplatform.core.model.util.AiPlatformLoggerUtil;
-import com.jakt.aiplatform.web.result.AiPlatformResult;
+import com.jakt.aiplatform.common.util.enums.LogFileEnum;
+import com.jakt.aiplatform.common.util.tools.LoggerUtil;
+import com.jakt.aiplatform.web.result.ApiResult;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,21 +26,35 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 /**
  * 全局异常处理器：单一入口兜住所有逃逸到框架层的异常。
  *
- * <p>业务异常（{@link AiPlatformException}）沿 cause 链解包后返回 HTTP 200 + 业务错误码；
+ * <p>业务异常（{@link CommonException}）沿 cause 链解包后返回 HTTP 200 + 业务错误码；
  * 框架级异常按 HTTP 语义分类（404/405/415/400），细节只进日志不返回前端。
  */
 @RestControllerAdvice
 public class AiPlatformExceptionHandler {
 
+    /** 未登录异常：HTTP 401，前端跳登录。 */
+    @ExceptionHandler(NotLoginException.class)
+    public ResponseEntity<ApiResult<Void>> handleNotLogin(NotLoginException e) {
+        LoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "未登录访问 类型={}", e.getType());
+        return fail(HttpStatus.UNAUTHORIZED, ErrorCodeEnum.NOT_LOGIN, "未登录或登录已过期");
+    }
+
+    /** 权限/角色不足异常：HTTP 403。 */
+    @ExceptionHandler({NotPermissionException.class, NotRoleException.class})
+    public ResponseEntity<ApiResult<Void>> handleNoPermission(RuntimeException e) {
+        LoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "无权限访问 原因={}", e.getMessage());
+        return fail(HttpStatus.FORBIDDEN, ErrorCodeEnum.NO_PERMISSION, "无权限访问");
+    }
+
     /** 单一入口：按异常类型分类转换。 */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<AiPlatformResult<Void>> handleException(Exception e) {
-        AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "系统异常", e);
+    public ResponseEntity<ApiResult<Void>> handleException(Exception e) {
+        LoggerUtil.error(LogFileEnum.COMMON_ERROR, e, "系统异常");
         // 框架层可能包装业务异常（如 Jackson 反序列化包 AiPlatformException），沿 cause 链解包
         Throwable cause = e;
         while (cause != null) {
-            if (cause instanceof AiPlatformException bizException) {
-                return ResponseEntity.ok(AiPlatformResult.fail(bizException.getErrorCode(), bizException.getMessage()));
+            if (cause instanceof CommonException bizException) {
+                return ResponseEntity.ok(ApiResult.fail(bizException.getErrorCode(), bizException.getMessage()));
             }
             cause = cause.getCause();
         }
@@ -67,10 +85,10 @@ public class AiPlatformExceptionHandler {
         return fail(HttpStatus.OK, ErrorCodeEnum.SYSTEM_ERROR, null);
     }
 
-    private ResponseEntity<AiPlatformResult<Void>> fail(HttpStatus status, ErrorCodeEnum errorCode, String message) {
-        AiPlatformResult<Void> result = message == null
-                ? AiPlatformResult.fail(errorCode)
-                : AiPlatformResult.fail(errorCode, message);
+    private ResponseEntity<ApiResult<Void>> fail(HttpStatus status, ErrorCodeEnum errorCode, String message) {
+        ApiResult<Void> result = message == null
+                ? ApiResult.fail(errorCode)
+                : ApiResult.fail(errorCode, message);
         return ResponseEntity.status(status).body(result);
     }
 }

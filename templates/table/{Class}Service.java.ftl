@@ -1,8 +1,8 @@
 package ${basePackage}.core.service;
 
+import ${basePackage}.common.util.result.PageResult;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.param.${className}QueryParam;
-import ${basePackage}.core.model.result.PageResult;
 
 import java.util.List;
 
@@ -25,30 +25,33 @@ public interface ${className}Service {
      * 更新${entityName}（全量）
      *
      * @param ${classNameLower} ${entityName}（含主键）
+     * @return 受影响行数；0 表示未生效，由上层决定
      */
-    void update${className}(${className} ${classNameLower});
+    int update${className}(${className} ${classNameLower});
 
     /**
      * 按条件更新${entityName}（只更新传入的非空字段）。
      *
      * @param ${classNameLower} ${entityName}（至少含主键）
+     * @return 受影响行数；0 表示未生效，由上层决定
      */
-    void updateByCondition(${className} ${classNameLower});
+    int updateByCondition(${className} ${classNameLower});
 
     /**
      * 删除${entityName}
      *
-     * @param id ${entityName} ID
+     * @param ${pkCallArgs} ${entityName}主键
+     * @return 受影响行数；0 表示未生效，由上层决定
      */
-    void delete${className}(${pkJavaType} id);
+    int delete${className}(${pkMethodArgs});
 
     /**
-     * 按 ID 获取${entityName}
+     * 按主键获取${entityName}
      *
-     * @param id ${entityName} ID
+     * @param ${pkCallArgs} ${entityName}主键
      * @return ${entityName}
      */
-    ${className} get${className}(${pkJavaType} id);
+    ${className} get${className}(${pkMethodArgs});
 
     /**
      * 分页查询${entityName}

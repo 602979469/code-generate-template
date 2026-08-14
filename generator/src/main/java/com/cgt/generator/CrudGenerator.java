@@ -47,6 +47,7 @@ public final class CrudGenerator {
         TEMPLATES.put("{Class}DO.java.ftl", "common/dal/src/main/java/{pkg}/common/dal/dataobject/{Class}DO.java");
         TEMPLATES.put("{Class}Mapper.java.ftl", "common/dal/src/main/java/{pkg}/common/dal/mapper/{Class}Mapper.java");
         TEMPLATES.put("{Class}Mapper.xml.ftl", "common/dal/src/main/resources/mapper/{Class}Mapper.xml");
+        TEMPLATES.put("{Class}DalQuery.java.ftl", "common/dal/src/main/java/{pkg}/common/dal/query/{Class}DalQuery.java");
         TEMPLATES.put("{Class}.java.ftl", "core/model/src/main/java/{pkg}/core/model/domain/{Class}.java");
         TEMPLATES.put("{Class}QueryParam.java.ftl", "core/model/src/main/java/{pkg}/core/model/param/{Class}QueryParam.java");
         TEMPLATES.put("{Class}Repository.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/{Class}Repository.java");
@@ -98,32 +99,33 @@ public final class CrudGenerator {
             TableMeta meta = DbMetaReader.read(cfg, table);
             String display = table.dbTableName;
 
-            // 表级跳过判定：DO 已存在 / 枚举已存在（未 force_create）
-            String skipReason = null;
+            // 表级跳过判定：DO 已存在 / 枚举已存在（未 force_create）；跳过则继续下一张表
             Path doPath = cfg.outputDir.resolve("common/dal/src/main/java/" + cfg.packagePath()
                     + "/common/dal/dataobject/" + meta.className + "DO.java");
-            if (Files.exists(doPath) && !table.forceCreate) {
+            boolean doExists = Files.exists(doPath);
+            String existingEnum = firstExistingEnumFile(meta);
+
+            String skipReason = null;
+            if (doExists && !table.forceCreate) {
                 skipReason = "DO 已存在";
-            }
-            if (skipReason == null) {
-                String enumFile = firstExistingEnumFile(meta);
-                if (enumFile != null && !table.forceCreate) {
-                    skipReason = "枚举 " + enumFile + " 已存在";
-                }
+            } else if (existingEnum != null && !table.forceCreate) {
+                skipReason = "枚举 " + existingEnum + " 已存在";
             }
             if (skipReason != null) {
-                System.out.println("[gen] " + display + " 表已存在，跳过（" + skipReason
-                        + "；如需覆盖请配置 force_create: true）");
+                System.out.println("[gen] " + display + " 表" + skipReason + "，跳过，不覆盖"
+                        + "（如需覆盖请配置 force_create: true）");
                 skipped++;
-                skipReasons.add(display + ": " + skipReason);
+                skipReasons.add(display + ": " + skipReason + "，跳过，不覆盖");
                 continue;
             }
 
-            boolean overwriting = table.forceCreate && (Files.exists(doPath) || firstExistingEnumFile(meta) != null);
+            boolean overwriting = table.forceCreate && (doExists || existingEnum != null);
             if (overwriting) {
-                System.out.println("[gen] ⚠️ " + display + " 表存在，强制覆盖（会覆盖手动修改的代码！）");
+                String existing = existingEnum != null ? "枚举 " + existingEnum : "DO";
+                System.out.println("[gen] ⚠️ " + display + " 表" + existing + " 已存在，force_create 强制覆盖，"
+                        + "请注意：会覆盖手动修改的代码！");
                 warned++;
-                warnReasons.add(display + ": 已存在，force_create 强制覆盖");
+                warnReasons.add(display + ": " + existing + " 已存在，force_create 强制覆盖，请注意会覆盖手动修改的代码");
             }
 
             Map<String, Object> model = buildModel(meta);
@@ -140,7 +142,10 @@ public final class CrudGenerator {
             fileCount += renderEnums(meta, table.forceCreate);
             generateTableSql(table, table.forceCreate);
 
-            System.out.println("[gen] " + display + " 表代码生成成功（" + fileCount + " 个文件）");
+            String modeTip = meta.compositePk
+                    ? "，复合主键：按完整主键 ByKey 生成 CRUD"
+                    : "";
+            System.out.println("[gen] " + display + " 表代码生成成功（" + fileCount + " 个文件" + modeTip + "）");
             success++;
         }
 
@@ -162,6 +167,15 @@ public final class CrudGenerator {
             }
         }
         return null;
+    }
+
+    /** 校验模式用：预估单表生成的代码文件数（不含 SQL 与枚举，与执行报告口径一致）。 */
+    public static int plannedFileCount(TableMeta meta, boolean generateController) {
+        int count = TEMPLATES.size();
+        if (!generateController) {
+            count -= WEB_TEMPLATES.size() + BIZ_TEMPLATES.size();
+        }
+        return count;
     }
 
     /** 渲染枚举模板，返回生成/覆盖的文件数（已存在且非 force 时跳过）。 */
@@ -247,6 +261,59 @@ public final class CrudGenerator {
         model.put("pkPropertyName", meta.pkPropertyName);
         model.put("pkJavaType", meta.pkJavaType);
         model.put("pkAuto", meta.pkAuto);
+        model.put("compositePk", meta.compositePk);
+        model.put("pkColumns", meta.pkColumns);
+        model.put("createTimeAuto", meta.createTimeAuto);
+        model.put("updateTimeAuto", meta.updateTimeAuto);
+        // 按主键方法辅助串：单主键走 ById(单参)，复合主键走 ByKey(全键多参)
+        String pkMethodName = meta.compositePk ? "Key" : "Id";
+        String pkMethodArgs = meta.compositePk
+                ? meta.pkColumns.stream().map(c -> c.javaType + " " + c.propertyName)
+                        .collect(java.util.stream.Collectors.joining(", "))
+                : meta.pkJavaType + " id";
+        String pkMapperArgs = meta.compositePk
+                ? meta.pkColumns.stream().map(c -> "@Param(\"" + c.propertyName + "\") "
+                        + c.javaType + " " + c.propertyName)
+                        .collect(java.util.stream.Collectors.joining(", "))
+                : meta.pkJavaType + " id";
+        String pkCallArgs = meta.compositePk
+                ? meta.pkColumns.stream().map(c -> c.propertyName)
+                        .collect(java.util.stream.Collectors.joining(", "))
+                : "id";
+        String pkWhere = meta.compositePk
+                ? meta.pkColumns.stream().map(c -> c.columnName + " = #{" + c.propertyName + "}")
+                        .collect(java.util.stream.Collectors.joining(" AND "))
+                : meta.pkColumnName + " = #{id}";
+        String pkOrderBy = meta.compositePk
+                ? meta.pkColumns.stream().map(c -> c.columnName + " DESC")
+                        .collect(java.util.stream.Collectors.joining(", "))
+                : meta.pkColumnName + " DESC";
+        String pkPathVars = meta.compositePk
+                ? meta.pkColumns.stream().map(c -> "{" + c.propertyName + "}")
+                        .collect(java.util.stream.Collectors.joining("/"))
+                : "{id}";
+        String pkPathParams = meta.compositePk
+                ? meta.pkColumns.stream().map(c -> "@PathVariable " + c.javaType + " " + c.propertyName)
+                        .collect(java.util.stream.Collectors.joining(", "))
+                : "@PathVariable " + meta.pkJavaType + " id";
+        String pkLogKey = meta.compositePk ? meta.pkColumns.get(0).propertyName : "id";
+        String pkLogFirstArg = meta.compositePk ? meta.pkColumns.get(0).propertyName : "id";
+        String pkFirstType = meta.compositePk ? meta.pkColumns.get(0).javaType : meta.pkJavaType;
+        String pkFirstArg = meta.compositePk ? meta.pkColumns.get(0).propertyName : "id";
+        String pkCheckMethod = meta.compositePk ? "checkKey" : "checkId";
+        model.put("pkMethodName", pkMethodName);
+        model.put("pkMethodArgs", pkMethodArgs);
+        model.put("pkMapperArgs", pkMapperArgs);
+        model.put("pkCallArgs", pkCallArgs);
+        model.put("pkWhere", pkWhere);
+        model.put("pkOrderBy", pkOrderBy);
+        model.put("pkPathVars", pkPathVars);
+        model.put("pkPathParams", pkPathParams);
+        model.put("pkLogKey", pkLogKey);
+        model.put("pkLogFirstArg", pkLogFirstArg);
+        model.put("pkFirstType", pkFirstType);
+        model.put("pkFirstArg", pkFirstArg);
+        model.put("pkCheckMethod", pkCheckMethod);
         model.put("modelImports", buildModelImports(meta, true));
         model.put("dtoImports", buildModelImports(meta, false));
         model.put("convertorImports", buildConvertorImports(meta));

@@ -30,6 +30,8 @@ public final class GeneratorConfig {
     public Path outputDir;
     /** 全局逻辑删除配置，null 表示未配置。 */
     public LogicDeleteConfig globalLogicDelete;
+    /** 全局敏感列名：生成时从查询参数/响应/查询条件中剔除（password 等按默认名单识别，此处可追加）。 */
+    public final List<String> sensitiveColumns = new ArrayList<>();
     public final List<TableConfig> tables = new ArrayList<>();
 
     /**
@@ -64,6 +66,8 @@ public final class GeneratorConfig {
     public static final class ColumnConfig {
         /** enum / json / jsonArray / jsonObject / Java 类型（如 Integer）。 */
         public String type;
+        /** 敏感列：不进查询参数/响应（默认按列名识别 password/token 等，可显式声明）。 */
+        public boolean sensitive;
         /** jsonArray 元素类型 / jsonObject 目标类型（全限定类名）。 */
         public String javaObject;
         /** type: enum 时的枚举配置。 */
@@ -155,6 +159,14 @@ public final class GeneratorConfig {
         }
 
         cfg.globalLogicDelete = parseLogicDelete(root.get("globalLogicDelete"));
+        if (root.get("sensitive_columns") instanceof List<?> sensitiveList) {
+            for (Object item : sensitiveList) {
+                String name = str(item);
+                if (name != null && !name.isBlank()) {
+                    cfg.sensitiveColumns.add(name);
+                }
+            }
+        }
 
         String outputDir = str(root.get("outputDir"));
         cfg.outputDir = (outputDir == null || outputDir.isBlank() ? Path.of(".") : Path.of(outputDir))
@@ -208,6 +220,7 @@ public final class GeneratorConfig {
         ColumnConfig cc = new ColumnConfig();
         cc.type = str(col.get("type"));
         cc.javaObject = str(col.get("javaObject"));
+        cc.sensitive = "true".equalsIgnoreCase(str(col.get("sensitive")));
         if (col.get("enum") instanceof Map<?, ?> enumCfg) {
             EnumConfig ec = new EnumConfig();
             ec.className = str(enumCfg.get("className"));

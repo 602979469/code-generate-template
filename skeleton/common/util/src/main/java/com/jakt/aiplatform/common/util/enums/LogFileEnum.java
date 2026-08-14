@@ -1,9 +1,9 @@
-package com.jakt.aiplatform.core.model.enums;
+package com.jakt.aiplatform.common.util.enums;
 
 import lombok.Getter;
 
 /**
- * 日志文件枚举
+ * 日志文件枚举。
  */
 @Getter
 public enum LogFileEnum {
@@ -15,9 +15,11 @@ public enum LogFileEnum {
     BIZ_SERVICE("biz-service"),
 
     /** 异步调度日志。 */
-    ASYNC_SCHEDULE("async-schedule");
+    ASYNC_SCHEDULE("async-schedule"),
 
-    /** 日志文件名 / Logger 名称。 */
+    /** 外部集成日志。 */
+    INTEGRATION("integration");
+
     private final String fileName;
 
     LogFileEnum(String fileName) {

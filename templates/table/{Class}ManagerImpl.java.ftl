@@ -1,11 +1,11 @@
 package ${basePackage}.biz.service.impl;
 
 import ${basePackage}.biz.service.${className}Manager;
+import ${basePackage}.common.util.enums.LogFileEnum;
+import ${basePackage}.common.util.result.PageResult;
+import ${basePackage}.common.util.tools.LoggerUtil;
 import ${basePackage}.core.model.domain.${className};
-import ${basePackage}.core.model.enums.LogFileEnum;
 import ${basePackage}.core.model.param.${className}QueryParam;
-import ${basePackage}.core.model.result.PageResult;
-import ${basePackage}.core.model.util.${toolPrefix}LoggerUtil;
 import ${basePackage}.core.service.${className}Service;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +13,6 @@ import java.util.List;
 
 /**
  * ${entityName}管理实现类
- *
  */
 @Service
 public class ${className}ManagerImpl implements ${className}Manager {
@@ -28,13 +27,13 @@ public class ${className}ManagerImpl implements ${className}Manager {
     @Override
     public ${className} create${className}(${className} ${classNameLower}) {
         ${className} created = ${classNameLower}Service.create${className}(${classNameLower});
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "创建${entityName}成功 ${pkPropertyName}={}", created.get${pkPropertyName?cap_first}());
+        LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "创建${entityName}成功 ${pkPropertyName}={}", created.get${pkPropertyName?cap_first}());
         return created;
     }
 
     @Override
-    public ${className} get${className}(${pkJavaType} id) {
-        return ${classNameLower}Service.get${className}(id);
+    public ${className} get${className}(${pkMethodArgs}) {
+        return ${classNameLower}Service.get${className}(${pkCallArgs});
     }
 
     @Override
@@ -48,20 +47,25 @@ public class ${className}ManagerImpl implements ${className}Manager {
     }
 
     @Override
-    public void update${className}(${className} ${classNameLower}) {
-        ${classNameLower}Service.update${className}(${classNameLower});
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "更新${entityName}成功 ${pkPropertyName}={}", ${classNameLower}.get${pkPropertyName?cap_first}());
+    public int update${className}(${className} ${classNameLower}) {
+        int affected = ${classNameLower}Service.update${className}(${classNameLower});
+        LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "更新${entityName}成功 ${pkPropertyName}={} 影响行数={}",
+                ${classNameLower}.get${pkPropertyName?cap_first}(), affected);
+        return affected;
     }
 
     @Override
-    public void updateByCondition(${className} ${classNameLower}) {
-        ${classNameLower}Service.updateByCondition(${classNameLower});
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "按条件更新${entityName}成功 ${pkPropertyName}={}", ${classNameLower}.get${pkPropertyName?cap_first}());
+    public int updateByCondition(${className} ${classNameLower}) {
+        int affected = ${classNameLower}Service.updateByCondition(${classNameLower});
+        LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "按条件更新${entityName}成功 ${pkPropertyName}={} 影响行数={}",
+                ${classNameLower}.get${pkPropertyName?cap_first}(), affected);
+        return affected;
     }
 
     @Override
-    public void delete${className}(${pkJavaType} id) {
-        ${classNameLower}Service.delete${className}(id);
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "删除${entityName}成功 id={}", id);
+    public int delete${className}(${pkMethodArgs}) {
+        int affected = ${classNameLower}Service.delete${className}(${pkCallArgs});
+        LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "删除${entityName}成功 ${pkLogKey}={} 影响行数={}", ${pkLogFirstArg}, affected);
+        return affected;
     }
 }

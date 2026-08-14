@@ -1,12 +1,15 @@
 package ${basePackage}.core.repository.convertor;
 
 import ${basePackage}.common.dal.dataobject.${className}DO;
+import ${basePackage}.common.dal.query.${className}DalQuery;
 import ${basePackage}.core.model.domain.${className};
+import ${basePackage}.core.model.param.${className}QueryParam;
 ${convertorImports}
 
 /**
- * ${entityName} DO 与领域模型互转，只存在于 repository。
- * 显式 get/set 赋值：DO 保持数据库原始类型，Model 按列级配置转换（枚举 / json / 强制类型）。
+ * ${entityName} DO/领域模型/查询参数互转，只存在于 repository。
+ * 显式 get/set 赋值：DO 保持数据库原始类型，Model 按列级配置转换（枚举 / json / 强制类型）；
+ * QueryParam（core-model）→ DalQuery（common-dal）在 Repository 调 Mapper 前完成，common-dal 不依赖 core-model。
  */
 public final class ${className}Convertor {
 
@@ -45,6 +48,28 @@ public final class ${className}Convertor {
         target.set${c.propertyName?cap_first}(${c.toDoExpr?replace("{model}", "source")});
 </#list>        target.setCreateTime(source.getCreateTime());
         target.setUpdateTime(source.getUpdateTime());
+        return target;
+    }
+
+    /**
+     * 查询参数 → common-dal 查询参数。
+     *
+     * @param source ${entityName}查询参数；为空返回空对象
+     * @return ${entityName}查询参数（common-dal）
+     */
+    public static ${className}DalQuery toDalQuery(${className}QueryParam source) {
+        ${className}DalQuery target = new ${className}DalQuery();
+        if (source == null) {
+            return target;
+        }
+        target.setPageNum(source.getPageNum());
+        target.setPageSize(source.getPageSize());
+<#list queryColumns as c>
+        target.set${c.propertyName?cap_first}(${c.toDalExpr?replace("{query}", "source")});
+</#list>        target.setCreateTimeBegin(source.getCreateTimeBegin());
+        target.setCreateTimeEnd(source.getCreateTimeEnd());
+        target.setUpdateTimeBegin(source.getUpdateTimeBegin());
+        target.setUpdateTimeEnd(source.getUpdateTimeEnd());
         return target;
     }
 }

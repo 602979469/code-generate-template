@@ -1,23 +1,23 @@
 package ${basePackage}.core.repository;
 
+import ${basePackage}.common.util.result.PageResult;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.param.${className}QueryParam;
-import ${basePackage}.core.model.result.PageResult;
 
 import java.util.List;
 
 /**
- * ${entityName}仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
+ * ${entityName}仓储：封装 Mapper，对外只暴露领域模型，不暴露 DO/DalQuery/DalResult。
  */
 public interface ${className}Repository {
 
     /**
      * 按主键查询。
      *
-     * @param id 主键
+     * @param ${pkCallArgs} 主键
      * @return ${entityName}领域模型
      */
-    ${className} findById(${pkJavaType} id);
+    ${className} findBy${pkMethodName}(${pkMethodArgs});
 
     /**
      * 分页查询。
@@ -52,24 +52,27 @@ public interface ${className}Repository {
     ${className} insert(${className} ${classNameLower});
 
     /**
-     * 更新。
+     * 更新（全量）。
      *
-     * @param ${classNameLower} ${entityName}
+     * @param ${classNameLower} ${entityName}（含主键）
+     * @return 受影响行数；0 表示未生效，由上层决定
      */
-    void update(${className} ${classNameLower});
+    int update(${className} ${classNameLower});
 
     /**
      * 按条件更新：只更新传入的非空字段（部分更新）。
      * 注意：无法把字段更新为 null，需要置 null 请用 {@link #update}；create_time/update_time 由数据库自动维护。
      *
      * @param ${classNameLower} ${entityName}（至少含主键）
+     * @return 受影响行数；0 表示未生效，由上层决定
      */
-    void updateByCondition(${className} ${classNameLower});
+    int updateByCondition(${className} ${classNameLower});
 
     /**
      * 按主键删除。
      *
-     * @param id 主键
+     * @param ${pkCallArgs} 主键
+     * @return 受影响行数；0 表示未生效，由上层决定
      */
-    void deleteById(${pkJavaType} id);
+    int deleteBy${pkMethodName}(${pkMethodArgs});
 }

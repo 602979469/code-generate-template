@@ -41,4 +41,18 @@ public class ThreadPoolConfig {
         executor.setAwaitTerminationSeconds(60);
         return executor;
     }
+
+    /** 镜像下载任务线程池，与 {@link ThreadPoolEnum#MIRROR_DOWNLOAD} 对应。 */
+    @Bean(name = "mirrorDownloadThreadPool")
+    public ThreadPoolTaskExecutor mirrorDownloadThreadPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("mirror-download-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(60);
+        return executor;
+    }
 }

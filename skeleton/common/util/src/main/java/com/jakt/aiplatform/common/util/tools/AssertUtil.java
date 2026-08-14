@@ -5,46 +5,28 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
-import com.jakt.aiplatform.core.model.exception.AiPlatformException;
-import com.jakt.aiplatform.core.model.exception.ErrorCode;
+import com.jakt.aiplatform.common.util.error.CommonException;
+import com.jakt.aiplatform.common.util.error.ErrorCode;
 
 import java.util.Collection;
 import java.util.Map;
 
 /**
- * 条件断言工具：所有 {@code if (条件) { throw ... }} 的场景统一走这里，业务代码不再手写 if + throw。
- *
- * <p>方法命名统一为 {@code throwErrWhenXxx}，所有方法最终都委托给
- * {@link #throwErrWhenTrue(boolean, ErrorCode, String)}；
- * 入参可以只传条件，也可以带 ErrorCode，或 ErrorCode + message（缺省错误码为 {@link ErrorCodeEnum#BIZ_ERROR}）。
+ * common-util 层条件断言工具。
  */
-public final class AiPlatformInvoker {
+public final class AssertUtil {
 
-    private static final ErrorCode DEFAULT_ERROR_CODE = ErrorCodeEnum.BIZ_ERROR;
-
-    private AiPlatformInvoker() {
-    }
-
-    // ---------- 核心 ----------
-
-    public static void throwErrWhenTrue(boolean condition) {
-        throwErrWhenTrue(condition, DEFAULT_ERROR_CODE, null);
+    private AssertUtil() {
     }
 
     public static void throwErrWhenTrue(boolean condition, ErrorCode errorCode) {
-        throwErrWhenTrue(condition, errorCode, null);
+        throwErrWhenTrue(condition, errorCode, errorCode.getMessage());
     }
 
     public static void throwErrWhenTrue(boolean condition, ErrorCode errorCode, String message) {
         if (condition) {
-            ErrorCode code = errorCode == null ? DEFAULT_ERROR_CODE : errorCode;
-            throw new AiPlatformException(code, message == null ? code.getMessage() : message);
+            throw CommonException.of(errorCode, message);
         }
-    }
-
-    public static void throwErrWhenFalse(boolean condition) {
-        throwErrWhenTrue(!condition);
     }
 
     public static void throwErrWhenFalse(boolean condition, ErrorCode errorCode) {
@@ -55,22 +37,12 @@ public final class AiPlatformInvoker {
         throwErrWhenTrue(!condition, errorCode, message);
     }
 
-    // ---------- 判空 ----------
-
-    public static void throwErrWhenNull(Object value) {
-        throwErrWhenTrue(ObjectUtil.isNull(value));
-    }
-
     public static void throwErrWhenNull(Object value, ErrorCode errorCode) {
         throwErrWhenTrue(ObjectUtil.isNull(value), errorCode);
     }
 
     public static void throwErrWhenNull(Object value, ErrorCode errorCode, String message) {
         throwErrWhenTrue(ObjectUtil.isNull(value), errorCode, message);
-    }
-
-    public static void throwErrWhenNotNull(Object value) {
-        throwErrWhenTrue(ObjectUtil.isNotNull(value));
     }
 
     public static void throwErrWhenNotNull(Object value, ErrorCode errorCode) {
@@ -81,22 +53,12 @@ public final class AiPlatformInvoker {
         throwErrWhenTrue(ObjectUtil.isNotNull(value), errorCode, message);
     }
 
-    // ---------- 判 Blank（字符串）----------
-
-    public static void throwErrWhenBlank(CharSequence value) {
-        throwErrWhenTrue(StrUtil.isBlank(value));
-    }
-
     public static void throwErrWhenBlank(CharSequence value, ErrorCode errorCode) {
         throwErrWhenTrue(StrUtil.isBlank(value), errorCode);
     }
 
     public static void throwErrWhenBlank(CharSequence value, ErrorCode errorCode, String message) {
         throwErrWhenTrue(StrUtil.isBlank(value), errorCode, message);
-    }
-
-    public static void throwErrWhenNotBlank(CharSequence value) {
-        throwErrWhenTrue(StrUtil.isNotBlank(value));
     }
 
     public static void throwErrWhenNotBlank(CharSequence value, ErrorCode errorCode) {
@@ -107,22 +69,12 @@ public final class AiPlatformInvoker {
         throwErrWhenTrue(StrUtil.isNotBlank(value), errorCode, message);
     }
 
-    // ---------- 判 Empty（字符串/集合/Map/数组通用）----------
-
-    public static void throwErrWhenEmpty(Object value) {
-        throwErrWhenTrue(isEmpty(value));
-    }
-
     public static void throwErrWhenEmpty(Object value, ErrorCode errorCode) {
         throwErrWhenTrue(isEmpty(value), errorCode);
     }
 
     public static void throwErrWhenEmpty(Object value, ErrorCode errorCode, String message) {
         throwErrWhenTrue(isEmpty(value), errorCode, message);
-    }
-
-    public static void throwErrWhenNotEmpty(Object value) {
-        throwErrWhenTrue(!isEmpty(value));
     }
 
     public static void throwErrWhenNotEmpty(Object value, ErrorCode errorCode) {
@@ -133,7 +85,6 @@ public final class AiPlatformInvoker {
         throwErrWhenTrue(!isEmpty(value), errorCode, message);
     }
 
-    /** 统一判空：null、空字符串、空集合、空 Map、空数组都算 empty。 */
     private static boolean isEmpty(Object value) {
         if (value == null) {
             return true;

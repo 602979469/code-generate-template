@@ -19,11 +19,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ${className}Response extends BaseResult {
+<#if !compositePk>
     /** 主键。 */
     private ${pkJavaType} ${pkPropertyName};
 
-<#list columns as c>
+</#if>
+<#list columns as c><#if !c.sensitive>
     /** ${c.comment}。 */
     private ${c.modelType} ${c.propertyName};
 
-</#list>}
+</#if></#list>}

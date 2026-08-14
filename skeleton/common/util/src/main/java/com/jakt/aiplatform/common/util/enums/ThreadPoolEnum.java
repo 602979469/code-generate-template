@@ -9,7 +9,10 @@ public enum ThreadPoolEnum {
     SYS_THREAD_POOL("sysThreadPool"),
 
     /** 异步任务线程池。 */
-    ASYNC_THREAD_POOL("asyncThreadPool");
+    ASYNC_THREAD_POOL("asyncThreadPool"),
+
+    /** 镜像下载任务线程池。 */
+    MIRROR_DOWNLOAD("mirrorDownloadThreadPool");
 
     private final String beanName;
 

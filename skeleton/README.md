@@ -11,7 +11,7 @@ SOFABoot 风格的多模块 DDD 样板：**每个叶子节点都是一个 Maven 
 ```
 aiplatform（聚合根 pom）
 ├── bootstrap/                  # aiplatform-bootstrap        启动模块：MainApplication + 扫描 + 配置
-├── web/                        # aiplatform-web              视图层：Controller、DTO、ParamChecker、AiPlatformTemplate（统一日志/校验/异常）
+├── web/                        # aiplatform-web              视图层：Controller、DTO、ParamChecker、ApiTemplate + ApiResult（统一日志/校验/异常）
 ├── biz/                        # aiplatform-biz              业务层聚合（空壳）
 │   └── service-impl/           # aiplatform-biz-service-impl 业务层：XxxManager（用例编排，操作领域模型）
 ├── core/                       # aiplatform-core             核心领域层聚合
@@ -20,31 +20,50 @@ aiplatform（聚合根 pom）
 │   └── service/                # aiplatform-core-service     领域服务：XxxService（业务规则）
 └── common/                     # aiplatform-common           基础结构层聚合
     ├── dal/                    # aiplatform-common-dal       数据访问：MyBatis Mapper（interface + XML）、DO
-    ├── util/                   # aiplatform-common-util      工具：TraceId、RestTemplate、线程池、条件断言（AiPlatformInvoker）
+    ├── util/                   # aiplatform-common-util      最底层基础模块：AssertUtil/LoggerUtil/ConvertUtil/Result/PageResult/BizTemplate 等统一出口
     └── integration/            # aiplatform-common-integration 外部集成：HTTP/RPC 客户端封装（预留）
 ```
 
 ## 依赖方向（红线）
 
 ```
-web → biz-service-impl → core-service → core-repository → common-dal
-                              ↘                      ↗
-                         core-model（所有人依赖） common-util / common-integration（基础共享）
+common-util
+    ↑
+    ├── core-model
+    ├── common-dal
+    ├── common-integration
+    │
+    core-repository → core-model + common-dal + common-util
+    core-service    → core-model + core-repository + common-util + common-integration
+    biz-service-impl → core-model + core-service + common-util
+    web             → biz-service-impl + core-model + common-util
+    bootstrap       → 以上所有模块
 ```
 
-- `core-model` 零依赖，被所有模块依赖；
-- `common-util`、`common-integration` 是基础共享模块，业务模块都依赖；
+- `common-util` 是最底层基础模块，不依赖任何内部业务模块；
+- `core-model` 依赖 `common-util`，只保留领域语义（禁止 Spring/MyBatis/Redis）；
 - 依赖只能从上往下，禁止反向与循环；
-- `web` 不直接依赖 `common-dal` / `core-repository`，只通过 `biz-service-impl`。
+- `web` 不直接依赖 `common-dal` / `core-repository`，只通过 `biz-service-impl`；
+- `core-service` 不直接依赖 `common-dal`。
+
+## 统一出口（速查）
+
+- 条件断言：`AssertUtil.throwErrWhenXxx`（必须显式传 ErrorCode）；无条件业务失败：`AiPlatformException.ofThrow(...)`；
+- 判空：Hutool（`ObjectUtil/StrUtil/CollUtil/...`）；
+- 日志：`LoggerUtil + LogFileEnum`；
+- DTO/Model/DO 转换：`XxxAssembler`（web）/ `XxxConvertor`（repository）；
+- 多写事务：`BizTemplate.execute(transactionTemplate, callback)`；
+- 分页：`XxxQueryRequest → XxxQueryParam → XxxDalQuery（Convertor.toDalQuery）→ PageResult → ConvertUtil.mapPage`；
+- 接口返回：`ApiResult<T> + ApiTemplate`。
 
 ## 请求流转
 
 ```
-UserController(web)                        # 参数校验（UserParamChecker）、DTO 转换、Result 包装
+UserController(web)                        # 参数校验（UserParamChecker）、DTO 转换、ApiResult 包装
   → UserManager/UserManagerImpl(biz)       # 用例编排（接口 + 实现）
   → UserService/UserServiceImpl(core-service) # 领域服务：业务规则（当前示例为纯透传）
-      → UserRepository(core-repository)    # 封装 Mapper，DO → Model
-        → UserMapper(common-dal)           # MyBatis interface + XML
+  → UserRepository(core-repository)    # 封装 Mapper，DO → Model；QueryParam → DalQuery
+    → UserMapper(common-dal)           # MyBatis interface + XML（只吃 XxxDalQuery，不依赖 core-model）
           → user 表
 ```
 

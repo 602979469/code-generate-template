@@ -16,16 +16,30 @@
     <description>核心领域模型：Model、查询参数、异常体系、返回体、业务模板（仅依赖 lombok/slf4j）</description>
 
     <dependencies>
-        <!-- slf4j：BizTemplate 统一异常日志 -->
+        <dependency>
+            <groupId>com.jakt</groupId>
+            <artifactId>aiplatform-common-util</artifactId>
+        </dependency>
+        <!-- slf4j：AiPlatformTransactionTemplate 统一异常日志 -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <!-- Hutool：AiPlatformTransactionTemplate 异常解析（ExceptionUtil / EnumUtil） -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
         </dependency>
         <!-- Jackson 注解：生成枚举的 @JsonFormat(OBJECT) / @JsonCreator 序列化（provided，无运行期依赖） -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

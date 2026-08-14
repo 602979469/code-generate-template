@@ -17,7 +17,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ${className}UpdateRequest extends BaseRequest {
-<#list columns as c>
+<#list columns as c><#if !c.pk>
     /** ${c.comment}。 */
 <#if c.required && c.modelString>    @NotBlank(message = "${c.comment}不能为空")
 <#if c.length gt 0>    @Size(max = ${c.length}, message = "${c.comment}长度不能超过 ${c.length}")
@@ -31,5 +31,4 @@ public class ${className}UpdateRequest extends BaseRequest {
 
 <#else>    private ${c.modelType} ${c.propertyName};
 
-</#if>
-</#list>}
+</#if></#if></#list>}

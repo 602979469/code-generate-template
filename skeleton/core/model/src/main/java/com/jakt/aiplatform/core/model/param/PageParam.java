@@ -3,7 +3,6 @@ package com.jakt.aiplatform.core.model.param;
 import com.jakt.aiplatform.core.model.domain.BaseModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 /**
  * 分页查询参数基类：继承 {@link com.jakt.aiplatform.core.model.domain.BaseModel} 的公共字段

@@ -1,11 +1,10 @@
 package com.jakt.aiplatform.web.template;
 
-import com.jakt.aiplatform.web.result.AiPlatformResult;
-import com.jakt.aiplatform.common.util.tools.AiPlatformParamValidator;
-import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
-import com.jakt.aiplatform.core.model.enums.LogFileEnum;
-import com.jakt.aiplatform.core.model.exception.AiPlatformException;
-import com.jakt.aiplatform.core.model.util.AiPlatformLoggerUtil;
+import com.jakt.aiplatform.web.result.ApiResult;
+import com.jakt.aiplatform.common.util.error.CommonErrorCode;
+import com.jakt.aiplatform.common.util.error.CommonException;
+import com.jakt.aiplatform.common.util.enums.LogFileEnum;
+import com.jakt.aiplatform.common.util.tools.LoggerUtil;
 import jakarta.validation.ValidationException;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -17,12 +16,12 @@ import java.time.format.DateTimeFormatter;
  *
  * <p>执行流程：请求日志 → beforeService（参数校验）→ execute（业务）→ afterService（finally）→ 结果日志。
  */
-public final class AiPlatformTemplate {
+public final class ApiTemplate {
 
     /** 日志时间格式。 */
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
-    private AiPlatformTemplate() {
+    private ApiTemplate() {
     }
 
     /**
@@ -34,52 +33,52 @@ public final class AiPlatformTemplate {
      * @param <R>      出参类型
      * @return 统一返回体
      */
-    public static <P, R> AiPlatformResult<R> execute(P param, Callback<P, R> callback) {
+    public static <P, R> ApiResult<R> execute(P param, Callback<P, R> callback) {
         long start = System.currentTimeMillis();
         String caller = resolveCaller();
         String startTime = LocalDateTime.now().format(TIME_FORMATTER);
-        AiPlatformResult<R> result = null;
+        ApiResult<R> result = null;
         R data = null;
 
-        AiPlatformLoggerUtil.info(LogFileEnum.BIZ_SERVICE, "请求开始 接口信息={} 时间={} 请求参数={}", caller, startTime, param);
+        LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "请求开始 接口信息={} 时间={} 请求参数={}", caller, startTime, param);
 
         try {
             try {
                 callback.beforeService(param);
-            } catch (AiPlatformException | ValidationException e) {
-                AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "参数校验失败 接口信息={} 原因={}", caller, e.getMessage());
-                result = AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, e.getMessage());
+            } catch (CommonException | ValidationException e) {
+                LoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "参数校验失败 接口信息={} 原因={}", caller, e.getMessage());
+                result = ApiResult.fail(CommonErrorCode.PARAM_INVALID, e.getMessage());
             } catch (Exception e) {
-                AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "执行" + caller + "校验逻辑时抛出异常", e);
-                result = AiPlatformResult.fail(ErrorCodeEnum.SYSTEM_ERROR);
+                LoggerUtil.error(LogFileEnum.COMMON_ERROR, e, "执行{}校验逻辑时抛出异常", caller);
+                result = ApiResult.fail(CommonErrorCode.SYSTEM_ERROR);
             }
 
             if (result == null) {
                 try {
                     data = callback.execute(param);
-                    result = AiPlatformResult.ok(data);
-                } catch (AiPlatformException e) {
-                    AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "业务异常 接口信息={} errorCode={} message={}",
-                            caller, e.getErrorCode().getCode(), e.getMessage());
-                    result = AiPlatformResult.fail(e.getErrorCode(), e.getMessage());
+                    result = ApiResult.ok(data);
+                } catch (CommonException e) {
+                    LoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "业务异常 接口信息={} errorCode={} message={}",
+                            caller, e.getErrorCode(), e.getErrorMessage());
+                    result = ApiResult.fail(e.getErrorCode(), e.getErrorMessage());
                 } catch (DataIntegrityViolationException e) {
-                    AiPlatformLoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "数据约束异常 接口信息={} message={}",
+                    LoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "数据约束异常 接口信息={} message={}",
                             caller, e.getMessage());
-                    result = AiPlatformResult.fail(ErrorCodeEnum.PARAM_INVALID, "数据不合法：必填字段缺失或违反数据约束");
+                    result = ApiResult.fail(CommonErrorCode.PARAM_INVALID, "数据不合法：必填字段缺失或违反数据约束");
                 } catch (Exception e) {
-                    AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "执行" + caller + "业务逻辑时抛出异常", e);
-                    result = AiPlatformResult.fail(ErrorCodeEnum.SYSTEM_ERROR);
+                    LoggerUtil.error(LogFileEnum.COMMON_ERROR, e, "执行{}业务逻辑时抛出异常", caller);
+                    result = ApiResult.fail(CommonErrorCode.SYSTEM_ERROR);
                 }
             }
         } finally {
             try {
                 callback.afterService(param, data);
             } catch (Exception e) {
-                AiPlatformLoggerUtil.error(LogFileEnum.COMMON_ERROR, "afterService 执行异常 caller=" + caller, e);
+                LoggerUtil.error(LogFileEnum.COMMON_ERROR, e, "afterService 执行异常 caller={}", caller);
             }
             boolean success = result != null && result.isSuccess();
             long cost = System.currentTimeMillis() - start;
-            AiPlatformLoggerUtil.info(LogFileEnum.BIZ_SERVICE,
+            LoggerUtil.info(LogFileEnum.BIZ_SERVICE,
                     "请求结束 接口信息={} 时间={} 耗时={}ms 是否成功={} 返回值={}",
                     caller, startTime, cost, success, result);
         }
@@ -94,7 +93,7 @@ public final class AiPlatformTemplate {
      * @param <P>      入参类型
      * @return 统一返回体
      */
-    public static <P> AiPlatformResult<Void> executeWithoutResult(P param, CallbackWithoutResult<P> callback) {
+    public static <P> ApiResult<Void> executeWithoutResult(P param, CallbackWithoutResult<P> callback) {
         return execute(param, new Callback<P, Void>() {
 
             @Override
@@ -123,8 +122,9 @@ public final class AiPlatformTemplate {
      */
     public interface Callback<P, R> {
 
-        /** 业务执行前钩子：统一在此调用 {@link AiPlatformParamValidator#validate(Object, Class[])} 做参数校验。 */
-        void beforeService(P param);
+        /** 业务执行前钩子：统一在此调用 {@link ParamValidator#validate(Object, Class[])} 做参数校验。无参数用例无需重写。 */
+        default void beforeService(P param) {
+        }
 
         /** 核心业务逻辑。 */
         R execute(P param);
@@ -140,8 +140,9 @@ public final class AiPlatformTemplate {
      */
     public interface CallbackWithoutResult<P> {
 
-        /** 业务执行前钩子：统一在此调用 {@link AiPlatformParamValidator#validate(Object, Class[])} 做参数校验。 */
-        void beforeService(P param);
+        /** 业务执行前钩子：统一在此调用 {@link ParamValidator#validate(Object, Class[])} 做参数校验。无参数用例无需重写。 */
+        default void beforeService(P param) {
+        }
 
         /** 核心业务逻辑（无返回值）。 */
         void execute(P param);
@@ -156,7 +157,7 @@ public final class AiPlatformTemplate {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         for (StackTraceElement element : stack) {
             String className = element.getClassName();
-            if (!className.startsWith(AiPlatformTemplate.class.getName())
+            if (!className.startsWith(ApiTemplate.class.getName())
                     && !className.startsWith("java.")
                     && !className.startsWith("jdk.")) {
                 return className.substring(className.lastIndexOf('.') + 1) + "." + element.getMethodName();

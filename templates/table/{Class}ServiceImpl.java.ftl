@@ -1,8 +1,8 @@
 package ${basePackage}.core.service.impl;
 
+import ${basePackage}.common.util.result.PageResult;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.param.${className}QueryParam;
-import ${basePackage}.core.model.result.PageResult;
 import ${basePackage}.core.repository.${className}Repository;
 import ${basePackage}.core.service.${className}Service;
 import org.springframework.stereotype.Service;
@@ -28,23 +28,23 @@ public class ${className}ServiceImpl implements ${className}Service {
     }
 
     @Override
-    public void update${className}(${className} ${classNameLower}) {
-        ${classNameLower}Repository.update(${classNameLower});
+    public int update${className}(${className} ${classNameLower}) {
+        return ${classNameLower}Repository.update(${classNameLower});
     }
 
     @Override
-    public void updateByCondition(${className} ${classNameLower}) {
-        ${classNameLower}Repository.updateByCondition(${classNameLower});
+    public int updateByCondition(${className} ${classNameLower}) {
+        return ${classNameLower}Repository.updateByCondition(${classNameLower});
     }
 
     @Override
-    public void delete${className}(${pkJavaType} id) {
-        ${classNameLower}Repository.deleteById(id);
+    public int delete${className}(${pkMethodArgs}) {
+        return ${classNameLower}Repository.deleteBy${pkMethodName}(${pkCallArgs});
     }
 
     @Override
-    public ${className} get${className}(${pkJavaType} id) {
-        return ${classNameLower}Repository.findById(id);
+    public ${className} get${className}(${pkMethodArgs}) {
+        return ${classNameLower}Repository.findBy${pkMethodName}(${pkCallArgs});
     }
 
     @Override

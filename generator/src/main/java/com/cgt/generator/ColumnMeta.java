@@ -29,6 +29,8 @@ public final class ColumnMeta {
     public String enumClassName;
     /** 转换策略：NONE / ENUM / JSON / JSON_ARRAY / JSON_OBJECT / COERCE。 */
     public String conversion = "NONE";
+    /** 是否敏感列：生成时从查询参数/响应/查询条件中剔除（默认按列名识别，可配置）。 */
+    public boolean sensitive;
     /** jsonArray 元素类型 / jsonObject 目标类型（全限定名或泛型）。 */
     public String jsonElementType;
     /** 枚举 code 类型（Integer/String/Long）。 */
@@ -39,6 +41,8 @@ public final class ColumnMeta {
     public String toModelExpr;
     /** Model → DO 的转换表达式（右值）。 */
     public String toDoExpr;
+    /** QueryParam → DalQuery 的转换表达式（右值，{query} 为 QueryParam 变量名）。 */
+    public String toDalExpr;
     /** Model 类型是否为 String（决定 @Size/@NotBlank 与导入）。 */
     public boolean modelString;
 
@@ -98,8 +102,20 @@ public final class ColumnMeta {
         return toDoExpr;
     }
 
+    public String getToDalExpr() {
+        return toDalExpr;
+    }
+
+    public boolean isSensitive() {
+        return sensitive;
+    }
+
     public boolean isModelString() {
         return modelString;
+    }
+
+    public boolean isPk() {
+        return pk;
     }
 
     public String getEnumClassName() {

@@ -22,6 +22,16 @@
         </dependency>
         <dependency>
             <groupId>com.jakt</groupId>
+            <artifactId>aiplatform-common-util</artifactId>
+        </dependency>
+
+        <!-- Sa-Token core：StpUtil.getRoleList/getPermissionList -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jakt</groupId>
             <artifactId>aiplatform-core-service</artifactId>
         </dependency>
 

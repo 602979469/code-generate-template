@@ -16,7 +16,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class ${className}CreateRequest extends BaseRequest {
 
-<#if !pkAuto>
+<#if !pkAuto && !compositePk>
     /** ${pkPropertyName}。 */
 <#if pkJavaType == "String">    @NotBlank(message = "${pkPropertyName}不能为空")
 <#else>    @NotNull(message = "${pkPropertyName}不能为空")

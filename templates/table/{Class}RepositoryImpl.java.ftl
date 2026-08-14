@@ -2,13 +2,15 @@ package ${basePackage}.core.repository.impl;
 
 import ${basePackage}.common.dal.dataobject.${className}DO;
 import ${basePackage}.common.dal.mapper.${className}Mapper;
-import ${basePackage}.common.util.tools.${toolPrefix}Invoker;
+import ${basePackage}.common.dal.query.${className}DalQuery;
+import ${basePackage}.common.util.enums.LogFileEnum;
+import ${basePackage}.common.util.result.PageResult;
+import ${basePackage}.common.util.tools.AssertUtil;
+import ${basePackage}.common.util.tools.ConvertUtil;
+import ${basePackage}.common.util.tools.LoggerUtil;
 import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.core.model.enums.ErrorCodeEnum;
-import ${basePackage}.core.model.enums.LogFileEnum;
 import ${basePackage}.core.model.param.${className}QueryParam;
-import ${basePackage}.core.model.result.PageResult;
-import ${basePackage}.core.model.util.${toolPrefix}LoggerUtil;
 import ${basePackage}.core.repository.${className}Repository;
 import ${basePackage}.core.repository.convertor.${className}Convertor;
 import org.springframework.stereotype.Repository;
@@ -16,7 +18,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * ${entityName}仓储：封装 Mapper，对外只暴露领域模型。当前阶段单表操作不引入事务。
+ * ${entityName}仓储：封装 Mapper，对外只暴露领域模型。单表操作不引入事务，多写事务由 core-service 编排。
  */
 @Repository
 public class ${className}RepositoryImpl implements ${className}Repository {
@@ -29,28 +31,33 @@ public class ${className}RepositoryImpl implements ${className}Repository {
     }
 
     @Override
-    public ${className} findById(${pkJavaType} id) {
-        return ${className}Convertor.toModel(${classNameLower}Mapper.selectById(id));
+    public ${className} findBy${pkMethodName}(${pkMethodArgs}) {
+        ${className}DO ${classNameLower}DO = ${classNameLower}Mapper.selectBy${pkMethodName}(${pkCallArgs});
+        return ${className}Convertor.toModel(${classNameLower}DO);
     }
 
     @Override
     public List<${className}> findList(${className}QueryParam query) {
-        return ${classNameLower}Mapper.selectList(query).stream().map(${className}Convertor::toModel).toList();
+        ${className}DalQuery dalQuery = ${className}Convertor.toDalQuery(query);
+        List<${className}DO> doList = ${classNameLower}Mapper.selectList(dalQuery);
+        return ConvertUtil.map(doList, ${className}Convertor::toModel);
     }
 
     @Override
     public ${className} findOne(${className}QueryParam query) {
-        List<${className}DO> doList = ${classNameLower}Mapper.selectList(query);
-        ${toolPrefix}Invoker.throwErrWhenTrue(doList.size() > 1, ErrorCodeEnum.RESULT_NOT_UNIQUE,
+        ${className}DalQuery dalQuery = ${className}Convertor.toDalQuery(query);
+        List<${className}DO> doList = ${classNameLower}Mapper.selectList(dalQuery);
+        AssertUtil.throwErrWhenTrue(doList.size() > 1, ErrorCodeEnum.RESULT_NOT_UNIQUE,
                 "查询结果不唯一：预期 1 条，实际 " + doList.size() + " 条");
         return doList.isEmpty() ? null : ${className}Convertor.toModel(doList.get(0));
     }
 
     @Override
     public PageResult<${className}> findPage(${className}QueryParam query) {
-        List<${className}DO> doList = ${classNameLower}Mapper.selectPage(query);
-        long total = ${classNameLower}Mapper.countByQuery(query);
-        List<${className}> list = doList.stream().map(${className}Convertor::toModel).toList();
+        ${className}DalQuery dalQuery = ${className}Convertor.toDalQuery(query);
+        List<${className}DO> doList = ${classNameLower}Mapper.selectPage(dalQuery);
+        long total = ${classNameLower}Mapper.countByQuery(dalQuery);
+        List<${className}> list = ConvertUtil.map(doList, ${className}Convertor::toModel);
         return new PageResult<>(total, query.getPageNum(), query.getPageSize(), list);
     }
 
@@ -58,30 +65,35 @@ public class ${className}RepositoryImpl implements ${className}Repository {
     public ${className} insert(${className} ${classNameLower}) {
         ${className}DO ${classNameLower}DO = ${className}Convertor.toDO(${classNameLower});
         ${classNameLower}Mapper.insert(${classNameLower}DO);
+<#if !compositePk>
         // 主键回填到入参（自增主键由数据库生成），调用方直接使用原对象
         ${classNameLower}.set${pkPropertyName?cap_first}(${classNameLower}DO.get${pkPropertyName?cap_first}());
+</#if>
         return ${classNameLower};
     }
 
     @Override
-    public void update(${className} ${classNameLower}) {
+    public int update(${className} ${classNameLower}) {
         ${className}DO ${classNameLower}DO = ${className}Convertor.toDO(${classNameLower});
         int affected = ${classNameLower}Mapper.update(${classNameLower}DO);
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.update ${pkPropertyName}={} 影响行数={}", ${classNameLower}.get${pkPropertyName?cap_first}(), affected);
-        ${toolPrefix}Invoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.UPDATE_FAILED, "更新失败：记录不存在或已被修改");
+        LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.update ${pkPropertyName}={} 影响行数={}",
+                ${classNameLower}.get${pkPropertyName?cap_first}(), affected);
+        return affected;
     }
 
     @Override
-    public void updateByCondition(${className} ${classNameLower}) {
+    public int updateByCondition(${className} ${classNameLower}) {
         int affected = ${classNameLower}Mapper.updateByCondition(${className}Convertor.toDO(${classNameLower}));
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.updateByCondition ${pkPropertyName}={} 影响行数={}", ${classNameLower}.get${pkPropertyName?cap_first}(), affected);
-        ${toolPrefix}Invoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.UPDATE_FAILED, "更新失败：记录不存在或已被修改");
+        LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.updateByCondition ${pkPropertyName}={} 影响行数={}",
+                ${classNameLower}.get${pkPropertyName?cap_first}(), affected);
+        return affected;
     }
 
     @Override
-    public void deleteById(${pkJavaType} id) {
-        int affected = ${classNameLower}Mapper.deleteById(id);
-        ${toolPrefix}LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.deleteById id={} 影响行数={}", id, affected);
-        ${toolPrefix}Invoker.throwErrWhenTrue(affected == 0, ErrorCodeEnum.DELETE_FAILED, "删除失败：记录不存在或已被删除");
+    public int deleteBy${pkMethodName}(${pkMethodArgs}) {
+        int affected = ${classNameLower}Mapper.deleteBy${pkMethodName}(${pkCallArgs});
+        LoggerUtil.info(LogFileEnum.BIZ_SERVICE, "${className}Repository.deleteBy${pkMethodName} ${pkLogKey}={} 影响行数={}",
+                ${pkLogFirstArg}, affected);
+        return affected;
     }
 }

@@ -2,18 +2,19 @@ package ${basePackage}.web.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import ${basePackage}.biz.service.${className}Manager;
+import ${basePackage}.common.util.result.PageResult;
+import ${basePackage}.common.util.tools.AssertUtil;
+import ${basePackage}.common.util.tools.ConvertUtil;
+import ${basePackage}.core.model.domain.${className};
+import ${basePackage}.core.model.enums.ErrorCodeEnum;
 import ${basePackage}.web.assembler.${className}Assembler;
 import ${basePackage}.web.checker.${className}ParamChecker;
 import ${basePackage}.web.param.${className}CreateRequest;
 import ${basePackage}.web.param.${className}QueryRequest;
 import ${basePackage}.web.param.${className}UpdateRequest;
+import ${basePackage}.web.result.ApiResult;
 import ${basePackage}.web.result.${className}Response;
-import ${basePackage}.web.result.${toolPrefix}Result;
-import ${basePackage}.web.template.${toolPrefix}Template;
-import ${basePackage}.common.util.tools.${toolPrefix}Invoker;
-import ${basePackage}.core.model.domain.${className};
-import ${basePackage}.core.model.enums.ErrorCodeEnum;
-import ${basePackage}.core.model.result.PageResult;
+import ${basePackage}.web.template.ApiTemplate;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * ${entityName}管理接口。Controller 只做参数校验、DTO 转换与结果包装，不含业务规则；
- * 参数校验、异常封装、请求日志与 Result 组装统一交给 ${toolPrefix}Template。
+ * 参数校验、异常封装、请求日志与 Result 组装统一交给 ApiTemplate。
  */
 @RestController
 @RequestMapping("/api/v1/${classNameLower}s")
@@ -47,8 +48,8 @@ public class ${className}Controller {
      * @return 创建成功后的${entityName}信息
      */
     @PostMapping
-    public ${toolPrefix}Result<${className}Response> create(@RequestBody ${className}CreateRequest request) {
-        return ${toolPrefix}Template.execute(request, new ${toolPrefix}Template.Callback<>() {
+    public ApiResult<${className}Response> create(@RequestBody ${className}CreateRequest request) {
+        return ApiTemplate.execute(request, new ApiTemplate.Callback<>() {
 
             @Override
             public void beforeService(${className}CreateRequest param) {
@@ -60,37 +61,29 @@ public class ${className}Controller {
                 ${className} ${classNameLower} = ${classNameLower}Manager.create${className}(${className}Assembler.toModel(param));
                 return ${className}Assembler.toResponse(${classNameLower});
             }
-
-            @Override
-            public void afterService(${className}CreateRequest param, ${className}Response result) {
-            }
         });
     }
 
     /**
-     * 按 ID 查询${entityName}。
+     * 按主键查询${entityName}。
      *
-     * @param id ${entityName} ID
+     * @param ${pkCallArgs} ${entityName}主键
      * @return ${entityName}信息
      */
-    @GetMapping("/{id}")
-    public ${toolPrefix}Result<${className}Response> get(@PathVariable ${pkJavaType} id) {
-        return ${toolPrefix}Template.execute(id, new ${toolPrefix}Template.Callback<>() {
+    @GetMapping("/${pkPathVars}")
+    public ApiResult<${className}Response> get(${pkPathParams}) {
+        return ApiTemplate.execute(${pkFirstArg}, new ApiTemplate.Callback<>() {
 
             @Override
-            public void beforeService(${pkJavaType} param) {
-                ${className}ParamChecker.checkId(param);
+            public void beforeService(${pkFirstType} param) {
+                ${className}ParamChecker.${pkCheckMethod}(${pkCallArgs});
             }
 
             @Override
-            public ${className}Response execute(${pkJavaType} param) {
-                ${className} ${classNameLower} = ${classNameLower}Manager.get${className}(param);
-                ${toolPrefix}Invoker.throwErrWhenNull(${classNameLower}, ErrorCodeEnum.RESOURCE_NOT_FOUND, "${entityName}不存在");
+            public ${className}Response execute(${pkFirstType} param) {
+                ${className} ${classNameLower} = ${classNameLower}Manager.get${className}(${pkCallArgs});
+                AssertUtil.throwErrWhenNull(${classNameLower}, ErrorCodeEnum.RESOURCE_NOT_FOUND, "${entityName}不存在");
                 return ${className}Assembler.toResponse(${classNameLower});
-            }
-
-            @Override
-            public void afterService(${pkJavaType} param, ${className}Response result) {
             }
         });
     }
@@ -102,9 +95,8 @@ public class ${className}Controller {
      * @return 分页结果
      */
     @GetMapping("/page")
-    public ${toolPrefix}Result<PageResult<${className}Response>> page(${className}QueryRequest request) {
-        
-        return ${toolPrefix}Template.execute(request, new ${toolPrefix}Template.Callback<>() {
+    public ApiResult<PageResult<${className}Response>> page(${className}QueryRequest request) {
+        return ApiTemplate.execute(request, new ApiTemplate.Callback<>() {
 
             @Override
             public void beforeService(${className}QueryRequest param) {
@@ -115,8 +107,7 @@ public class ${className}Controller {
             public PageResult<${className}Response> execute(${className}QueryRequest param) {
                 param = ObjectUtil.defaultIfNull(param, new ${className}QueryRequest());
                 PageResult<${className}> page = ${classNameLower}Manager.page${className}s(${className}Assembler.toQueryParam(param));
-                return new PageResult<>(page.getTotal(), param.getPageNum(), param.getPageSize(),
-                        page.getDataList().stream().map(${className}Assembler::toResponse).toList());
+                return ConvertUtil.mapPage(page, ${className}Assembler::toResponse);
             }
         });
     }
@@ -125,23 +116,23 @@ public class ${className}Controller {
      * 更新${entityName}（全量）。
      * 注意：PUT 为全量覆盖，未传字段会被置 NULL；部分更新请走 updateByCondition（Manager/DomainService）。
      *
-     * @param id      ${entityName} ID
+     * @param ${pkCallArgs} ${entityName}主键
      * @param request 更新内容
-     * @return 更新后的${entityName}信息
+     * @return 更新结果
      */
-    @PutMapping("/{id}")
-    public ${toolPrefix}Result<Void> update(@PathVariable ${pkJavaType} id, @RequestBody ${className}UpdateRequest request) {
-        return ${toolPrefix}Template.executeWithoutResult(request, new ${toolPrefix}Template.CallbackWithoutResult<>() {
+    @PutMapping("/${pkPathVars}")
+    public ApiResult<Void> update(${pkPathParams}, @RequestBody ${className}UpdateRequest request) {
+        return ApiTemplate.executeWithoutResult(request, new ApiTemplate.CallbackWithoutResult<>() {
 
             @Override
             public void beforeService(${className}UpdateRequest param) {
-                ${className}ParamChecker.checkId(id);
+                ${className}ParamChecker.${pkCheckMethod}(${pkCallArgs});
                 ${className}ParamChecker.check${className}UpdateRequest(param);
             }
 
             @Override
             public void execute(${className}UpdateRequest param) {
-                ${classNameLower}Manager.update${className}(${className}Assembler.toModel(param, id));
+                ${classNameLower}Manager.update${className}(${className}Assembler.toModel(param, ${pkCallArgs}));
             }
         });
     }
@@ -149,21 +140,21 @@ public class ${className}Controller {
     /**
      * 删除${entityName}。
      *
-     * @param id ${entityName} ID
+     * @param ${pkCallArgs} ${entityName}主键
      * @return 删除结果
      */
-    @DeleteMapping("/{id}")
-    public ${toolPrefix}Result<Void> delete(@PathVariable ${pkJavaType} id) {
-        return ${toolPrefix}Template.executeWithoutResult(id, new ${toolPrefix}Template.CallbackWithoutResult<>() {
+    @DeleteMapping("/${pkPathVars}")
+    public ApiResult<Void> delete(${pkPathParams}) {
+        return ApiTemplate.executeWithoutResult(${pkFirstArg}, new ApiTemplate.CallbackWithoutResult<${pkFirstType}>() {
 
             @Override
-            public void beforeService(${pkJavaType} id) {
-                ${className}ParamChecker.checkId(id);
+            public void beforeService(${pkFirstType} ${pkFirstArg}) {
+                ${className}ParamChecker.${pkCheckMethod}(${pkCallArgs});
             }
 
             @Override
-            public void execute(${pkJavaType} id) {
-                ${classNameLower}Manager.delete${className}(id);
+            public void execute(${pkFirstType} ${pkFirstArg}) {
+                ${classNameLower}Manager.delete${className}(${pkCallArgs});
             }
         });
     }
