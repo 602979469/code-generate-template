@@ -27,6 +27,12 @@ npm start     # 默认 5180 端口，可用 PORT 覆盖
 - `vendor/`：vue.min.js / element-ui.js / element-ui.css（从 aiplatform-vue node_modules 拷贝）
 - `package.json`：唯一依赖 mysql2
 
+## 生成日志
+
+点击「生成项目」后会自动弹出「生成日志」窗口：服务端实际执行
+`java -Dcgt.templateRepo=<仓库根> -jar generator.jar <generate.yaml>`（等价 `./gen.sh`），
+弹窗展示该命令的完整 stdout/stderr 输出（成功与失败都会显示）。
+
 ## 数据库连接
 
 页面"数据源"填写：主机 / 端口 / 数据库 / 用户名 / 密码（密码可空）。服务只读 `information_schema`，不建表、不改数据。

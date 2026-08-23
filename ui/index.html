@@ -339,6 +339,21 @@
     <el-button :disabled="activeStep === 1" @click="activeStep--">上一步</el-button>
     <el-button v-if="activeStep < 4" type="primary" @click="goNext">下一步</el-button>
   </div>
+
+  <el-dialog title="生成日志" :visible.sync="logVisible" width="78%" top="6vh" :close-on-click-modal="false">
+    <div style="margin-bottom: 10px">
+      <el-tag :type="generateSuccess ? 'success' : 'danger'" size="small">
+        {{ generateSuccess ? '生成成功' : '生成失败' }}
+      </el-tag>
+    </div>
+    <el-input
+      v-model="generateLog"
+      type="textarea"
+      :rows="24"
+      readonly
+      style="font-family: Menlo, Consolas, monospace; font-size: 12px;"
+    />
+  </el-dialog>
 </div>
 </script>
 
@@ -418,6 +433,9 @@ new Vue({
       columnNameDraft: 'del_flag',
       forceCreateWarned: false,
       generating: false,
+      generateLog: '',
+      logVisible: false,
+      generateSuccess: false,
       yamlContent: ''
     }
   },
@@ -872,11 +890,13 @@ new Vue({
           body: JSON.stringify({ yaml: this.yamlContent })
         })
         const result = await res.json()
+        this.generateLog = String(result.log || result.errorMessage || '').trim()
+        this.generateSuccess = !!result.success
+        this.logVisible = true
         if (result.success) {
           this.$message.success('项目生成完成，输出目录：' + this.project.outputDir)
         } else {
-          const tail = String(result.log || result.errorMessage || '').split('\n').slice(-10).join('\n')
-          this.$alert(tail || '生成失败', '生成失败', { type: 'error' })
+          this.$message.error('生成失败，详见日志弹窗')
         }
       } catch (e) {
         this.$message.error('生成失败：' + ((e && e.message) || '服务不可达'))
