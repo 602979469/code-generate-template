@@ -637,6 +637,11 @@ new Vue({
           return table
         })
         this.selectedTables = []
+        // 若在读取表结构前已开启逻辑删除/时间配置，加载后补触发一次 review / 保留集合重置
+        if (this.global.enable && this.global.columnName) {
+          this.reviewLogicDelete()
+        }
+        this.applyReservedReset()
         if (body.warnings && body.warnings.length) {
           this.loadError = body.warnings.map(w => w.tableName + ': ' + w.message).join('；')
         }
