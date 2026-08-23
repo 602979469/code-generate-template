@@ -161,18 +161,34 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body))
 }
 
-/** 调用 code-generate-template 生成器（等价 ./gen.sh <配置>）。 */
-function runGenerator(yamlContent) {
+/**
+ * 调用 code-generate-template 生成器。
+ * packageMode=false（本地模式）：按 yaml 的 outputDir 直接生成到指定路径；
+ * packageMode=true（集群模式）：临时目录生成 + tar.gz 打包，忽略 yaml 的 outputDir。
+ */
+function runGenerator(yamlContent, packageMode) {
   return new Promise(resolve => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codegen-'))
+    const projectDir = path.join(tmpDir, 'project')
+    const archivePath = path.join(tmpDir, 'codegen-project.tar.gz')
+    // 集群模式：覆盖 outputDir 为临时目录；本地模式：保持 yaml 原样
+    const yamlPatched = packageMode
+      ? String(yamlContent).replace(/^(outputDir\s*:).*$/m, 'outputDir: ' + projectDir)
+      : String(yamlContent)
+    if (packageMode) {
+      fs.mkdirSync(projectDir, { recursive: true })
+    }
     const yamlPath = path.join(tmpDir, 'generate.yaml')
-    fs.writeFileSync(yamlPath, yamlContent, 'utf8')
+    fs.writeFileSync(yamlPath, yamlPatched, 'utf8')
+    const cleanup = () => {
+      try { fs.rmSync(tmpDir, { recursive: true, force: true }) } catch (e) {}
+    }
     const jar = path.join(TEMPLATE_ROOT, 'generator', 'target', 'generator.jar')
     if (!fs.existsSync(jar)) {
       const build = spawnSync('mvn', ['-q', '-f', path.join(TEMPLATE_ROOT, 'generator', 'pom.xml'), '-DskipTests', 'package'],
         { stdio: 'pipe', timeout: 300000 })
       if (build.status !== 0) {
-        try { fs.rmSync(tmpDir, { recursive: true, force: true }) } catch (e) {}
+        cleanup()
         return resolve({ success: false, log: (build.stderr || '').toString(), errorMessage: '生成器构建失败' })
       }
     }
@@ -182,11 +198,20 @@ function runGenerator(yamlContent) {
       maxBuffer: 10 * 1024 * 1024
     }, (err, stdout, stderr) => {
       const log = ((stdout || '') + '\n' + (stderr || '')).trim()
-      try { fs.rmSync(tmpDir, { recursive: true, force: true }) } catch (e) {}
-      resolve({
-        success: !err,
-        log,
-        errorMessage: err ? (err.message || '生成失败') : ''
+      if (err) {
+        cleanup()
+        return resolve({ success: false, log, errorMessage: err.message || '生成失败' })
+      }
+      if (!packageMode) {
+        cleanup()
+        return resolve({ success: true, log })
+      }
+      execFile('tar', ['-czf', archivePath, '-C', projectDir, '.'], tarErr => {
+        if (tarErr) {
+          cleanup()
+          return resolve({ success: false, log: log + '\n打包失败: ' + tarErr.message, errorMessage: '打包失败' })
+        }
+        resolve({ success: true, log, archivePath, cleanup })
       })
     })
   })
@@ -254,8 +279,20 @@ const server = http.createServer(async (req, res) => {
       if (!yaml.trim()) {
         return sendJson(res, 400, { success: false, errorCode: 'PARAM_INVALID', errorMessage: '缺少 generate.yaml 内容' })
       }
-      const result = await runGenerator(yaml)
-      return sendJson(res, result.success ? 200 : 400, result)
+      const packageMode = body.package === true
+      const result = await runGenerator(yaml, packageMode)
+      if (!result.success) {
+        return sendJson(res, 400, { success: false, log: result.log, errorMessage: result.errorMessage })
+      }
+      if (!packageMode) {
+        return sendJson(res, 200, { success: true, log: result.log })
+      }
+      // 成功：直接返回打包好的 tar.gz 压缩包
+      res.writeHead(200, {
+        'Content-Type': 'application/gzip',
+        'Content-Disposition': 'attachment; filename="codegen-project.tar.gz"'
+      })
+      fs.createReadStream(result.archivePath).pipe(res).on('close', result.cleanup)
     })
     return
   }
