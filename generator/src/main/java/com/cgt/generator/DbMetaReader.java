@@ -214,9 +214,11 @@ public final class DbMetaReader {
             c.modelString = "String".equals(c.modelType);
             if (cc != null) {
                 applyColumnConfig(meta, c, cc);
+                if (cc.comment != null && !cc.comment.isBlank()) {
+                    c.comment = cc.comment;
+                }
             }
             c.sensitive = (cc != null && cc.sensitive)
-                    || cfg.sensitiveColumns.contains(c.columnName)
                     || SENSITIVE_COLUMNS.contains(c.columnName);
             if (c.toModelExpr == null) {
                 c.toModelExpr = "{do}.get" + cap(c.propertyName) + "()";
@@ -304,9 +306,6 @@ public final class DbMetaReader {
     }
 
     private static void applyJsonArrayConfig(TableMeta meta, ColumnMeta c, GeneratorConfig.ColumnConfig cc, String getter) {
-        if (!"json".equals(c.dbType)) {
-            throw new IllegalStateException("列 " + c.columnName + " type: jsonArray 只适用于 json 类型列");
-        }
         String element = cc.javaObject == null ? "Object" : cc.javaObject;
         c.conversion = "JSON_ARRAY";
         c.jsonElementType = element;
@@ -318,12 +317,6 @@ public final class DbMetaReader {
     }
 
     private static void applyJsonObjectConfig(TableMeta meta, ColumnMeta c, GeneratorConfig.ColumnConfig cc, String getter) {
-        if (!"json".equals(c.dbType)) {
-            throw new IllegalStateException("列 " + c.columnName + " type: jsonObject 只适用于 json 类型列");
-        }
-        if ("String".equals(cc.javaObject)) {
-            throw new IllegalStateException("列 " + c.columnName + " type: jsonObject 需要对象类型(POJO/Map)，原始字符串请用 type: json");
-        }
         c.conversion = "JSON_OBJECT";
         c.toDoExpr = "JsonUtil.toJson({model}." + getter + ")";
         if (cc.javaObject == null) {

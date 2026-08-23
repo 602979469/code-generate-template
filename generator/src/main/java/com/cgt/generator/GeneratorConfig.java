@@ -31,7 +31,6 @@ public final class GeneratorConfig {
     /** 全局逻辑删除配置，null 表示未配置。 */
     public LogicDeleteConfig globalLogicDelete;
     /** 全局敏感列名：生成时从查询参数/响应/查询条件中剔除（password 等按默认名单识别，此处可追加）。 */
-    public final List<String> sensitiveColumns = new ArrayList<>();
     public final List<TableConfig> tables = new ArrayList<>();
 
     /**
@@ -66,6 +65,8 @@ public final class GeneratorConfig {
     public static final class ColumnConfig {
         /** enum / json / jsonArray / jsonObject / Java 类型（如 Integer）。 */
         public String type;
+        /** 列别名（javadoc/注释用），覆盖数据库列注释。 */
+        public String comment;
         /** 敏感列：不进查询参数/响应（默认按列名识别 password/token 等，可显式声明）。 */
         public boolean sensitive;
         /** jsonArray 元素类型 / jsonObject 目标类型（全限定类名）。 */
@@ -159,17 +160,9 @@ public final class GeneratorConfig {
         }
 
         cfg.globalLogicDelete = parseLogicDelete(root.get("globalLogicDelete"));
-        if (root.get("sensitive_columns") instanceof List<?> sensitiveList) {
-            for (Object item : sensitiveList) {
-                String name = str(item);
-                if (name != null && !name.isBlank()) {
-                    cfg.sensitiveColumns.add(name);
-                }
-            }
-        }
 
         String outputDir = str(root.get("outputDir"));
-        cfg.outputDir = (outputDir == null || outputDir.isBlank() ? Path.of(".") : Path.of(outputDir))
+        cfg.outputDir = (outputDir == null || outputDir.isBlank() ? Path.of(".") : Path.of(expandHome(outputDir)))
                 .toAbsolutePath().normalize();
 
         if (root.get("tables") instanceof List<?> list) {
@@ -203,6 +196,14 @@ public final class GeneratorConfig {
         return cfg;
     }
 
+    /** 展开配置里的 ~ 前缀为用户主目录（~/AiProd -> /Users/xxx/AiProd）。 */
+    private static String expandHome(String value) {
+        if (value != null && value.startsWith("~/")) {
+            return System.getProperty("user.home") + value.substring(1);
+        }
+        return value;
+    }
+
     private static LogicDeleteConfig parseLogicDelete(Object value) {
         if (!(value instanceof Map<?, ?> m)) {
             return null;
@@ -219,6 +220,7 @@ public final class GeneratorConfig {
     private static ColumnConfig parseColumnConfig(Map<?, ?> col) {
         ColumnConfig cc = new ColumnConfig();
         cc.type = str(col.get("type"));
+        cc.comment = str(col.get("comment"));
         cc.javaObject = str(col.get("javaObject"));
         cc.sensitive = "true".equalsIgnoreCase(str(col.get("sensitive")));
         if (col.get("enum") instanceof Map<?, ?> enumCfg) {

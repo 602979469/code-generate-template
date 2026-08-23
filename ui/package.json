@@ -1,0 +1,12 @@
+{
+  "name": "codegen-ui-standalone",
+  "version": "0.1.0",
+  "private": true,
+  "description": "独立版代码生成配置页（脱离 RuoYi/Java 后端，Node 直连 MySQL 读表结构）",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "mysql2": "^3.11.0"
+  }
+}
