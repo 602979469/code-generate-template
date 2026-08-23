@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codegen-ui
+  namespace: tsk
+  labels:
+    app: codegen-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: codegen-ui
+  template:
+    metadata:
+      labels:
+        app: codegen-ui
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+      containers:
+      - name: codegen-ui
+        # 流水线会 set image 为 codegen-ui:<短哈希>（镜像由 ctr 导入 containerd）
+        image: codegen-ui:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5180
+          name: http
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5180
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: codegen-ui
+  namespace: tsk
+  labels:
+    app: codegen-ui
+spec:
+  ports:
+  - port: 5180
+    targetPort: 5180
+    name: http
+  selector:
+    app: codegen-ui
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: codegen-ui
+  namespace: tsk
+  annotations:
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: generate.jakt.online
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: codegen-ui
+            port:
+              number: 5180
