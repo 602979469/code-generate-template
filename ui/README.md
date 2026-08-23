@@ -15,8 +15,10 @@ npm start     # 默认 5180 端口，可用 PORT 覆盖
 
 | 模式 | URL | 效果 |
 | --- | --- | --- |
-| 内嵌（默认） | `http://localhost:5180/` | 保持现状，无标题头，便于未来以 iframe 等方式内嵌引用 |
-| 独立 | `http://localhost:5180/?mode=standalone`（或 `?standalone=1`） | 顶部居中显示大字"代码生成器" + 代码主题 logo |
+| 独立（默认） | `http://localhost:5180/` | 顶部居中显示大字"代码生成器" + 代码主题 logo |
+| 内嵌 | `http://localhost:5180/?embed=1`（或 `?mode=embed`） | 无标题头、无 logo，便于以 iframe 等方式内嵌引用 |
+
+> 兼容旧参数：`?mode=standalone` / `?standalone=1` 仍显示 logo（与默认一致）。
 
 ## 目录
 

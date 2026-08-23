@@ -351,8 +351,9 @@ new Vue({
   data() {
     return {
       activeStep: 1,
-      standalone: new URLSearchParams(window.location.search).get('mode') === 'standalone'
-        || new URLSearchParams(window.location.search).get('standalone') === '1',
+      // 默认独立模式（带 logo）；?embed=1 或 ?mode=embed 时进入内嵌模式（隐藏 logo）
+      standalone: new URLSearchParams(window.location.search).get('embed') !== '1'
+        && new URLSearchParams(window.location.search).get('mode') !== 'embed',
       steps: [
         { value: 1, label: '基础配置' },
         { value: 2, label: '模块配置' },
