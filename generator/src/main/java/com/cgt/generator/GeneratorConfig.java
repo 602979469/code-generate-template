@@ -180,7 +180,8 @@ public final class GeneratorConfig {
         }
 
         cfg.projectPrefix = str(root.get("projectPrefix"));
-        cfg.toolPrefix = str(root.get("toolPrefix"));
+        // 2.0 规范已移除 toolPrefix 配置项：未配置时默认取 projectPrefix，保证骨架 token 替换不落空
+        cfg.toolPrefix = defaultStr(root.get("toolPrefix"), cfg.projectPrefix);
         cfg.groupId = str(root.get("groupId"));
         cfg.projectArtifactPrefix = str(root.get("projectArtifactPrefix"));
         cfg.basePackageOverride = str(root.get("basePackage"));
