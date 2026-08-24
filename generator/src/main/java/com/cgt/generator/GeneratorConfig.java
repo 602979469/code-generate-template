@@ -21,7 +21,6 @@ public final class GeneratorConfig {
     public Path repoDir;
 
     public String projectPrefix;
-    public String toolPrefix;
     public String groupId;
     public String projectArtifactPrefix;
     /** 显式基础包名（2.0 配置项）；缺省 = groupId + "." + projectArtifactPrefix。 */
@@ -180,7 +179,6 @@ public final class GeneratorConfig {
         }
 
         cfg.projectPrefix = str(root.get("projectPrefix"));
-        cfg.toolPrefix = str(root.get("toolPrefix"));
         cfg.groupId = str(root.get("groupId"));
         cfg.projectArtifactPrefix = str(root.get("projectArtifactPrefix"));
         cfg.basePackageOverride = str(root.get("basePackage"));
@@ -303,9 +301,6 @@ public final class GeneratorConfig {
         if (isBlank(projectPrefix)) {
             missing.append(" projectPrefix");
         }
-        if (isBlank(toolPrefix)) {
-            missing.append(" toolPrefix");
-        }
         if (isBlank(groupId)) {
             missing.append(" groupId");
         }
@@ -322,9 +317,6 @@ public final class GeneratorConfig {
         }
         if (!projectPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
             throw new IllegalArgumentException("projectPrefix 需为驼峰字母/数字(如 AiProd)");
-        }
-        if (!toolPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
-            throw new IllegalArgumentException("toolPrefix 需为驼峰字母/数字(如 AiProd)");
         }
         if (!tables.isEmpty()) {
             if (isBlank(jdbcUrl) || isBlank(jdbcUsername)) {

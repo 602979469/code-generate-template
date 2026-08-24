@@ -75,7 +75,8 @@ public final class SkeletonGenerator {
         out = out.replace(TOKENS.get(1)[0], cfg.basePackage());
         // 目录路径用斜杠分隔，补一组路径版 token，避免 com/jakt 残留在目录结构中
         out = out.replace(TOKENS.get(2)[0], cfg.packagePath());
-        out = out.replace(TOKENS.get(3)[0], cfg.toolPrefix);
+        // 工具前缀与项目名一致（2.0 移除 toolPrefix 配置项）
+        out = out.replace(TOKENS.get(3)[0], cfg.projectPrefix);
         out = out.replace(TOKENS.get(4)[0], cfg.projectArtifactPrefix);
         out = out.replace(TOKENS.get(5)[0], cfg.groupId);
         out = out.replace(TOKENS.get(6)[0], cfg.groupId.replace('.', '/'));

@@ -11,9 +11,6 @@
 # 项目前缀（驼峰，用于启动类名），如 AiProd -> AiProdApplication
 projectPrefix: AiProd
 
-# 工具/基础组件前缀（驼峰，必填），如 AiProd -> AiProdException / AiProdConstants
-toolPrefix: AiProd
-
 # Maven groupId
 groupId: com.jakt
 
