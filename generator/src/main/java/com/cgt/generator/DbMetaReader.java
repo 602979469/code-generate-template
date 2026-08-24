@@ -268,14 +268,12 @@ public final class DbMetaReader {
         if (cc.enumConfig == null || cc.enumConfig.values.isEmpty()) {
             throw new IllegalStateException("列 " + c.columnName + " type: enum 时必须配置 enum 块");
         }
-        String codeType = cc.enumConfig.codeType;
-        if (codeType == null) {
-            codeType = switch (c.javaType) {
-                case "Integer" -> "Integer";
-                case "Long" -> "Long";
-                default -> "String";
-            };
-        }
+        // codeType 不再由配置指定：强制按数据库列默认映射推断（int->Integer、bigint->Long、其余->String）
+        String codeType = switch (c.javaType) {
+            case "Integer" -> "Integer";
+            case "Long" -> "Long";
+            default -> "String";
+        };
         for (GeneratorConfig.EnumValue v : cc.enumConfig.values) {
             if ("Integer".equals(codeType)) {
                 try {

@@ -38,13 +38,14 @@
     .logic-row .el-input { margin-right: 12px; }
     .logic-row .el-input:last-child { margin-right: 0; }
     .type-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
-    .enum-editor { display: inline-flex; flex-direction: column; align-items: flex-start; }
-    .enum-meta { display: flex; align-items: center; margin-bottom: 6px; }
-    .enum-meta-label { font-size: 12px; color: #606266; margin-right: 4px; white-space: nowrap; }
-    .enum-meta .el-input, .enum-meta .el-select { margin-right: 6px; }
+    .enum-cell { display: inline-flex; flex-direction: column; align-items: flex-start; }
+    .enum-cell-top { display: flex; align-items: center; }
+    .enum-selected .el-input__inner { color: #67c23a; font-weight: 600; }
     .enum-row { display: flex; align-items: center; margin-bottom: 4px; }
     .enum-row .el-input { margin-right: 4px; }
-    .enum-actions { margin-top: 8px; border-top: 1px dashed #e4e7ed; padding-top: 8px; }
+    .enum-row .enum-error .el-input__inner { border-color: #f56c6c; }
+    .enum-err-text { color: #f56c6c; font-size: 12px; margin-right: 12px; }
+    .enum-err-row { min-height: 18px; display: flex; flex-wrap: wrap; margin: 2px 0 6px; }
     .logic-value-editor { display: flex; align-items: center; }
     .logic-value-label { font-size: 12px; color: #606266; margin: 0 6px 0 4px; }
     .yaml-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; }
@@ -225,49 +226,12 @@
                   </el-dropdown>
                 </template>
               </el-table-column>
-              <el-table-column label="映射值" min-width="280">
+              <el-table-column label="映射值" min-width="340">
                 <template slot-scope="{ row: col }">
                   <el-select v-if="col._config.type === 'javaType'" v-model="col._config.javaType" size="mini">
                     <el-option v-for="t in javaTypeOptions" :key="t" :label="t" :value="t" />
                   </el-select>
-                  <el-popover v-else-if="col._config.type === 'enum'" trigger="click" placement="bottom-start" width="480"
-                              :visible.sync="col._enumPopoverVisible">
-                    <div class="enum-editor">
-                      <div class="enum-meta">
-                        <span class="enum-meta-label">枚举名</span>
-                        <el-select v-model="col._config.enum.className" size="mini" filterable allow-create default-first-option
-                                   style="width:100%" :disabled="isEnumLocked(col)" placeholder="选择已有枚举或输入新名称"
-                                   @change="onEnumClassSelect(col)">
-                          <el-option v-for="name in enumRegistryNames" :key="name" :label="name" :value="name">
-                            <span style="color:#67c23a;font-weight:600;">已配置</span><span>：{{ name }}</span>
-                          </el-option>
-                        </el-select>
-                      </div>
-                      <div class="enum-meta">
-                        <span class="enum-meta-label">类型</span>
-                        <el-select v-model="col._config.enum.codeType" size="mini" style="width:120px" :disabled="isEnumLocked(col)">
-                          <el-option label="Integer" value="Integer" /><el-option label="String" value="String" /><el-option label="Long" value="Long" />
-                        </el-select>
-                      </div>
-                      <div v-if="isEnumLocked(col)" class="schema-tip" style="margin:4px 0 8px;">已确认配置，本页面其他列可直接复用；点击"修改配置"可调整</div>
-                      <template v-else>
-                        <div v-for="(v, idx) in col._config.enum.values" :key="idx" class="enum-row">
-                          <el-input v-model="v.code" size="mini" style="width:64px" placeholder="值" />
-                          <el-input v-model="v.name" size="mini" style="width:90px" placeholder="名称" />
-                          <el-input v-model="v.desc" size="mini" style="width:110px" placeholder="说明" />
-                          <el-button type="text" icon="el-icon-delete" @click="col._config.enum.values.splice(idx, 1)"></el-button>
-                        </div>
-                        <el-button size="mini" icon="el-icon-plus" @click="col._config.enum.values.push({ code: '', name: '', desc: '' })">添加一条</el-button>
-                      </template>
-                      <div class="enum-actions">
-                        <el-button v-if="isEnumLocked(col)" size="mini" @click="unlockEnum(col)">修改配置</el-button>
-                        <el-button v-else size="mini" type="primary" @click="confirmEnum(col)">确认配置</el-button>
-                      </div>
-                    </div>
-                    <el-tag slot="reference" size="mini" style="cursor:pointer;" :type="isEnumLocked(col) ? 'success' : 'info'">
-                      {{ isEnumLocked(col) ? col._config.enum.className : ('枚举配置' + (col._config.enum && col._config.enum.values.length ? '（' + col._config.enum.values.length + '）' : '')) }}
-                    </el-tag>
-                  </el-popover>
+                  <enum-tag v-else-if="col._config.type === 'enum'" :table="row" :column="col" />
                   <el-autocomplete v-else-if="col._config.type === 'jsonObject' || col._config.type === 'jsonArray'"
                                    v-model="col._config.javaObject" :fetch-suggestions="queryJsonJavaObject"
                                    size="mini" placeholder="基础类型或全限定类名" style="width:180px" />
@@ -360,12 +324,380 @@
       style="font-family: Menlo, Consolas, monospace; font-size: 12px;"
     />
   </el-dialog>
+
 </div>
+</script>
+
+<script type="text/x-template" id="enum-editor-tpl">
+  <el-dialog :title="title" :visible.sync="innerVisible" width="760px" append-to-body
+             :close-on-click-modal="false" @close="onDialogClose">
+    <el-alert v-if="mode === 'edit' && refCount > 0" type="warning" :closable="false" show-icon
+              :title="'该枚举已被 ' + refCount + ' 个字段引用，修改后将影响这些字段'"
+              style="margin-bottom:12px;" />
+    <el-form label-width="70px" size="small">
+      <el-form-item label="枚举名">
+        <el-input v-model="form.className" placeholder="如 CommonStatusEnum" @input="validateName" @blur="validateName" />
+        <div class="enum-err-text" v-if="nameError">{{ nameError }}</div>
+      </el-form-item>
+      <el-form-item label="映射">
+        <div v-for="(v, idx) in form.mappings" :key="idx" class="enum-row" style="margin-bottom:6px;">
+          <el-input v-model="v.code" size="mini" style="width:110px" placeholder="值 code（0/1）"
+                    :class="{ 'enum-error': v.errCode }" @input="validateRow(idx, 'code')" />
+          <el-input v-model="v.name" size="mini" style="width:190px" placeholder="常量名（NORMAL）"
+                    :class="{ 'enum-error': v.errName }" @input="validateRow(idx, 'name')" />
+          <el-input v-model="v.desc" size="mini" style="width:280px" placeholder="说明（可空）" />
+          <el-button type="text" icon="el-icon-delete" :disabled="form.mappings.length <= 1"
+                     @click="removeRow(idx)"></el-button>
+        </div>
+        <div class="enum-err-row">
+          <span v-for="(v, idx) in form.mappings" :key="idx">
+            <span v-if="v.errCode" class="enum-err-text">{{ '第' + (idx + 1) + '行 code：' + v.errCode }}</span>
+            <span v-if="v.errName" class="enum-err-text">{{ '第' + (idx + 1) + '行 name：' + v.errName }}</span>
+          </span>
+        </div>
+        <el-button size="mini" icon="el-icon-plus" @click="addRow">
+          添加一行
+        </el-button>
+      </el-form-item>
+    </el-form>
+    <div slot="footer">
+      <el-button v-if="mode === 'edit'" size="small" type="danger" plain @click="removeEnum">删除枚举</el-button>
+      <el-button size="small" @click="cancel">取消</el-button>
+      <el-button size="small" type="primary" @click="submit">{{ mode === 'edit' ? '保存修改' : '提交' }}</el-button>
+    </div>
+  </el-dialog>
+</script>
+
+<script type="text/x-template" id="enum-tag-tpl">
+  <div class="enum-cell">
+    <div class="enum-cell-top">
+      <el-select v-model="refName" size="mini" filterable clearable placeholder="请选择枚举"
+                 style="width:168px" :class="{ 'enum-selected': !!refName }"
+                 @change="onRefChange" @clear="onRefClear">
+        <el-option v-for="e in storeList" :key="e.className" :label="e.className" :value="e.className">
+          <span style="float:left;">{{ e.className }}</span>
+          <span style="float:right;color:#909399;font-size:12px;">{{ e.mappings.length }} 项</span>
+        </el-option>
+      </el-select>
+      <el-button size="mini" type="text" icon="el-icon-plus" title="新增枚举" @click="openCreate"></el-button>
+      <el-button size="mini" type="text" icon="el-icon-edit" title="编辑枚举" :disabled="!refName" @click="openEdit"></el-button>
+    </div>
+    <enum-editor :table="table" :column="column" :visible.sync="editorVisible" :mode-init="editorMode"
+                 @saved="onEditorSaved" @deleted="onEditorDeleted" />
+  </div>
 </script>
 
 <script src="./vendor/vue.min.js"></script>
 <script src="./vendor/element-ui.js"></script>
 <script>
+// ============ EnumStore：公共枚举池（数据字典模式，单一数据源） ============
+// 枚举定义只存一份在池里；各字段仅保存引用（className）。
+// 引用计数由根实例注入计数函数（遍历所有表的列实时统计），
+// 通过 store 版本号订阅让所有引用处自动刷新。
+const EnumStore = {
+  registry: [],
+  _version: 0,
+  _listeners: [],
+  _refCounter: null,
+  subscribe(fn) {
+    this._listeners.push(fn)
+    fn(this._version)
+    return () => { this._listeners = this._listeners.filter(f => f !== fn) }
+  },
+  _emit() {
+    this._version++
+    this._listeners.forEach(fn => { try { fn(this._version) } catch (e) {} })
+  },
+  setRefCounter(fn) { this._refCounter = fn },
+  list() { return this.registry },
+  names() { return this.registry.map(i => i.className).filter(Boolean) },
+  find(className) { return this.registry.find(i => i.className === className) || null },
+  mappingsOf(className) {
+    const entry = this.find(className)
+    return entry ? entry.mappings : null
+  },
+  countRefs(className) {
+    return this._refCounter ? this._refCounter(className) : 0
+  },
+  upsert(className, mappings) {
+    const normalized = mappings.map(v => ({
+      code: String(v.code == null ? '' : v.code).trim(),
+      name: String(v.name == null ? '' : v.name).trim(),
+      desc: String(v.desc == null ? '' : v.desc).trim()
+    }))
+    const index = this.registry.findIndex(i => i.className === className)
+    if (index >= 0) {
+      this.registry.splice(index, 1, {
+        className,
+        mappings: normalized,
+        createdAt: this.registry[index].createdAt,
+        updatedAt: new Date().toISOString()
+      })
+    } else {
+      this.registry.push({ className, mappings: normalized, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
+    }
+    this._emit()
+  },
+  remove(className) {
+    const index = this.registry.findIndex(i => i.className === className)
+    if (index >= 0) {
+      this.registry.splice(index, 1)
+      this._emit()
+    }
+  }
+}
+
+/** 代码生成器默认枚举名：模型名 + 列名驼峰 + Enum（如 ChatImageStatusEnum）。 */
+function enumClassNameFor(modelName, columnName) {
+  let result = ''
+  let upper = false
+  for (const ch of String(columnName || '')) {
+    if (ch === '_') { upper = true; continue }
+    result += upper ? ch.toUpperCase() : ch
+    upper = false
+  }
+  if (result) result = result.charAt(0).toUpperCase() + result.slice(1)
+  return (modelName || '') + result + 'Enum'
+}
+
+// ============ enum-editor：枚举定义弹窗（新增 A1-A5 / 编辑 A6-A9） ============
+// create：空白 + 一行空映射；edit：回填。取消/X 一律丢弃；遮罩点击不关闭（E1）。
+// 实时校验：枚举名唯一、code/name 必填且不重复、格式；被引用时警告 + 提交二次确认（D1-D4）。
+Vue.component('enum-editor', {
+  props: {
+    table: Object,
+    column: Object,
+    visible: Boolean,
+    modeInit: { type: String, default: 'create' }
+  },
+  template: '#enum-editor-tpl',
+  data() {
+    return {
+      innerVisible: false,
+      storeVersion: 0,
+      mode: 'create',
+      savedName: '',
+      form: { className: '', mappings: [] },
+      nameError: '',
+      original: ''
+    }
+  },
+  created() { this._unsub = EnumStore.subscribe(v => { this.storeVersion = v }) },
+  beforeDestroy() { this._unsub && this._unsub() },
+  watch: {
+    visible(v) {
+      this.innerVisible = v
+      if (v) this.init()
+    }
+  },
+  computed: {
+    title() {
+      if (this.mode === 'edit') return '修改枚举：' + this.savedName
+      return '为字段 ' + ((this.column && this.column.columnName) || '') + ' 新增枚举'
+    },
+    refCount() {
+      this.storeVersion
+      return EnumStore.countRefs(this.savedName || this.form.className)
+    }
+  },
+  methods: {
+    init() {
+      this.mode = this.modeInit === 'edit' ? 'edit' : 'create'
+      this.nameError = ''
+      this.original = ''
+      if (this.mode === 'edit') {
+        const ref = this.column && this.column._config && this.column._config.enum
+        const name = (ref && ref.className) || ''
+        const existing = name ? EnumStore.find(name) : null
+        this.savedName = name
+        this.form = {
+          className: name,
+          mappings: existing
+            ? existing.mappings.map(m => ({ code: m.code, name: m.name, desc: m.desc, errCode: '', errName: '' }))
+            : []
+        }
+      } else {
+        this.savedName = ''
+        // 未配置枚举的字段：按生成器默认命名规则预填枚举名（可修改）
+        const modelName = (this.table && (this.table._modelName || this.table.tableName)) || ''
+        const colName = (this.column && this.column.columnName) || ''
+        this.form = {
+          className: enumClassNameFor(modelName, colName),
+          mappings: [{ code: '', name: '', desc: '', errCode: '', errName: '' }]
+        }
+      }
+      this.original = this.fingerprint()
+      this.$nextTick(() => this.focusRow(0))
+    },
+    fingerprint() {
+      return JSON.stringify(this.form.mappings.map(m => ({ code: (m.code || '').trim(), name: (m.name || '').trim() })))
+    },
+    validateName() {
+      const name = (this.form.className || '').trim()
+      if (!name) { this.nameError = '请输入枚举名'; return this.nameError }
+      if (name !== this.savedName && EnumStore.find(name)) { this.nameError = '枚举名已存在'; return this.nameError }
+      if (!/^[A-Za-z][A-Za-z0-9]*$/.test(name)) { this.nameError = '需为合法 Java 类名（字母开头，仅字母/数字）'; return this.nameError }
+      this.nameError = ''
+      return ''
+    },
+    validateRow(idx, field) {
+      const row = this.form.mappings[idx]
+      if (!row) return ''
+      if (field === 'code') {
+        const val = (row.code || '').trim()
+        if (!val) row.errCode = '必填'
+        else if (!/^[A-Za-z0-9_]+$/.test(val)) row.errCode = '仅支持字母/数字/下划线'
+        else if (this.form.mappings.some((r, i) => i !== idx && (r.code || '').trim() === val)) row.errCode = '重复'
+        else row.errCode = ''
+        return row.errCode
+      }
+      const val = (row.name || '').trim()
+      if (!val) row.errName = '必填'
+      else if (!/^[A-Za-z0-9_]+$/.test(val)) row.errName = '仅支持字母/数字/下划线'
+      else if (this.form.mappings.some((r, i) => i !== idx && (r.name || '').trim() === val)) row.errName = '重复'
+      else row.errName = ''
+      return row.errName
+    },
+    validateAll() {
+      let ok = this.validateName() === ''
+      if (!this.form.mappings.length) ok = false
+      this.form.mappings.forEach((_, i) => {
+        if (this.validateRow(i, 'code') || this.validateRow(i, 'name')) ok = false
+      })
+      return ok
+    },
+    addRow() {
+      this.form.mappings.push({ code: '', name: '', desc: '', errCode: '', errName: '' })
+      this.$nextTick(() => this.focusRow(this.form.mappings.length - 1))
+    },
+    removeRow(idx) {
+      if (this.form.mappings.length <= 1) return
+      this.form.mappings.splice(idx, 1)
+    },
+    focusRow(idx) {
+      const inputs = this.$refs.codeInputs
+      if (inputs && inputs[idx] && inputs[idx].focus) inputs[idx].focus()
+    },
+    submit() {
+      if (!this.validateAll()) {
+        this.$message.warning('请先修正表单中的错误')
+        return
+      }
+      const className = (this.form.className || '').trim()
+      const mappings = this.form.mappings.map(m => ({ code: m.code.trim(), name: m.name.trim(), desc: m.desc.trim() }))
+      if (this.mode === 'edit') {
+        const affecting = this.refCount > 0 && this.fingerprint() !== this.original
+        const doSave = () => {
+          EnumStore.upsert(className, mappings)
+          this.close()
+          this.$emit('saved', className, false)
+          this.$message.success('修改成功，所有引用已同步')
+        }
+        if (affecting) {
+          this.$confirm('该枚举已被 ' + this.refCount + ' 个字段引用，本次修改会影响这些字段，确认提交？',
+            '修改枚举', { type: 'warning' }).then(doSave).catch(() => {})
+        } else {
+          doSave()
+        }
+        return
+      }
+      EnumStore.upsert(className, mappings)
+      this.close()
+      this.$emit('saved', className, true)
+      this.$message.success('创建成功')
+    },
+    removeEnum() {
+      const n = this.refCount
+      this.$confirm(
+        n > 0
+          ? '该枚举已被 ' + n + ' 个字段引用，删除后这些字段将失效，确认删除？'
+          : '确认删除枚举 ' + this.savedName + '？删除后不可恢复。',
+        '删除枚举', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+      ).then(() => {
+        EnumStore.remove(this.savedName)
+        this.close()
+        this.$emit('deleted', this.savedName)
+        this.$message.success('删除成功')
+      }).catch(() => {})
+    },
+    cancel() {
+      this.close()
+    },
+    close() {
+      this.innerVisible = false
+      this.$emit('update:visible', false)
+    },
+    onDialogClose() {
+      this.$emit('update:visible', false)
+    }
+  }
+})
+
+// ============ enum-tag：字段行内的枚举引用控件（下拉 + 新增 + 编辑） ============
+// 未关联：下拉框 + ＋新增；已关联：下拉选中项绿色加粗 + 只读映射展示 + ✏️编辑。
+Vue.component('enum-tag', {
+  props: { table: Object, column: Object },
+  template: '#enum-tag-tpl',
+  data() {
+    return { refName: '', editorVisible: false, editorMode: 'create', storeVersion: 0 }
+  },
+  created() { this._unsub = EnumStore.subscribe(v => { this.storeVersion = v }) },
+  beforeDestroy() { this._unsub && this._unsub() },
+  watch: {
+    storeVersion() { this.syncRef() },
+    'column._config.enum'() { this.syncRef() }
+  },
+  computed: {
+    storeList() { this.storeVersion; return EnumStore.list() },
+  },
+  mounted() { this.syncRef() },
+  methods: {
+    syncRef() {
+      if (!this.column || !this.column._config) return
+      const cfg = this.column._config.enum
+      const name = (cfg && cfg.className) || ''
+      if (name && !EnumStore.find(name)) {
+        // 引用失效（枚举被删除）：自动清除为未选择
+        this.column._config.enum = null
+        this.refName = ''
+        return
+      }
+      this.refName = name
+    },
+    onRefChange(name) {
+      if (!name) return
+      this.column._config.enum = { className: name, registered: true }
+      this.$message.success('已引用枚举 ' + name)
+    },
+    onRefClear() {
+      if (!this.refName) return
+      const old = this.refName
+      this.column._config.enum = null
+      this.refName = ''
+      this.$message.success('已解除枚举引用：' + old)
+    },
+    openCreate() {
+      this.editorMode = 'create'
+      this.editorVisible = true
+    },
+    openEdit() {
+      if (!this.refName) return
+      this.editorMode = 'edit'
+      this.editorVisible = true
+    },
+    onEditorSaved(className, isNew) {
+      if (isNew) {
+        this.column._config.enum = { className, registered: true }
+        this.syncRef()
+      }
+    },
+    onEditorDeleted() {
+      this.column._config.enum = null
+      this.syncRef()
+    }
+  }
+})
+
 new Vue({
   el: '#app',
   template: '#codegen-template',
@@ -386,7 +718,8 @@ new Vue({
       loading: false,
       loadError: '',
       advancedEnabled: false,
-      form: { host: '', port: 3306, database: '', username: 'root', password: '' },
+      // 临时测试默认值，确认后需还原为空
+      form: { host: '192.168.3.131', port: 30306, database: 'aiplatform', username: 'root', password: '123456' },
       project: { projectPrefix: 'AiProd', toolPrefix: 'AiProd', groupId: 'com.jakt', projectArtifactPrefix: 'aiprod', outputDir: '~/AiProd' },
       global: { enable: false, columnName: 'del_flag', normalValue: '0', deleteValue: '1' },
       audit: { enable: false, createTimeColumn: 'create_time', updateTimeColumn: 'update_time' },
@@ -415,7 +748,6 @@ new Vue({
       },
       prefixStrip: '',
       prefixAdd: '',
-      enumRegistry: [],
       sensitiveStrategies: [
         { value: 'PHONE', label: '手机号', example: '13812345678 → 138****5678' },
         { value: 'MOBILE', label: '手机号(同PHONE)', example: '同上' },
@@ -449,8 +781,11 @@ new Vue({
   },
   computed: {
     confirmedModuleNames() { return this.modules.filter(m => m.confirmed && m.name).map(m => m.name) },
-    enumRegistryNames() { return this.enumRegistry.map(i => i.className).filter(Boolean) },
-    moduleLayoutOptions() { return this.moduleLayouts[this.projectStyle] || [] }
+    moduleLayoutOptions() { return this.moduleLayouts[this.projectStyle] || [] },
+  },
+  created() {
+    // 注入枚举引用计数函数：遍历所有表实时统计
+    EnumStore.setRefCounter(name => this.countEnumRefs(name))
   },
   methods: {
     addModule() { this.modules.push({ name: '', cnName: '', confirmed: false, isDefault: false }) },
@@ -631,7 +966,6 @@ new Vue({
               enum: null, javaObject: '',
               logicDelete: { enabled: false, normalValue: '0', deleteValue: '1', auto: false }
             }
-            column._enumPopoverVisible = false
             return column
           })
           return table
@@ -674,16 +1008,18 @@ new Vue({
         .catch(() => { table._forceCreate = false })
     },
     onColumnTypeChange(table, column, type) {
+      if (type !== 'enum') column._config.enum = null
       column._config.type = type
       if (type === 'default') column._config.javaType = column.javaType
-      if (type === 'enum' && !column._config.enum) {
-        column._config.enum = {
-          className: this.toEnumClassName(table._modelName, column.columnName),
-          codeType: this.toEnumCodeType(column.dbType),
-          values: (column.enumNativeValues || []).map(v => ({ code: v, name: v, desc: v })),
-          confirmed: false
-        }
-      }
+    },
+    countEnumRefs(className) {
+      if (!className) return 0
+      let n = 0
+      this.tables.forEach(t => (t.columns || []).forEach(c => {
+        const cfg = c._config && c._config.enum
+        if (cfg && cfg.className === className) n++
+      }))
+      return n
     },
     typeTagType(type) {
       return { javaType: '', enum: 'warning', jsonObject: 'success', jsonArray: 'success', json: 'info' }[type] || 'info'
@@ -700,34 +1036,11 @@ new Vue({
       const keyword = queryString || ''
       cb(this.jsonJavaObjectOptions.filter(n => n.indexOf(keyword) !== -1).map(n => ({ value: n })))
     },
-    openEnumClassOptions() {},
-    onEnumClassSelect(column) {
-      const found = this.enumRegistry.find(i => i.className === column._config.enum.className)
-      if (found) {
-        column._config.enum.codeType = found.codeType
-        column._config.enum.values = found.values.map(v => ({ code: v.code, name: v.name, desc: v.desc }))
-      }
-    },
-    isEnumLocked(column) {
-      return !!(column._config.enum && column._config.enum.className && column._config.enum.confirmed)
-    },
-    unlockEnum(column) { column._config.enum.confirmed = false },
-    confirmEnum(column) {
-      const enumCfg = column._config.enum
-      if (!enumCfg || !enumCfg.className || !enumCfg.values.length) {
-        this.$message.warning('请填写枚举类名并至少添加一条映射')
-        return
-      }
-      const snapshot = {
-        className: enumCfg.className, codeType: enumCfg.codeType,
-        values: enumCfg.values.map(v => ({ code: v.code, name: v.name, desc: v.desc })), confirmed: true
-      }
-      const index = this.enumRegistry.findIndex(i => i.className === enumCfg.className)
-      if (index >= 0) this.enumRegistry.splice(index, 1, snapshot)
-      else this.enumRegistry.push(snapshot)
-      column._enumPopoverVisible = false
-      enumCfg.confirmed = true
-      this.$message.success('枚举 ' + enumCfg.className + ' 配置成功，其他列配置枚举时可直接复用')
+    /** 枚举值解析：从公共池读取引用枚举的映射。 */
+    resolveEnumValues(column) {
+      const cfg = column && column._config && column._config.enum
+      if (!cfg || !cfg.className) return []
+      return EnumStore.mappingsOf(cfg.className) || []
     },
     goNext() {
       if (this.activeStep === 3) { this.goPreview(); return }
@@ -800,17 +1113,17 @@ new Vue({
           const block = ['      ' + column.columnName + ':']
           let wroteType = false
           if (cfg.type === 'enum') {
-            if (!cfg.enum || !cfg.enum.className || !cfg.enum.values.length) {
+            const enumValues = this.resolveEnumValues(column)
+            if (!cfg.enum || !cfg.enum.className || !enumValues.length) {
               yamlErrors.push('表 ' + table.tableName + ' 列 ' + column.columnName + ': 枚举配置不完整')
               return
             }
             block.push('        type: enum')
             block.push('        enum:')
             block.push('          className: ' + cfg.enum.className)
-            block.push('          codeType: ' + cfg.enum.codeType)
             block.push('          values:')
-            cfg.enum.values.forEach(v => {
-              block.push('            - { code: ' + this.enumCode(v.code, cfg.enum.codeType) + ', name: ' + v.name
+            enumValues.forEach(v => {
+              block.push('            - { code: ' + v.code + ', name: ' + v.name
                 + ', desc: ' + this.yamlQuote(v.desc) + ' }')
             })
             wroteType = true
@@ -844,19 +1157,6 @@ new Vue({
     },
     yamlQuote(value) {
       return '"' + String(value == null ? '' : value).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'
-    },
-    enumCode(code, codeType) {
-      return (codeType === 'Integer' || codeType === 'Long') && code !== '' && !isNaN(Number(code))
-        ? String(Number(code)) : code
-    },
-    toEnumClassName(modelName, columnName) {
-      return modelName + this.cap(this.camel(columnName)) + 'Enum'
-    },
-    toEnumCodeType(dbType) {
-      const type = String(dbType || '').toLowerCase()
-      if (type.includes('bigint')) return 'Long'
-      if (['int', 'integer', 'smallint', 'mediumint', 'tinyint'].includes(type)) return 'Integer'
-      return 'String'
     },
     camel(name) {
       let result = ''

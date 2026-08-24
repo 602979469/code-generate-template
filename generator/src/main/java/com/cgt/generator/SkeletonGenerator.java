@@ -57,11 +57,12 @@ public final class SkeletonGenerator {
         System.out.println("[gen] 项目骨架初始化完成（生成 " + generated + " 个文件，跳过 " + skipped + " 个） -> " + cfg.outputDir);
     }
 
-    /** 跳过构建产物/IDE 目录（target、.git、.idea、out）。 */
+    /** 跳过构建产物/IDE 目录与系统垃圾文件（target、.git、.idea、out、.DS_Store 等）。 */
     private static boolean isSkipped(Path relative) {
         for (Path part : relative) {
             String name = part.toString();
-            if ("target".equals(name) || ".git".equals(name) || ".idea".equals(name) || "out".equals(name)) {
+            if ("target".equals(name) || ".git".equals(name) || ".idea".equals(name) || "out".equals(name)
+                    || ".DS_Store".equals(name) || "Thumbs.db".equals(name) || "desktop.ini".equals(name)) {
                 return true;
             }
         }

@@ -78,8 +78,6 @@ public final class GeneratorConfig {
     /** 枚举配置。 */
     public static final class EnumConfig {
         public String className;
-        /** Integer / String / Long，缺省按数据库列推断。 */
-        public String codeType;
         public final List<EnumValue> values = new ArrayList<>();
     }
 
@@ -226,7 +224,6 @@ public final class GeneratorConfig {
         if (col.get("enum") instanceof Map<?, ?> enumCfg) {
             EnumConfig ec = new EnumConfig();
             ec.className = str(enumCfg.get("className"));
-            ec.codeType = str(enumCfg.get("codeType"));
             if (enumCfg.get("values") instanceof List<?> values) {
                 for (Object item : values) {
                     if (!(item instanceof Map<?, ?> v)) {
@@ -333,11 +330,6 @@ public final class GeneratorConfig {
             if (!cc.enumConfig.className.matches("[A-Za-z][A-Za-z0-9]*")) {
                 throw new IllegalArgumentException("表 " + tableName + " 列 " + columnName + " 枚举 className 需为合法 Java 类名: "
                         + cc.enumConfig.className);
-            }
-            if (cc.enumConfig.codeType != null
-                    && !cc.enumConfig.codeType.matches("Integer|String|Long")) {
-                throw new IllegalArgumentException("表 " + tableName + " 列 " + columnName
-                        + " codeType 只支持 Integer/String/Long: " + cc.enumConfig.codeType);
             }
             if (cc.enumConfig.values.isEmpty()) {
                 throw new IllegalArgumentException("表 " + tableName + " 列 " + columnName + " 枚举缺少 values");
