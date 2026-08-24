@@ -213,7 +213,10 @@ public final class DbMetaReader {
             c.modelType = c.javaType;
             c.modelString = "String".equals(c.modelType);
             if (cc != null) {
-                applyColumnConfig(meta, c, cc);
+                // 2.0：type 缺省 = 走数据库默认映射（仅配 sensitive / comment 的列）
+                if (cc.type != null && !cc.type.isBlank()) {
+                    applyColumnConfig(meta, c, cc);
+                }
                 if (cc.comment != null && !cc.comment.isBlank()) {
                     c.comment = cc.comment;
                 }
