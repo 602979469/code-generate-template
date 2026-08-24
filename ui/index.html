@@ -121,12 +121,6 @@
     <div class="el-card__header">模块配置</div>
     <div class="el-card__body">
       <div class="module-global">
-        <span class="global-config-label">项目风格</span>
-        <el-select v-model="projectStyle" size="small" style="width: 140px" @change="onProjectStyleChange">
-          <el-option v-for="s in projectStyles" :key="s.value" :label="s.label" :value="s.value">
-            <span style="float:left;">{{ s.label }}</span><span style="float:right;color:#909399;font-size:12px;">{{ s.desc }}</span>
-          </el-option>
-        </el-select>
         <span class="global-config-label">模块样式</span>
         <el-select v-model="moduleLayout" size="small" style="width: 170px" placeholder="选择样式">
           <el-option v-for="l in moduleLayoutOptions" :key="l.value" :label="l.label" :value="l.value">
@@ -739,21 +733,11 @@ new Vue({
       defaultModule: '',
       projectStyle: 'monolith',
       moduleLayout: 'flat',
-      projectStyles: [
-        { value: 'monolith', label: '🏢 单体风格', desc: '所有代码在同一项目/仓库，统一部署' },
-        { value: 'microservice', label: '☁️ 微服务风格', desc: '每个业务域独立项目/仓库，独立部署' }
-      ],
       moduleLayouts: {
         monolith: [
           { value: 'flat', label: '📁 平铺式', desc: '模块平铺在根包下，共用一个 Application' },
           { value: 'aggregated', label: '📂 聚合式', desc: '模块收在 modules/ 目录下，共用一个 Application' },
-          { value: 'maven-module', label: '📦 Maven 多模块', desc: '每个模块独立 Maven 子项目，同仓管理' },
-          { value: 'maven-starter', label: '🚀 独立启动式', desc: 'Maven 多模块，每个模块可独立启动' }
-        ],
-        microservice: [
-          { value: 'single-repo', label: '📦 单仓多服务', desc: '多服务同一仓库，各自独立部署' },
-          { value: 'multi-repo', label: '📦📦 多仓多服务', desc: '每服务独立仓库，独立版本管理' },
-          { value: 'hybrid', label: '🔀 混合模式', desc: '核心服务独立仓库，辅助服务单仓聚合' }
+          { value: 'maven-module', label: '📦 Maven 多模块', desc: '每个模块独立 Maven 子项目，同仓管理' }
         ]
       },
       prefixStrip: '',
@@ -813,10 +797,6 @@ new Vue({
         this.applyDefaultModule()
       }
       this.$message.success('模块 ' + name + ' 已添加，所属模块下拉已同步')
-    },
-    onProjectStyleChange() {
-      const options = this.moduleLayoutOptions
-      this.moduleLayout = options.length ? options[0].value : ''
     },
     onModuleDefaultChange(module) {
       this.modules.forEach(m => { if (m !== module && m.isDefault) m.isDefault = false })
