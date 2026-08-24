@@ -223,6 +223,7 @@ public final class DbMetaReader {
             }
             c.sensitive = (cc != null && cc.sensitive)
                     || SENSITIVE_COLUMNS.contains(c.columnName);
+            c.sensitiveStrategy = cc != null ? cc.sensitiveStrategy : null;
             if (c.toModelExpr == null) {
                 c.toModelExpr = "{do}.get" + cap(c.propertyName) + "()";
             }

@@ -84,6 +84,8 @@ public final class GeneratorConfig {
         public String comment;
         /** 敏感列：不进查询参数/响应（默认按列名识别 password/token 等，可显式声明）。 */
         public boolean sensitive;
+        /** 脱敏策略（列级）：PHONE / ID_CARD / BANK_CARD / EMAIL / NAME / ADDRESS / PASSWORD / NONE。 */
+        public String sensitiveStrategy;
         /** jsonArray 元素类型 / jsonObject 目标类型（全限定类名）。 */
         public String javaObject;
         /** type: enum 时的枚举配置。 */
@@ -270,6 +272,7 @@ public final class GeneratorConfig {
         cc.comment = str(col.get("comment"));
         cc.javaObject = str(col.get("javaObject"));
         cc.sensitive = "true".equalsIgnoreCase(str(col.get("sensitive")));
+        cc.sensitiveStrategy = str(col.get("sensitiveStrategy"));
         if (col.get("enum") instanceof Map<?, ?> enumCfg) {
             EnumConfig ec = new EnumConfig();
             ec.className = str(enumCfg.get("className"));

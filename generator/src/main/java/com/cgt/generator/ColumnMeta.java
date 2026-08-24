@@ -31,6 +31,8 @@ public final class ColumnMeta {
     public String conversion = "NONE";
     /** 是否敏感列：生成时从查询参数/响应/查询条件中剔除（默认按列名识别，可配置）。 */
     public boolean sensitive;
+    /** 脱敏策略（列级）：PHONE / ID_CARD / BANK_CARD / EMAIL / NAME / ADDRESS / PASSWORD / NONE。 */
+    public String sensitiveStrategy;
     /** jsonArray 元素类型 / jsonObject 目标类型（全限定名或泛型）。 */
     public String jsonElementType;
     /** 枚举 code 类型（Integer/String/Long）。 */
@@ -108,6 +110,10 @@ public final class ColumnMeta {
 
     public boolean isSensitive() {
         return sensitive;
+    }
+
+    public String getSensitiveStrategy() {
+        return sensitiveStrategy;
     }
 
     public boolean isModelString() {

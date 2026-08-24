@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>代码生成配置（独立版）</title>
+  <link rel="stylesheet" href="./vendor/element-ui.css">
+  <style>
+    body { margin: 0; background: #f0f2f5; overflow-anchor: auto; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .app-container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+    .standalone-header { display: flex; flex-direction: column; align-items: center; margin: 12px 0 26px; }
+    .standalone-logo { width: 72px; height: 72px; margin-bottom: 12px; }
+    .standalone-title { font-size: 34px; font-weight: 700; letter-spacing: 6px; color: #303133; }
+    .standalone-sub { font-size: 13px; color: #909399; letter-spacing: 2px; margin-top: 6px; }
+    .mode-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+    .box-card { margin-bottom: 16px; }
+    .step-nav { display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .step-node { display: flex; align-items: center; cursor: pointer; color: #909399; }
+    .step-node + .step-node::before { content: ''; display: inline-block; width: 60px; height: 2px; background: #dcdfe6; margin: 0 12px; }
+    .step-node.active { color: #409eff; }
+    .step-node.done { color: #67c23a; }
+    .step-index { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #dcdfe6; color: #909399; font-size: 13px; margin-right: 6px; box-sizing: border-box; }
+    .step-node.active .step-index { border-color: #409eff; background: #409eff; color: #fff; }
+    .step-node.done .step-index { border-color: #67c23a; background: #67c23a; color: #fff; }
+    .step-label { font-size: 14px; }
+    .step-footer { display: flex; justify-content: center; margin-top: 16px; }
+    .global-config-label { font-size: 13px; color: #606266; margin-right: 8px; white-space: nowrap; }
+    .schema-tip { font-size: 12px; color: #909399; margin-top: 4px; }
+    .module-config { display: flex; flex-direction: column; align-items: flex-start; }
+    .module-row { display: flex; align-items: center; flex-wrap: wrap; row-gap: 4px; margin-bottom: 8px; }
+    .module-row .el-input, .module-row .el-switch { margin-right: 6px; }
+    .module-preview { height: 260px; border: 1px dashed #dcdfe6; border-radius: 4px; margin-top: 10px; padding: 10px; box-sizing: border-box; }
+    .module-global { display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #e4e7ed; }
+    .module-global .el-select { margin-right: 10px; }
+    .ds-form .el-form-item__label { font-weight: 600; }
+    .advanced-separator { border-bottom: 1px solid #dcdfe6; margin: 2px 0 14px; }
+    .logic-row { display: flex; align-items: center; margin-top: 8px; }
+    .logic-label { font-size: 12px; color: #606266; font-weight: 600; margin-right: 4px; white-space: nowrap; }
+    .logic-row .el-input { margin-right: 12px; }
+    .logic-row .el-input:last-child { margin-right: 0; }
+    .type-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .enum-cell { display: inline-flex; flex-direction: column; align-items: flex-start; }
+    .enum-cell-top { display: flex; align-items: center; }
+    .enum-selected .el-input__inner { color: #67c23a; font-weight: 600; }
+    .enum-row { display: flex; align-items: center; margin-bottom: 4px; }
+    .enum-row .el-input { margin-right: 4px; }
+    .enum-row .enum-error .el-input__inner { border-color: #f56c6c; }
+    .enum-err-text { color: #f56c6c; font-size: 12px; margin-right: 12px; }
+    .enum-err-row { min-height: 18px; display: flex; flex-wrap: wrap; margin: 2px 0 6px; }
+    .logic-value-editor { display: flex; align-items: center; }
+    .logic-value-label { font-size: 12px; color: #606266; margin: 0 6px 0 4px; }
+    .yaml-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+    .yaml-actions .el-button { margin-left: 8px; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script type="text/x-template" id="codegen-template">
+<div class="app-container">
+  <div v-if="standalone" class="standalone-header">
+    <div class="standalone-logo">
+      <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="codegenGradient" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#409EFF"/>
+            <stop offset="100%" stop-color="#7C4DFF"/>
+          </linearGradient>
+        </defs>
+        <rect x="2" y="2" width="68" height="68" rx="16" fill="url(#codegenGradient)"/>
+        <text x="36" y="47" text-anchor="middle" font-family="Consolas, Menlo, monospace" font-size="30"
+              font-weight="bold" fill="#ffffff">&lt;/&gt;</text>
+        <rect x="40" y="48" width="8" height="2" rx="1" fill="#FFD54F"/>
+      </svg>
+    </div>
+    <div class="standalone-title">代码生成器</div>
+    <div class="standalone-sub">Code Generator · generate.yaml 配置</div>
+  </div>
+
+  <div class="step-nav">
+    <div v-for="(step, idx) in steps" :key="step.value" class="step-node"
+         :class="{ active: activeStep === step.value, done: idx + 1 < activeStep }"
+         @click="activeStep = step.value">
+      <span class="step-index">{{ idx + 1 }}</span>
+      <span class="step-label">{{ step.label }}</span>
+    </div>
+  </div>
+  <div class="mode-bar">
+    <el-tag :type="clusterMode ? 'warning' : 'info'" size="small">
+      {{ clusterMode ? '集群模式：临时目录生成并打包下载' : '本地模式：生成到输出目录' }}
+    </el-tag>
+  </div>
+
+  <div class="box-card el-card is-always-shadow" v-show="activeStep === 1">
+    <div class="el-card__header">基础配置</div>
+    <div class="el-card__body">
+      <el-form :model="project" label-width="120px" size="small">
+        <el-row :gutter="20">
+          <el-col :span="12"><el-form-item label="项目前缀" required><el-input v-model="project.projectPrefix" placeholder="启动类名前缀" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="基础包名" required><el-input v-model="project.basePackage" placeholder="所有代码的根包，如 com.jakt.aiprod" /></el-form-item></el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12"><el-form-item label="groupId" required><el-input v-model="project.groupId" placeholder="Maven groupId，如 com.jakt" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="artifactId" required><el-input v-model="project.projectArtifactPrefix" placeholder="artifactId/包名后缀（小写）" /></el-form-item></el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12"><el-form-item label="输出目录" :required="!clusterMode"><el-input v-model="project.outputDir" :placeholder="clusterMode ? '集群模式不使用输出目录' : '生成器运行时所在机器的工程根目录'" /></el-form-item></el-col>
+          <el-col :span="12">
+            <el-form-item label="插件">
+              <div v-for="(p, idx) in plugins" :key="idx" style="display:flex;align-items:center;margin-bottom:6px;">
+                <el-input v-model="p.name" size="small" style="width:220px" placeholder="插件名，如 sa-token" />
+                <el-button size="mini" type="text" icon="el-icon-delete" @click="plugins.splice(idx, 1)"></el-button>
+              </div>
+              <el-button size="mini" icon="el-icon-plus" @click="plugins.push({ name: '' })">添加插件</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+    </div>
+  </div>
+
+  <div class="box-card el-card is-always-shadow" v-show="activeStep === 2">
+    <div class="el-card__header">模块配置</div>
+    <div class="el-card__body">
+      <div class="module-global">
+        <span class="global-config-label">项目风格</span>
+        <el-select v-model="projectStyle" size="small" style="width: 140px" @change="onProjectStyleChange">
+          <el-option v-for="s in projectStyles" :key="s.value" :label="s.label" :value="s.value">
+            <span style="float:left;">{{ s.label }}</span><span style="float:right;color:#909399;font-size:12px;">{{ s.desc }}</span>
+          </el-option>
+        </el-select>
+        <span class="global-config-label">模块样式</span>
+        <el-select v-model="moduleLayout" size="small" style="width: 170px" placeholder="选择样式">
+          <el-option v-for="l in moduleLayoutOptions" :key="l.value" :label="l.label" :value="l.value">
+            <span style="float:left;">{{ l.label }}</span><span style="float:right;color:#909399;font-size:12px;">{{ l.desc }}</span>
+          </el-option>
+        </el-select>
+      </div>
+      <div class="module-config">
+        <div v-for="(m, idx) in modules" :key="idx" class="module-row">
+          <el-input v-model="m.name" size="small" style="width:130px" :disabled="m.confirmed" :placeholder="m.confirmed ? m.name : '模块名'" />
+          <el-input v-model="m.cnName" size="small" style="width:130px" :disabled="m.confirmed" :placeholder="m.confirmed ? m.cnName : '模块中文名称'" />
+          <span class="global-config-label">默认</span>
+          <el-switch v-model="m.isDefault" :disabled="!m.confirmed || !m.name" @change="onModuleDefaultChange(m)" />
+          <el-button v-if="!m.confirmed" size="mini" type="text" @click="confirmModule(m)">确认</el-button>
+          <el-button size="mini" type="text" icon="el-icon-delete" @click="removeModule(idx)"></el-button>
+        </div>
+        <el-button size="mini" icon="el-icon-plus" @click="addModule">添加模块</el-button>
+      </div>
+      <div class="module-preview"><div class="schema-tip">模块风格展示区（树形预览，待实现；仅支持展开/收缩，不支持拖拽）</div></div>
+    </div>
+  </div>
+
+  <div class="box-card el-card is-always-shadow" v-show="activeStep === 3">
+    <div class="el-card__header">数据源</div>
+    <div class="el-card__body">
+      <el-form :model="form" label-width="100px" size="small" class="ds-form">
+        <el-row :gutter="20">
+          <el-col :span="12"><el-form-item label="主机"><el-input v-model="form.host" placeholder="数据库地址（需公网可访问）" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="端口"><el-input v-model.number="form.port" placeholder="端口" /></el-form-item></el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12"><el-form-item label="数据库"><el-input v-model="form.database" placeholder="数据库名" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="用户名"><el-input v-model="form.username" placeholder="数据库用户名" /></el-form-item></el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12"><el-form-item label="密码"><el-input v-model="form.password" type="password" show-password placeholder="密码（可为空）" /></el-form-item></el-col>
+        </el-row>
+        <el-form-item label="高级设置"><el-switch v-model="advancedEnabled" /></el-form-item>
+        <template v-if="advancedEnabled">
+          <div class="advanced-separator"></div>
+          <el-row :gutter="20">
+            <el-col :span="12"><el-form-item label="删除表前缀"><el-input v-model="prefixStrip" :disabled="!!prefixAdd" @input="onPrefixInput('strip')" placeholder="如 sys" /></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="添加表前缀"><el-input v-model="prefixAdd" :disabled="!!prefixStrip" @input="onPrefixInput('add')" placeholder="如 ai" /></el-form-item></el-col>
+          </el-row>
+          <el-form-item label="逻辑删除"><el-switch v-model="global.enable" @change="onGlobalLogicDeleteChange" />
+            <template v-if="global.enable">
+              <div class="logic-row">
+                <span class="logic-label">删除列名</span>
+                <el-input v-model="columnNameDraft" style="width:170px" placeholder="输入列名后回车确认" suffix-icon="el-icon-arrow-down"
+                          @focus="columnNameDraft = global.columnName" @keyup.enter.native="onLogicDeleteColumnNameCommit"
+                          @blur="columnNameDraft = global.columnName" />
+                <span class="logic-label">正常值</span>
+                <el-input v-model="global.normalValue" style="width:64px" @change="onGlobalLogicDeleteValueChange" />
+                <span class="logic-label">删除值</span>
+                <el-input v-model="global.deleteValue" style="width:64px" @change="onGlobalLogicDeleteValueChange" />
+              </div>
+            </template>
+          </el-form-item>
+          <el-form-item label="时间配置"><el-switch v-model="audit.enable" @change="onAuditEnableChange" />
+            <template v-if="audit.enable">
+              <div class="logic-row">
+                <span class="logic-label">创建时间</span>
+                <el-input v-model="auditCreateDraft" style="width:140px" placeholder="如 create_time" suffix-icon="el-icon-arrow-down"
+                          @focus="auditCreateDraft = audit.createTimeColumn" @keyup.enter.native="onAuditFieldCommit('create')"
+                          @blur="auditCreateDraft = audit.createTimeColumn" />
+                <span class="logic-label">更新时间</span>
+                <el-input v-model="auditUpdateDraft" style="width:140px" placeholder="如 update_time" suffix-icon="el-icon-arrow-down"
+                          @focus="auditUpdateDraft = audit.updateTimeColumn" @keyup.enter.native="onAuditFieldCommit('update')"
+                          @blur="auditUpdateDraft = audit.updateTimeColumn" />
+              </div>
+            </template>
+          </el-form-item>
+        </template>
+      </el-form>
+      <el-button type="primary" :loading="loading" icon="el-icon-search" style="margin-top:18px;" @click="loadSchema">读取表结构</el-button>
+      <div v-if="loadError" class="el-form-item__error" style="margin-top:8px;">{{ loadError }}</div>
+    </div>
+  </div>
+
+  <div class="box-card el-card is-always-shadow" v-show="activeStep === 3">
+    <div class="el-card__header">表配置（勾选需要生成的表，展开配置字段）</div>
+    <div class="el-card__body">
+      <el-table ref="mainTable" v-loading="loading" :data="tables" border stripe
+                @selection-change="handleSelectionChange" @expand-change="onExpandChange">
+        <el-table-column type="selection" width="45" />
+        <el-table-column type="expand">
+          <template slot-scope="{ row }">
+            <el-table :data="row.columns" size="mini" border stripe>
+              <el-table-column prop="columnName" label="字段" width="130" />
+              <el-table-column prop="dbType" label="类型" width="110" />
+              <el-table-column label="中文名" min-width="150">
+                <template slot-scope="{ row: col }"><el-input v-model="col.comment" size="mini" /></template>
+              </el-table-column>
+              <el-table-column label="列类型" width="150">
+                <template slot-scope="{ row: col }">
+                  <el-dropdown trigger="click" @command="cmd => onColumnTypeChange(row, col, cmd)">
+                    <el-tag size="mini" :type="typeTagType(col._config.type)">
+                      <span class="type-dot" :style="{ background: typeTagColor(col._config.type) }"></span>{{ typeTagLabel(col._config.type) }}
+                      <i class="el-icon-arrow-down el-icon--right"></i>
+                    </el-tag>
+                    <el-dropdown-menu slot="dropdown">
+                      <el-dropdown-item v-for="opt in columnTypeOptions" :key="opt.value" :command="opt.value">
+                        <span class="type-dot" :style="{ background: opt.color }"></span>{{ opt.label }}
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                </template>
+              </el-table-column>
+              <el-table-column label="映射值" min-width="340">
+                <template slot-scope="{ row: col }">
+                  <el-select v-if="col._config.type === 'javaType'" v-model="col._config.javaType" size="mini">
+                    <el-option v-for="t in javaTypeOptions" :key="t" :label="t" :value="t" />
+                  </el-select>
+                  <enum-tag v-else-if="col._config.type === 'enum'" :table="row" :column="col" />
+                  <el-autocomplete v-else-if="col._config.type === 'jsonObject' || col._config.type === 'jsonArray'"
+                                   v-model="col._config.javaObject" :fetch-suggestions="queryJsonJavaObject"
+                                   size="mini" placeholder="基础类型或全限定类名" style="width:180px" />
+                  <span v-else-if="col._config.type === 'json'" class="schema-tip">原始字符串</span>
+                  <span v-else class="schema-tip">{{ col.javaType }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="敏感字段" min-width="230">
+                <template slot-scope="{ row: col }">
+                  <el-switch v-if="!isReservedColumn(col)" v-model="col._config.sensitive" />
+                  <el-select v-if="!isReservedColumn(col) && col._config.sensitive" v-model="col._config.sensitiveStrategy"
+                             size="mini" style="width:130px;margin-left:4px;">
+                    <el-option v-for="s in sensitiveStrategies" :key="s.value" :label="s.label" :value="s.value">
+                      <span style="float:left;">{{ s.label }}</span><span style="float:right;color:#909399;font-size:12px;">{{ s.example }}</span>
+                    </el-option>
+                  </el-select>
+                </template>
+              </el-table-column>
+              <el-table-column label="逻辑删除" min-width="130">
+                <template v-if="!isReservedColumn(col)" slot-scope="{ row: col }">
+                  <el-switch v-model="col._config.logicDelete.enabled" @change="onColumnLogicDeleteChange(row, col)" />
+                  <el-popover v-if="col._config.logicDelete.enabled && !col._config.logicDelete.auto" trigger="click" placement="bottom" width="220">
+                    <div class="logic-value-editor">
+                      <span class="logic-value-label">正常值</span>
+                      <el-input v-model="col._config.logicDelete.normalValue" size="small" style="width:70px" />
+                      <span class="logic-value-label">删除值</span>
+                      <el-input v-model="col._config.logicDelete.deleteValue" size="small" style="width:70px" />
+                    </div>
+                    <el-input slot="reference" readonly size="small" style="width:100px;margin-left:6px;"
+                              :value="col._config.logicDelete.normalValue + ' / ' + col._config.logicDelete.deleteValue"
+                              title="正常值 / 删除值" suffix-icon="el-icon-arrow-down" />
+                  </el-popover>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+        </el-table-column>
+        <el-table-column prop="tableName" label="表名" min-width="140" />
+        <el-table-column label="模型名称" min-width="170">
+          <template slot-scope="{ row }"><el-input v-model="row.comment" size="mini" /></template>
+        </el-table-column>
+        <el-table-column label="领域模型对象" min-width="200">
+          <template slot-scope="{ row }"><el-input v-model="row._modelName" size="mini" /></template>
+        </el-table-column>
+        <el-table-column v-if="confirmedModuleNames.length" label="所属模块" width="130">
+          <template slot-scope="{ row }">
+            <el-select v-model="row._module" size="mini">
+              <el-option v-for="name in confirmedModuleNames" :key="name" :label="name" :value="name" />
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column label="生成Controller" width="110">
+          <template slot-scope="{ row }"><el-switch v-model="row._generateController" /></template>
+        </el-table-column>
+        <el-table-column label="强制生成" width="90">
+          <template slot-scope="{ row }"><el-switch v-model="row._forceCreate" @change="onForceCreateChange(row)" /></template>
+        </el-table-column>
+      </el-table>
+    </div>
+  </div>
+
+  <div class="box-card el-card is-always-shadow" v-show="activeStep === 4">
+    <div class="el-card__header">预览 generate.yaml</div>
+    <div class="el-card__body">
+      <div class="yaml-actions">
+        <el-button size="small" type="primary" icon="el-icon-document-copy" @click="copyYaml">复制</el-button>
+        <el-button size="small" type="success" icon="el-icon-download" @click="downloadYaml">下载</el-button>
+        <el-button size="small" type="warning" icon="el-icon-cpu" :loading="generating" @click="generateProject">生成项目</el-button>
+      </div>
+      <el-input v-model="yamlContent" type="textarea" :rows="26" readonly style="font-family:Menlo,Consolas,monospace;font-size:12px;" />
+    </div>
+  </div>
+
+  <div class="step-footer">
+    <el-button :disabled="activeStep === 1" @click="activeStep--">上一步</el-button>
+    <el-button v-if="activeStep < 4" type="primary" @click="goNext">下一步</el-button>
+  </div>
+
+  <el-dialog title="生成日志" :visible.sync="logVisible" width="78%" top="6vh" :close-on-click-modal="false">
+    <div style="margin-bottom: 10px">
+      <el-tag :type="generateSuccess ? 'success' : 'danger'" size="small">
+        {{ generateSuccess ? '生成成功' : '生成失败' }}
+      </el-tag>
+    </div>
+    <el-input
+      v-model="generateLog"
+      type="textarea"
+      :rows="24"
+      readonly
+      style="font-family: Menlo, Consolas, monospace; font-size: 12px;"
+    />
+  </el-dialog>
+
+</div>
+</script>
+
+<script type="text/x-template" id="enum-editor-tpl">
+  <el-dialog :title="title" :visible.sync="innerVisible" width="760px" append-to-body
+             :close-on-click-modal="false" @close="onDialogClose">
+    <el-alert v-if="mode === 'edit' && refCount > 0" type="warning" :closable="false" show-icon
+              :title="'该枚举已被 ' + refCount + ' 个字段引用，修改后将影响这些字段'"
+              style="margin-bottom:12px;" />
+    <el-form label-width="70px" size="small">
+      <el-form-item label="枚举名">
+        <el-input v-model="form.className" placeholder="如 CommonStatusEnum" @input="validateName" @blur="validateName" />
+        <div class="enum-err-text" v-if="nameError">{{ nameError }}</div>
+      </el-form-item>
+      <el-form-item label="映射">
+        <div v-for="(v, idx) in form.mappings" :key="idx" class="enum-row" style="margin-bottom:6px;">
+          <el-input v-model="v.code" size="mini" style="width:110px" placeholder="值 code（0/1）"
+                    :class="{ 'enum-error': v.errCode }" @input="validateRow(idx, 'code')" />
+          <el-input v-model="v.name" size="mini" style="width:190px" placeholder="常量名（NORMAL）"
+                    :class="{ 'enum-error': v.errName }" @input="validateRow(idx, 'name')" />
+          <el-input v-model="v.desc" size="mini" style="width:280px" placeholder="说明（可空）" />
+          <el-button type="text" icon="el-icon-delete" :disabled="form.mappings.length <= 1"
+                     @click="removeRow(idx)"></el-button>
+        </div>
+        <div class="enum-err-row">
+          <span v-for="(v, idx) in form.mappings" :key="idx">
+            <span v-if="v.errCode" class="enum-err-text">{{ '第' + (idx + 1) + '行 code：' + v.errCode }}</span>
+            <span v-if="v.errName" class="enum-err-text">{{ '第' + (idx + 1) + '行 name：' + v.errName }}</span>
+          </span>
+        </div>
+        <el-button size="mini" icon="el-icon-plus" @click="addRow">
+          添加一行
+        </el-button>
+      </el-form-item>
+    </el-form>
+    <div slot="footer">
+      <el-button v-if="mode === 'edit'" size="small" type="danger" plain @click="removeEnum">删除枚举</el-button>
+      <el-button size="small" @click="cancel">取消</el-button>
+      <el-button size="small" type="primary" @click="submit">{{ mode === 'edit' ? '保存修改' : '提交' }}</el-button>
+    </div>
+  </el-dialog>
+</script>
+
+<script type="text/x-template" id="enum-tag-tpl">
+  <div class="enum-cell">
+    <div class="enum-cell-top">
+      <el-select v-model="refName" size="mini" filterable clearable placeholder="请选择枚举"
+                 style="width:168px" :class="{ 'enum-selected': !!refName }"
+                 @change="onRefChange" @clear="onRefClear">
+        <el-option v-for="e in storeList" :key="e.className" :label="e.className" :value="e.className">
+          <span style="float:left;">{{ e.className }}</span>
+          <span style="float:right;color:#909399;font-size:12px;">{{ e.mappings.length }} 项</span>
+        </el-option>
+      </el-select>
+      <el-button size="mini" type="text" icon="el-icon-plus" title="新增枚举" @click="openCreate"></el-button>
+      <el-button size="mini" type="text" icon="el-icon-edit" title="编辑枚举" :disabled="!refName" @click="openEdit"></el-button>
+    </div>
+    <enum-editor :table="table" :column="column" :visible.sync="editorVisible" :mode-init="editorMode"
+                 @saved="onEditorSaved" @deleted="onEditorDeleted" />
+  </div>
+</script>
+
+<script src="./vendor/vue.min.js"></script>
+<script src="./vendor/element-ui.js"></script>
+<script>
+// ============ EnumStore：公共枚举池（数据字典模式，单一数据源） ============
+// 枚举定义只存一份在池里；各字段仅保存引用（className）。
+// 引用计数由根实例注入计数函数（遍历所有表的列实时统计），
+// 通过 store 版本号订阅让所有引用处自动刷新。
+const EnumStore = {
+  registry: [],
+  _version: 0,
+  _listeners: [],
+  _refCounter: null,
+  subscribe(fn) {
+    this._listeners.push(fn)
+    fn(this._version)
+    return () => { this._listeners = this._listeners.filter(f => f !== fn) }
+  },
+  _emit() {
+    this._version++
+    this._listeners.forEach(fn => { try { fn(this._version) } catch (e) {} })
+  },
+  setRefCounter(fn) { this._refCounter = fn },
+  list() { return this.registry },
+  names() { return this.registry.map(i => i.className).filter(Boolean) },
+  find(className) { return this.registry.find(i => i.className === className) || null },
+  mappingsOf(className) {
+    const entry = this.find(className)
+    return entry ? entry.mappings : null
+  },
+  countRefs(className) {
+    return this._refCounter ? this._refCounter(className) : 0
+  },
+  upsert(className, mappings) {
+    const normalized = mappings.map(v => ({
+      code: String(v.code == null ? '' : v.code).trim(),
+      name: String(v.name == null ? '' : v.name).trim(),
+      desc: String(v.desc == null ? '' : v.desc).trim()
+    }))
+    const index = this.registry.findIndex(i => i.className === className)
+    if (index >= 0) {
+      this.registry.splice(index, 1, {
+        className,
+        mappings: normalized,
+        createdAt: this.registry[index].createdAt,
+        updatedAt: new Date().toISOString()
+      })
+    } else {
+      this.registry.push({ className, mappings: normalized, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
+    }
+    this._emit()
+  },
+  remove(className) {
+    const index = this.registry.findIndex(i => i.className === className)
+    if (index >= 0) {
+      this.registry.splice(index, 1)
+      this._emit()
+    }
+  }
+}
+
+/** 代码生成器默认枚举名：模型名 + 列名驼峰 + Enum（如 ChatImageStatusEnum）。 */
+function enumClassNameFor(modelName, columnName) {
+  let result = ''
+  let upper = false
+  for (const ch of String(columnName || '')) {
+    if (ch === '_') { upper = true; continue }
+    result += upper ? ch.toUpperCase() : ch
+    upper = false
+  }
+  if (result) result = result.charAt(0).toUpperCase() + result.slice(1)
+  return (modelName || '') + result + 'Enum'
+}
+
+// ============ enum-editor：枚举定义弹窗（新增 A1-A5 / 编辑 A6-A9） ============
+// create：空白 + 一行空映射；edit：回填。取消/X 一律丢弃；遮罩点击不关闭（E1）。
+// 实时校验：枚举名唯一、code/name 必填且不重复、格式；被引用时警告 + 提交二次确认（D1-D4）。
+Vue.component('enum-editor', {
+  props: {
+    table: Object,
+    column: Object,
+    visible: Boolean,
+    modeInit: { type: String, default: 'create' }
+  },
+  template: '#enum-editor-tpl',
+  data() {
+    return {
+      innerVisible: false,
+      storeVersion: 0,
+      mode: 'create',
+      savedName: '',
+      form: { className: '', mappings: [] },
+      nameError: '',
+      original: ''
+    }
+  },
+  created() { this._unsub = EnumStore.subscribe(v => { this.storeVersion = v }) },
+  beforeDestroy() { this._unsub && this._unsub() },
+  watch: {
+    visible(v) {
+      this.innerVisible = v
+      if (v) this.init()
+    }
+  },
+  computed: {
+    title() {
+      if (this.mode === 'edit') return '修改枚举：' + this.savedName
+      return '为字段 ' + ((this.column && this.column.columnName) || '') + ' 新增枚举'
+    },
+    refCount() {
+      this.storeVersion
+      return EnumStore.countRefs(this.savedName || this.form.className)
+    }
+  },
+  methods: {
+    init() {
+      this.mode = this.modeInit === 'edit' ? 'edit' : 'create'
+      this.nameError = ''
+      this.original = ''
+      if (this.mode === 'edit') {
+        const ref = this.column && this.column._config && this.column._config.enum
+        const name = (ref && ref.className) || ''
+        const existing = name ? EnumStore.find(name) : null
+        this.savedName = name
+        this.form = {
+          className: name,
+          mappings: existing
+            ? existing.mappings.map(m => ({ code: m.code, name: m.name, desc: m.desc, errCode: '', errName: '' }))
+            : []
+        }
+      } else {
+        this.savedName = ''
+        // 未配置枚举的字段：按生成器默认命名规则预填枚举名（可修改）
+        const modelName = (this.table && (this.table._modelName || this.table.tableName)) || ''
+        const colName = (this.column && this.column.columnName) || ''
+        this.form = {
+          className: enumClassNameFor(modelName, colName),
+          mappings: [{ code: '', name: '', desc: '', errCode: '', errName: '' }]
+        }
+      }
+      this.original = this.fingerprint()
+      this.$nextTick(() => this.focusRow(0))
+    },
+    fingerprint() {
+      return JSON.stringify(this.form.mappings.map(m => ({ code: (m.code || '').trim(), name: (m.name || '').trim() })))
+    },
+    validateName() {
+      const name = (this.form.className || '').trim()
+      if (!name) { this.nameError = '请输入枚举名'; return this.nameError }
+      if (name !== this.savedName && EnumStore.find(name)) { this.nameError = '枚举名已存在'; return this.nameError }
+      if (!/^[A-Za-z][A-Za-z0-9]*$/.test(name)) { this.nameError = '需为合法 Java 类名（字母开头，仅字母/数字）'; return this.nameError }
+      this.nameError = ''
+      return ''
+    },
+    validateRow(idx, field) {
+      const row = this.form.mappings[idx]
+      if (!row) return ''
+      if (field === 'code') {
+        const val = (row.code || '').trim()
+        if (!val) row.errCode = '必填'
+        else if (!/^[A-Za-z0-9_]+$/.test(val)) row.errCode = '仅支持字母/数字/下划线'
+        else if (this.form.mappings.some((r, i) => i !== idx && (r.code || '').trim() === val)) row.errCode = '重复'
+        else row.errCode = ''
+        return row.errCode
+      }
+      const val = (row.name || '').trim()
+      if (!val) row.errName = '必填'
+      else if (!/^[A-Za-z0-9_]+$/.test(val)) row.errName = '仅支持字母/数字/下划线'
+      else if (this.form.mappings.some((r, i) => i !== idx && (r.name || '').trim() === val)) row.errName = '重复'
+      else row.errName = ''
+      return row.errName
+    },
+    validateAll() {
+      let ok = this.validateName() === ''
+      if (!this.form.mappings.length) ok = false
+      this.form.mappings.forEach((_, i) => {
+        if (this.validateRow(i, 'code') || this.validateRow(i, 'name')) ok = false
+      })
+      return ok
+    },
+    addRow() {
+      this.form.mappings.push({ code: '', name: '', desc: '', errCode: '', errName: '' })
+      this.$nextTick(() => this.focusRow(this.form.mappings.length - 1))
+    },
+    removeRow(idx) {
+      if (this.form.mappings.length <= 1) return
+      this.form.mappings.splice(idx, 1)
+    },
+    focusRow(idx) {
+      const inputs = this.$refs.codeInputs
+      if (inputs && inputs[idx] && inputs[idx].focus) inputs[idx].focus()
+    },
+    submit() {
+      if (!this.validateAll()) {
+        this.$message.warning('请先修正表单中的错误')
+        return
+      }
+      const className = (this.form.className || '').trim()
+      const mappings = this.form.mappings.map(m => ({ code: m.code.trim(), name: m.name.trim(), desc: m.desc.trim() }))
+      if (this.mode === 'edit') {
+        const affecting = this.refCount > 0 && this.fingerprint() !== this.original
+        const doSave = () => {
+          EnumStore.upsert(className, mappings)
+          this.close()
+          this.$emit('saved', className, false)
+          this.$message.success('修改成功，所有引用已同步')
+        }
+        if (affecting) {
+          this.$confirm('该枚举已被 ' + this.refCount + ' 个字段引用，本次修改会影响这些字段，确认提交？',
+            '修改枚举', { type: 'warning' }).then(doSave).catch(() => {})
+        } else {
+          doSave()
+        }
+        return
+      }
+      EnumStore.upsert(className, mappings)
+      this.close()
+      this.$emit('saved', className, true)
+      this.$message.success('创建成功')
+    },
+    removeEnum() {
+      const n = this.refCount
+      this.$confirm(
+        n > 0
+          ? '该枚举已被 ' + n + ' 个字段引用，删除后这些字段将失效，确认删除？'
+          : '确认删除枚举 ' + this.savedName + '？删除后不可恢复。',
+        '删除枚举', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+      ).then(() => {
+        EnumStore.remove(this.savedName)
+        this.close()
+        this.$emit('deleted', this.savedName)
+        this.$message.success('删除成功')
+      }).catch(() => {})
+    },
+    cancel() {
+      this.close()
+    },
+    close() {
+      this.innerVisible = false
+      this.$emit('update:visible', false)
+    },
+    onDialogClose() {
+      this.$emit('update:visible', false)
+    }
+  }
+})
+
+// ============ enum-tag：字段行内的枚举引用控件（下拉 + 新增 + 编辑） ============
+// 未关联：下拉框 + ＋新增；已关联：下拉选中项绿色加粗 + 只读映射展示 + ✏️编辑。
+Vue.component('enum-tag', {
+  props: { table: Object, column: Object },
+  template: '#enum-tag-tpl',
+  data() {
+    return { refName: '', editorVisible: false, editorMode: 'create', storeVersion: 0 }
+  },
+  created() { this._unsub = EnumStore.subscribe(v => { this.storeVersion = v }) },
+  beforeDestroy() { this._unsub && this._unsub() },
+  watch: {
+    storeVersion() { this.syncRef() },
+    'column._config.enum'() { this.syncRef() }
+  },
+  computed: {
+    storeList() { this.storeVersion; return EnumStore.list() },
+  },
+  mounted() { this.syncRef() },
+  methods: {
+    syncRef() {
+      if (!this.column || !this.column._config) return
+      const cfg = this.column._config.enum
+      const name = (cfg && cfg.className) || ''
+      if (name && !EnumStore.find(name)) {
+        // 引用失效（枚举被删除）：自动清除为未选择
+        this.column._config.enum = null
+        this.refName = ''
+        return
+      }
+      this.refName = name
+    },
+    onRefChange(name) {
+      if (!name) return
+      this.column._config.enum = { className: name, registered: true }
+      this.$message.success('已引用枚举 ' + name)
+    },
+    onRefClear() {
+      if (!this.refName) return
+      const old = this.refName
+      this.column._config.enum = null
+      this.refName = ''
+      this.$message.success('已解除枚举引用：' + old)
+    },
+    openCreate() {
+      this.editorMode = 'create'
+      this.editorVisible = true
+    },
+    openEdit() {
+      if (!this.refName) return
+      this.editorMode = 'edit'
+      this.editorVisible = true
+    },
+    onEditorSaved(className, isNew) {
+      if (isNew) {
+        this.column._config.enum = { className, registered: true }
+        this.syncRef()
+      }
+    },
+    onEditorDeleted() {
+      this.column._config.enum = null
+      this.syncRef()
+    }
+  }
+})
+
+new Vue({
+  el: '#app',
+  template: '#codegen-template',
+  data() {
+    return {
+      activeStep: 1,
+      // 默认独立模式（带 logo）；?embed=1 或 ?mode=embed 时进入内嵌模式（隐藏 logo）
+      standalone: new URLSearchParams(window.location.search).get('embed') !== '1'
+        && new URLSearchParams(window.location.search).get('mode') !== 'embed',
+      clusterMode: new URLSearchParams(window.location.search).get('mode') === 'cluster'
+        || new URLSearchParams(window.location.search).get('cluster') === '1',
+      steps: [
+        { value: 1, label: '基础配置' },
+        { value: 2, label: '模块配置' },
+        { value: 3, label: '数据库与表配置' },
+        { value: 4, label: '预览 generate.yaml' }
+      ],
+      loading: false,
+      loadError: '',
+      advancedEnabled: false,
+      // 临时测试默认值，确认后需还原为空
+      form: { host: '192.168.3.131', port: 30306, database: 'aiplatform', username: 'root', password: '123456' },
+      project: { projectPrefix: 'AiProd', basePackage: 'com.jakt.aiprod', groupId: 'com.jakt', projectArtifactPrefix: 'aiprod', outputDir: '~/AiProd' },
+      plugins: [],
+      global: { enable: false, columnName: 'del_flag', normalValue: '0', deleteValue: '1' },
+      audit: { enable: false, createTimeColumn: 'create_time', updateTimeColumn: 'update_time' },
+      auditCreateDraft: 'create_time',
+      auditUpdateDraft: 'update_time',
+      modules: [],
+      defaultModule: '',
+      projectStyle: 'monolith',
+      moduleLayout: 'flat',
+      projectStyles: [
+        { value: 'monolith', label: '🏢 单体风格', desc: '所有代码在同一项目/仓库，统一部署' },
+        { value: 'microservice', label: '☁️ 微服务风格', desc: '每个业务域独立项目/仓库，独立部署' }
+      ],
+      moduleLayouts: {
+        monolith: [
+          { value: 'flat', label: '📁 平铺式', desc: '模块平铺在根包下，共用一个 Application' },
+          { value: 'aggregated', label: '📂 聚合式', desc: '模块收在 modules/ 目录下，共用一个 Application' },
+          { value: 'maven-module', label: '📦 Maven 多模块', desc: '每个模块独立 Maven 子项目，同仓管理' },
+          { value: 'maven-starter', label: '🚀 独立启动式', desc: 'Maven 多模块，每个模块可独立启动' }
+        ],
+        microservice: [
+          { value: 'single-repo', label: '📦 单仓多服务', desc: '多服务同一仓库，各自独立部署' },
+          { value: 'multi-repo', label: '📦📦 多仓多服务', desc: '每服务独立仓库，独立版本管理' },
+          { value: 'hybrid', label: '🔀 混合模式', desc: '核心服务独立仓库，辅助服务单仓聚合' }
+        ]
+      },
+      prefixStrip: '',
+      prefixAdd: '',
+      sensitiveStrategies: [
+        { value: 'PHONE', label: '手机号', example: '13812345678 → 138****5678' },
+        { value: 'MOBILE', label: '手机号(同PHONE)', example: '同上' },
+        { value: 'ID_CARD', label: '身份证号', example: '110101********1234' },
+        { value: 'BANK_CARD', label: '银行卡号', example: '6222***********0123' },
+        { value: 'EMAIL', label: '邮箱', example: 'zhangsan@qq.com → zha***@qq.com' },
+        { value: 'NAME', label: '姓名', example: '张三丰 → 张**' },
+        { value: 'ADDRESS', label: '地址', example: '浙江省杭*****' },
+        { value: 'PASSWORD', label: '密码', example: '完全脱敏 → ******' }
+      ],
+      javaTypeOptions: ['Integer', 'Long', 'BigDecimal', 'String', 'Double', 'Boolean', 'Float', 'Short', 'Byte', 'Character'],
+      columnTypeOptions: [
+        { value: 'default', label: '默认', color: '#909399' },
+        { value: 'javaType', label: '强制类型', color: '#409EFF' },
+        { value: 'enum', label: '枚举', color: '#E6A23C' },
+        { value: 'jsonObject', label: 'JSON对象', color: '#67C23A' },
+        { value: 'jsonArray', label: 'JSON数组', color: '#13C2C2' },
+        { value: 'json', label: '原始JSON', color: '#A0CFFF' }
+      ],
+      jsonJavaObjectOptions: ['String', 'Integer', 'Long', 'BigDecimal', 'Double', 'Boolean', 'Float', 'Short', 'Byte', 'Character', 'Object', 'Map<String, Object>'],
+      tables: [],
+      selectedTables: [],
+      columnNameDraft: 'del_flag',
+      forceCreateWarned: false,
+      generating: false,
+      generateLog: '',
+      logVisible: false,
+      generateSuccess: false,
+      yamlContent: ''
+    }
+  },
+  computed: {
+    confirmedModuleNames() { return this.modules.filter(m => m.confirmed && m.name).map(m => m.name) },
+    moduleLayoutOptions() { return this.moduleLayouts[this.projectStyle] || [] },
+  },
+  created() {
+    // 注入枚举引用计数函数：遍历所有表实时统计
+    EnumStore.setRefCounter(name => this.countEnumRefs(name))
+  },
+  methods: {
+    addModule() { this.modules.push({ name: '', cnName: '', confirmed: false, isDefault: false }) },
+    confirmModule(module) {
+      const name = (module.name || '').trim()
+      if (!name) { this.$message.warning('请输入模块名'); return }
+      if (this.modules.some(m => m !== module && m.confirmed && m.name === name)) { this.$message.warning('模块名 ' + name + ' 已存在'); return }
+      if (!(module.cnName || '').trim()) { this.$message.warning('请输入模块中文名称'); return }
+      module.name = name
+      module.cnName = (module.cnName || '').trim()
+      module.confirmed = true
+      if (!this.defaultModule || !this.modules.some(m => m.confirmed && m.name === this.defaultModule)) {
+        this.defaultModule = name
+        module.isDefault = true
+        this.applyDefaultModule()
+      }
+      this.$message.success('模块 ' + name + ' 已添加，所属模块下拉已同步')
+    },
+    onProjectStyleChange() {
+      const options = this.moduleLayoutOptions
+      this.moduleLayout = options.length ? options[0].value : ''
+    },
+    onModuleDefaultChange(module) {
+      this.modules.forEach(m => { if (m !== module && m.isDefault) m.isDefault = false })
+      this.defaultModule = module.isDefault ? module.name : ''
+      if (module.isDefault) this.applyDefaultModule()
+    },
+    applyDefaultModule() {
+      const name = this.defaultModule
+      if (!name) return
+      this.tables.forEach(t => { if (!t._module) t._module = name })
+    },
+    removeModule(idx) {
+      const removed = this.modules[idx]
+      if (!removed) return
+      this.modules.splice(idx, 1)
+      if (removed.confirmed) {
+        this.tables.forEach(t => { if (t._module === removed.name) t._module = '' })
+        if (this.defaultModule === removed.name) {
+          const next = this.confirmedModuleNames[0] || ''
+          this.defaultModule = next
+          this.modules.forEach(m => { m.isDefault = (m.name === next) })
+          if (next) this.applyDefaultModule()
+        }
+        this.$message.success('模块 ' + removed.name + ' 已删除，所属模块下拉已同步')
+      }
+    },
+    onPrefixInput(mode) {
+      if (mode === 'strip') this.prefixAdd = ''
+      else this.prefixStrip = ''
+      this.applyPrefix()
+    },
+    computeModelName(tableName) {
+      let name = tableName || ''
+      const strip = (this.prefixStrip || '').trim()
+      const add = (this.prefixAdd || '').trim()
+      if (strip) name = name.replace(new RegExp('^' + strip.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '_?'), '')
+      else if (add) name = add + '_' + name
+      return this.cap(this.camel(name))
+    },
+    applyPrefix() { this.tables.forEach(t => { t._modelName = this.computeModelName(t.tableName) }) },
+    onGlobalLogicDeleteChange() { this.reviewLogicDelete() },
+    onGlobalLogicDeleteValueChange() {
+      this.tables.forEach(t => (t.columns || []).forEach(c => {
+        const ld = c._config.logicDelete
+        if (ld && ld.auto && ld.enabled) { ld.normalValue = this.global.normalValue; ld.deleteValue = this.global.deleteValue }
+      }))
+    },
+    onLogicDeleteColumnNameCommit() {
+      const value = (this.columnNameDraft || '').trim()
+      if (!value) { this.columnNameDraft = this.global.columnName; return }
+      this.global.columnName = value
+      this.reviewLogicDelete()
+    },
+    reviewLogicDelete() {
+      if (!this.global.enable || !this.global.columnName) {
+        this.tables.forEach(t => (t.columns || []).forEach(c => {
+          const ld = c._config.logicDelete
+          if (ld && ld.auto) { ld.enabled = false; ld.auto = false }
+        }))
+        return
+      }
+      this.tables.forEach(t => (t.columns || []).forEach(c => {
+        const ld = c._config.logicDelete
+        if (ld && ld.auto && ld.enabled && c.columnName !== this.global.columnName) { ld.enabled = false; ld.auto = false }
+      }))
+      const matched = []
+      this.tables.forEach(t => {
+        const target = (t.columns || []).find(c => c.columnName === this.global.columnName)
+        if (!target || !target._config.logicDelete || this.isReservedColumn(target)) return
+        const manual = (t.columns || []).find(c => c._config.logicDelete && c._config.logicDelete.enabled && !c._config.logicDelete.auto)
+        if (manual && manual !== target) return
+        const ld = target._config.logicDelete
+        ld.enabled = true
+        ld.auto = true
+        ld.normalValue = this.global.normalValue
+        ld.deleteValue = this.global.deleteValue
+        matched.push(t.tableName)
+      })
+      this.$message.info('全局逻辑删除 ' + this.global.columnName + '：' + matched.length + ' 张表自动启用')
+    },
+    onAuditEnableChange() { this.applyReservedReset() },
+    onAuditFieldCommit(field) {
+      const draft = field === 'create' ? this.auditCreateDraft : this.auditUpdateDraft
+      const value = (draft || '').trim()
+      if (!value) {
+        if (field === 'create') this.auditCreateDraft = this.audit.createTimeColumn
+        else this.auditUpdateDraft = this.audit.updateTimeColumn
+        return
+      }
+      if (field === 'create') this.audit.createTimeColumn = value
+      else this.audit.updateTimeColumn = value
+      this.applyReservedReset()
+    },
+    applyReservedReset() {
+      this.tables.forEach(t => (t.columns || []).forEach(c => {
+        if (this.isReservedColumn(c)) {
+          if (c._config.logicDelete) { c._config.logicDelete.enabled = false; c._config.logicDelete.auto = false }
+          c._config.sensitive = c.sensitive
+        }
+      }))
+    },
+    isReservedColumn(column) {
+      if (!column) return false
+      if (column.pk) return true
+      if (!this.audit.enable) return false
+      const name = column.columnName
+      return !!(this.audit.createTimeColumn && name === this.audit.createTimeColumn)
+        || !!(this.audit.updateTimeColumn && name === this.audit.updateTimeColumn)
+    },
+    onColumnLogicDeleteChange(table, column) {
+      const ld = column._config.logicDelete
+      if (ld.enabled && this.isReservedColumn(column)) { ld.enabled = false; return }
+      if (ld.enabled) {
+        const other = (table.columns || []).find(c => c !== column && c._config.logicDelete && c._config.logicDelete.enabled)
+        if (other) {
+          this.$message.warning('一张表只能启用一个逻辑删除列：' + other.columnName + ' 已启用，请先关闭它')
+          ld.enabled = false
+          return
+        }
+        if (ld.normalValue === '') ld.normalValue = '0'
+        if (ld.deleteValue === '') ld.deleteValue = '1'
+        this.$message.success('列 ' + column.columnName + ' 已设为逻辑删除字段')
+      }
+    },
+    async loadSchema() {
+      if (!this.form.host || !this.form.port || !this.form.database || !this.form.username) {
+        this.$message.warning('请填写完整数据库连接信息：主机、端口、数据库、用户名（密码可为空）')
+        return
+      }
+      this.loading = true
+      this.loadError = ''
+      try {
+        const res = await fetch('/schema', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'direct', dbType: 'mysql', host: this.form.host, port: this.form.port || 3306,
+            database: this.form.database, username: this.form.username, password: this.form.password
+          })
+        })
+        const result = await res.json()
+        if (!result.success) {
+          this.loadError = result.errorMessage || '读取表结构失败'
+          this.$message.error(this.loadError)
+          return
+        }
+        const body = result.data || {}
+        this.tables = (body.tables || []).map(table => {
+          table._modelName = this.computeModelName(table.tableName)
+          table._generateController = true
+          table._forceCreate = false
+          table._module = this.defaultModule || (this.confirmedModuleNames[0] || '')
+          table.columns = (table.columns || []).map(column => {
+            column._origComment = column.comment
+            column._config = {
+              type: 'default', javaType: column.javaType, sensitive: column.sensitive, sensitiveStrategy: 'PHONE',
+              enum: null, javaObject: '',
+              logicDelete: { enabled: false, normalValue: '0', deleteValue: '1', auto: false }
+            }
+            return column
+          })
+          return table
+        })
+        this.selectedTables = []
+        // 若在读取表结构前已开启逻辑删除/时间配置，加载后补触发一次 review / 保留集合重置
+        if (this.global.enable && this.global.columnName) {
+          this.reviewLogicDelete()
+        }
+        this.applyReservedReset()
+        if (body.warnings && body.warnings.length) {
+          this.loadError = body.warnings.map(w => w.tableName + ': ' + w.message).join('；')
+        }
+        this.$message.success('读取到 ' + this.tables.length + ' 张表')
+      } catch (e) {
+        this.loadError = (e && e.message) || '读取表结构失败'
+        this.$message.error(this.loadError)
+      } finally {
+        this.loading = false
+      }
+    },
+    handleSelectionChange(rows) { this.selectedTables = rows },
+    /** 展开行时不跳页：把展开的行保持在可视区域内（贴近鼠标位置）。 */
+    onExpandChange() {
+      this.$nextTick(() => {
+        const table = this.$refs.mainTable
+        if (table && table.$el) {
+          const active = table.$el.querySelector('.el-table__expanded-row')
+          if (active && active.scrollIntoView) {
+            active.scrollIntoView({ block: 'nearest' })
+          }
+        }
+      })
+    },
+    onForceCreateChange(table) {
+      if (!table._forceCreate || this.forceCreateWarned) return
+      this.$confirm('强制生成会覆盖该表已存在的文件（DO、枚举、Mapper 等），包括手动修改过的代码，改动可能丢失。请确认仅对确实需要重新生成的表开启。',
+        '强制生成警告', { confirmButtonText: '确认开启', cancelButtonText: '取消', type: 'warning' })
+        .then(() => { this.forceCreateWarned = true; this.$message.success('表 ' + table.tableName + ' 已开启强制生成') })
+        .catch(() => { table._forceCreate = false })
+    },
+    onColumnTypeChange(table, column, type) {
+      if (type !== 'enum') column._config.enum = null
+      column._config.type = type
+      if (type === 'default') column._config.javaType = column.javaType
+    },
+    countEnumRefs(className) {
+      if (!className) return 0
+      let n = 0
+      this.tables.forEach(t => (t.columns || []).forEach(c => {
+        const cfg = c._config && c._config.enum
+        if (cfg && cfg.className === className) n++
+      }))
+      return n
+    },
+    typeTagType(type) {
+      return { javaType: '', enum: 'warning', jsonObject: 'success', jsonArray: 'success', json: 'info' }[type] || 'info'
+    },
+    typeTagLabel(type) {
+      const found = this.columnTypeOptions.find(o => o.value === type)
+      return found ? found.label : type
+    },
+    typeTagColor(type) {
+      const found = this.columnTypeOptions.find(o => o.value === type)
+      return found ? found.color : '#909399'
+    },
+    queryJsonJavaObject(queryString, cb) {
+      const keyword = queryString || ''
+      cb(this.jsonJavaObjectOptions.filter(n => n.indexOf(keyword) !== -1).map(n => ({ value: n })))
+    },
+    /** 枚举值解析：从公共池读取引用枚举的映射。 */
+    resolveEnumValues(column) {
+      const cfg = column && column._config && column._config.enum
+      if (!cfg || !cfg.className) return []
+      return EnumStore.mappingsOf(cfg.className) || []
+    },
+    goNext() {
+      if (this.activeStep === 3) { this.goPreview(); return }
+      this.activeStep++
+    },
+    goPreview() {
+      if (this.buildYaml()) this.activeStep = 4
+    },
+    buildYaml() {
+      if (!this.selectedTables.length) {
+        this.$message.warning('请先读取表结构并勾选需要生成的表')
+        return false
+      }
+      const lines = []
+      lines.push('projectPrefix: ' + this.project.projectPrefix)
+      lines.push('groupId: ' + this.project.groupId)
+      lines.push('projectArtifactPrefix: ' + this.project.projectArtifactPrefix)
+      lines.push('basePackage: ' + this.project.basePackage)
+      lines.push('projectStyle: ' + this.projectStyle)
+      lines.push('moduleLayout: ' + this.moduleLayout)
+      const confirmedModules = this.modules.filter(m => m.confirmed && m.name)
+      if (confirmedModules.length) {
+        lines.push('modules:')
+        confirmedModules.forEach(m => {
+          lines.push('  - name: ' + m.name)
+          lines.push('    displayName: ' + this.yamlQuote(m.cnName || m.name))
+        })
+      }
+      lines.push('')
+      lines.push('jdbc:')
+      lines.push('  url: jdbc:mysql://' + this.form.host + ':' + (this.form.port || 3306) + '/' + this.form.database
+        + '?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true')
+      lines.push('  username: ' + this.form.username)
+      lines.push('  password: "' + (this.form.password || '') + '"')
+      lines.push('')
+      lines.push('outputDir: ' + (this.project.outputDir || '/path/to/AiProd'))
+      lines.push('')
+      if (this.global.enable && this.global.columnName) {
+        lines.push('globalLogicDelete:')
+        lines.push('  enable: true')
+        lines.push('  column_name: ' + this.global.columnName)
+        lines.push('  normal_value: ' + this.global.normalValue)
+        lines.push('  delete_value: ' + this.global.deleteValue)
+        lines.push('')
+      }
+      const pluginNames = this.plugins.map(p => (p.name || '').trim()).filter(Boolean)
+      if (pluginNames.length) {
+        lines.push('plugins:')
+        pluginNames.forEach(name => lines.push('  - name: ' + name))
+        lines.push('')
+      }
+      lines.push('tables:')
+      const yamlErrors = []
+      this.selectedTables.forEach(table => {
+        lines.push('  - db_table_name: ' + table.tableName)
+        lines.push('    model_name: ' + table._modelName)
+        lines.push('    model_comment: ' + this.yamlQuote(table.comment || table._modelName))
+        lines.push('    generateController: ' + table._generateController)
+        if (table._forceCreate) lines.push('    force_create: true')
+        if (table._module) lines.push('    module: ' + table._module)
+        const logicDeleteCols = (table.columns || []).filter(c => c._config.logicDelete && c._config.logicDelete.enabled)
+        if (logicDeleteCols.length > 1) {
+          yamlErrors.push('表 ' + table.tableName + ' 只能启用一个逻辑删除列：' + logicDeleteCols.map(c => c.columnName).join('、'))
+          return
+        }
+        const logicDeleteCol = logicDeleteCols[0]
+        if (logicDeleteCol) {
+          const ld = logicDeleteCol._config.logicDelete
+          const sameAsGlobal = this.global.enable && logicDeleteCol.columnName === this.global.columnName
+            && ld.normalValue === this.global.normalValue && ld.deleteValue === this.global.deleteValue
+          if (!sameAsGlobal) {
+            lines.push('    logicDelete:')
+            lines.push('      enable: true')
+            lines.push('      column_name: ' + logicDeleteCol.columnName)
+            lines.push('      normal_value: ' + (ld.normalValue || '0'))
+            lines.push('      delete_value: ' + (ld.deleteValue || '1'))
+          }
+        }
+        const columnBlocks = []
+        table.columns.forEach(column => {
+          const cfg = column._config
+          const sensitiveChanged = cfg.sensitive !== column.sensitive
+          const typeChanged = cfg.type !== 'default'
+          const commentChanged = column.comment !== column._origComment
+          if (!typeChanged && !sensitiveChanged && !commentChanged) return
+          const block = ['      ' + column.columnName + ':']
+          let wroteType = false
+          if (cfg.type === 'enum') {
+            const enumValues = this.resolveEnumValues(column)
+            if (!cfg.enum || !cfg.enum.className || !enumValues.length) {
+              yamlErrors.push('表 ' + table.tableName + ' 列 ' + column.columnName + ': 枚举配置不完整')
+              return
+            }
+            block.push('        type: enum')
+            block.push('        enum:')
+            block.push('          className: ' + cfg.enum.className)
+            block.push('          values:')
+            enumValues.forEach(v => {
+              block.push('            - { code: ' + v.code + ', name: ' + v.name
+                + ', desc: ' + this.yamlQuote(v.desc) + ' }')
+            })
+            wroteType = true
+          } else if (cfg.type === 'jsonObject' || cfg.type === 'jsonArray') {
+            block.push('        type: ' + cfg.type)
+            if (cfg.javaObject && cfg.javaObject.trim()) block.push('        javaObject: ' + cfg.javaObject.trim())
+            wroteType = true
+          } else if (cfg.type === 'json') {
+            block.push('        type: json')
+            wroteType = true
+          } else if (cfg.type === 'javaType' && cfg.javaType !== column.javaType) {
+            block.push('        type: ' + cfg.javaType)
+            wroteType = true
+          }
+          if (sensitiveChanged) {
+            block.push('        sensitive: ' + cfg.sensitive)
+            if (cfg.sensitive && cfg.sensitiveStrategy && cfg.sensitiveStrategy !== 'NONE') {
+              block.push('        sensitiveStrategy: ' + cfg.sensitiveStrategy)
+            }
+          }
+          if (commentChanged) block.push('        comment: ' + this.yamlQuote(column.comment))
+          if (wroteType || sensitiveChanged || commentChanged) columnBlocks.push(block.join('\n'))
+        })
+        if (columnBlocks.length) {
+          lines.push('    columns:')
+          columnBlocks.forEach(b => lines.push(b))
+        }
+        lines.push('')
+      })
+      if (yamlErrors.length) {
+        this.$message.error('生成失败：\n' + yamlErrors.join('\n'))
+        return false
+      }
+      this.yamlContent = lines.join('\n')
+      return true
+    },
+    yamlQuote(value) {
+      return '"' + String(value == null ? '' : value).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'
+    },
+    camel(name) {
+      let result = ''
+      let upper = false
+      for (const ch of String(name)) {
+        if (ch === '_') { upper = true; continue }
+        result += upper ? ch.toUpperCase() : ch
+        upper = false
+      }
+      return result
+    },
+    cap(value) {
+      return value ? value.charAt(0).toUpperCase() + value.slice(1) : value
+    },
+    copyYaml() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(this.yamlContent).then(() => this.$message.success('已复制'))
+      } else {
+        this.$message.warning('当前环境不支持剪贴板，请手动复制')
+      }
+    },
+    downloadYaml() {
+      const blob = new Blob([this.yamlContent], { type: 'text/yaml;charset=utf-8' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = 'generate.yaml'
+      a.click()
+      URL.revokeObjectURL(a.href)
+    },
+    async generateProject() {
+      if (!this.yamlContent) {
+        this.$message.warning('请先生成 yaml 再生成项目')
+        return
+      }
+      if (!this.clusterMode && !this.project.outputDir) {
+        this.$message.warning('请先在基础配置填写输出目录（生成器落点）')
+        return
+      }
+      this.generating = true
+      try {
+        const res = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ yaml: this.yamlContent, package: this.clusterMode })
+        })
+        if (this.clusterMode) {
+          const contentType = res.headers.get('content-type') || ''
+          if (res.ok && contentType.includes('gzip')) {
+            const blob = await res.blob()
+            const a = document.createElement('a')
+            a.href = URL.createObjectURL(blob)
+            a.download = 'codegen-project-' + new Date().getTime() + '.tar.gz'
+            a.click()
+            URL.revokeObjectURL(a.href)
+            this.$message.success('项目生成完成，压缩包已下载')
+          } else {
+            const result = await res.json().catch(() => ({}))
+            this.generateLog = String(result.log || result.errorMessage || '').trim()
+            this.generateSuccess = false
+            this.logVisible = true
+            this.$message.error('生成失败，详见日志弹窗')
+          }
+        } else {
+          const result = await res.json()
+          this.generateLog = String(result.log || result.errorMessage || '').trim()
+          this.generateSuccess = !!result.success
+          this.logVisible = true
+          if (result.success) {
+            this.$message.success('项目生成完成，输出目录：' + this.project.outputDir)
+          } else {
+            this.$message.error('生成失败，详见日志弹窗')
+          }
+        }
+      } catch (e) {
+        this.$message.error('生成失败：' + ((e && e.message) || '服务不可达'))
+      } finally {
+        this.generating = false
+      }
+    }
+  }
+})
+</script>
+</body>
+</html>
