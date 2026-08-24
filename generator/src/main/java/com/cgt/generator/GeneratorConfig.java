@@ -180,8 +180,7 @@ public final class GeneratorConfig {
         }
 
         cfg.projectPrefix = str(root.get("projectPrefix"));
-        // 2.0 规范已移除 toolPrefix 配置项：未配置时默认取 projectPrefix，保证骨架 token 替换不落空
-        cfg.toolPrefix = defaultStr(root.get("toolPrefix"), cfg.projectPrefix);
+        cfg.toolPrefix = str(root.get("toolPrefix"));
         cfg.groupId = str(root.get("groupId"));
         cfg.projectArtifactPrefix = str(root.get("projectArtifactPrefix"));
         cfg.basePackageOverride = str(root.get("basePackage"));
@@ -304,6 +303,9 @@ public final class GeneratorConfig {
         if (isBlank(projectPrefix)) {
             missing.append(" projectPrefix");
         }
+        if (isBlank(toolPrefix)) {
+            missing.append(" toolPrefix");
+        }
         if (isBlank(groupId)) {
             missing.append(" groupId");
         }
@@ -321,7 +323,7 @@ public final class GeneratorConfig {
         if (!projectPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
             throw new IllegalArgumentException("projectPrefix 需为驼峰字母/数字(如 AiProd)");
         }
-        if (!isBlank(toolPrefix) && !toolPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
+        if (!toolPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
             throw new IllegalArgumentException("toolPrefix 需为驼峰字母/数字(如 AiProd)");
         }
         if (!tables.isEmpty()) {
