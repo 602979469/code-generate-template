@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.jakt</groupId>
+        <artifactId>aiplatform-core</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>aiplatform-core-repository</artifactId>
+    <name>aiplatform-core-repository</name>
+    <description>仓储层：封装 Mapper，DO 转 Model，可组合多个 Mapper</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.jakt</groupId>
+            <artifactId>aiplatform-core-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jakt</groupId>
+            <artifactId>aiplatform-common-dal</artifactId>
+        </dependency>
+        <!-- ${toolPrefix}Invoker（条件断言） -->
+        <dependency>
+            <groupId>com.jakt</groupId>
+            <artifactId>aiplatform-common-util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+    </dependencies>
+</project>
