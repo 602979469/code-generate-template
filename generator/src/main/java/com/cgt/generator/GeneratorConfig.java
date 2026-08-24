@@ -303,9 +303,6 @@ public final class GeneratorConfig {
         if (isBlank(projectPrefix)) {
             missing.append(" projectPrefix");
         }
-        if (isBlank(toolPrefix)) {
-            missing.append(" toolPrefix");
-        }
         if (isBlank(groupId)) {
             missing.append(" groupId");
         }
@@ -323,7 +320,7 @@ public final class GeneratorConfig {
         if (!projectPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
             throw new IllegalArgumentException("projectPrefix 需为驼峰字母/数字(如 AiProd)");
         }
-        if (!toolPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
+        if (!isBlank(toolPrefix) && !toolPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
             throw new IllegalArgumentException("toolPrefix 需为驼峰字母/数字(如 AiProd)");
         }
         if (!tables.isEmpty()) {
@@ -369,7 +366,8 @@ public final class GeneratorConfig {
 
     private static void validateColumnConfig(String tableName, String columnName, ColumnConfig cc) {
         if (isBlank(cc.type)) {
-            throw new IllegalArgumentException("表 " + tableName + " 列 " + columnName + " 配置了 columns 但缺少 type");
+            // 2.0：允许只配 sensitive / comment 的列（type 缺省走数据库默认映射）
+            return;
         }
         if ("enum".equals(cc.type)) {
             if (cc.enumConfig == null) {

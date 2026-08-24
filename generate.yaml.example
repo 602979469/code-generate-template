@@ -1,5 +1,5 @@
 # ============================================================
-# generate.yaml — code-generate-template 配置模板（全配置项）
+# generate.yaml — code-generate-template 2.0 配置模板（全配置项）
 # 用法:
 #   1) 首次运行 ./gen.sh 生成本文件与 example.sql
 #   2) 先执行 example.sql 创建示例表（example_inner / example_logic / example）
@@ -11,15 +11,34 @@
 # 项目前缀（驼峰，用于启动类名），如 AiProd -> AiProdApplication
 projectPrefix: AiProd
 
-# 兼容保留（驼峰）：新架构下基础组件已统一为无前缀命名（AssertUtil/ApiTemplate/ApiResult 等），
-# 该前缀仅用于启动类（projectPrefix + Application），不再出现在工具类/返回体/模板上
-toolPrefix: AiProd
-
 # Maven groupId
 groupId: com.jakt
 
 # artifactId/包名后缀（小写字母/数字，Java 包名不允许连字符）
 projectArtifactPrefix: aiprod
+
+# 基础包名
+basePackage: com.jakt.aiprod
+
+# ---------------- 项目架构风格（可选，默认 monolith:flat） ----------------
+
+# 项目风格: monolith | microservice（可选，默认 monolith；microservice 暂未实现）
+projectStyle: monolith
+
+# 模块样式: flat | aggregated | maven-module（可选，默认 flat）
+#   flat        - 不新建 Maven 模块（1.0 结构不变），业务模块作为层内子包: com.jakt.aiprod.core.model.chat.domain
+#   aggregated  - 业务模块拆 Maven 子项目，收在 modules/ 下: com.jakt.aiprod.modules.chat.web.controller
+#   maven-module- 业务模块拆 Maven 子项目，平铺在根下: com.jakt.aiprod.modules.chat.web.controller（目录 aiprod-chat/）
+moduleLayout: flat
+
+# ---------------- 业务模块列表（声明有哪些模块，供表关联选择） ----------------
+modules:
+  - name: chat
+    displayName: 聊天模块
+  - name: auth
+    displayName: 认证模块
+  - name: ai
+    displayName: AI 模块
 
 # ---------------- 数据库（配置了 tables 时必填） ----------------
 jdbc:
@@ -39,32 +58,36 @@ globalLogicDelete:
   normal_value: 0
   delete_value: 1
 
-# ---------------- 全局敏感列（可选） ----------------
-# 默认按列名识别 password/pwd/token/api_key/apikey/secret/salt 并从查询参数/响应/查询条件中剔除
-# （Model/DO/创建请求仍保留，登录校验需要读取）；此处可追加自定义列名。
-sensitive_columns:
-  - id_card
-  - phone
+# ---------------- 插件（可选，工程级一次性生成） ----------------
+# 声明插件后，生成器向工程注入对应业务代码（目标落 common-framework / common-util 包），
+# 已生成过的文件跳过、不覆盖；插件不负责表，涉及表的业务走下方 tables 配置。
+plugins:
+  - name: sa-token
+    # config:  # 参数预留位（第一版固定模板，暂不传参）
 
 # ---------------- 业务表（每张表只需 db_table_name） ----------------
 # model_name 缺省 = 表名驼峰（如 example_logic -> ExampleLogic）
 # model_comment 缺省 = 数据库表注释（生成代码的所有注释都用它拼接）
+# module: 可选，关联上方 modules 配置；flat 下不填 = 业务层路径不带模块段（1.0 原样），
+#         aggregated / maven-module 下决定业务代码落到哪个业务模块子项目
 # 下方三张示例表覆盖全部可选配置项:
-#   example_inner  -> generateController: false（内部表，不生成 web 层 7 个文件）
+#   example_inner  -> generateController: false（内部表，不生成 web 层）
 #   example_logic  -> logicDelete（逻辑删除，仅默认类型映射，不配置 columns）
-#   example        -> force_create + columns（枚举 / json / jsonArray / jsonObject / 强制类型转换）
+#   example        -> force_create + columns（枚举 / json / jsonArray / jsonObject / 强制类型转换 / 表级敏感列）
 tables:
-  # 1) 内部表: 不提供 Controller 与 Manager，只生成 10 个数据/服务层文件；model_name/model_comment 显式指定
+  # 1) 内部表: 不提供 Controller，只生成数据/服务层文件；model_name/model_comment 显式指定
   #    force_create: true 演示"内部表 + 强制覆盖"组合（危险：会覆盖该表已存在文件）
   - db_table_name: example_inner
+    module: chat                          # 关联 modules 中的 chat 模块
     model_name: ExampleInner
     model_comment: 内部示例
     generateController: false
     force_create: true
 
   # 2) 逻辑删除表: 只做默认类型映射，不指定转换方式；deleteById 变 UPDATE
-  #    仅配置 db_table_name，model_name/model_comment 走缺省（表名驼峰 + 数据库表注释）
+  #    仅配置 db_table_name + module，model_name/model_comment 走缺省（表名驼峰 + 数据库表注释）
   - db_table_name: example_logic
+    module: auth                          # 关联 modules 中的 auth 模块
     logicDelete:
       enable: true
       column_name: del_flag
@@ -74,40 +97,44 @@ tables:
   # 3) 全功能表: 非逻辑删除，演示全部列级转换 + force_create
   #    force_create: true 会覆盖该表已存在文件（危险，演示用）
   - db_table_name: example
+    module: ai                            # 关联 modules 中的 ai 模块
     model_name: Example
     model_comment: 示例
     force_create: true
     columns:
-      # 枚举: int 列 -> UserTypeEnum（Integer code），Model/DTO 用枚举，DO 保持 Integer
+      # 枚举: int 列 -> UserTypeEnum，Model/DTO 用枚举，DO 保持 Integer
+      # codeType 已移除，枚举 code 的类型由 values 中的 code 自动推断
       user_type:
         type: enum
         enum:
           className: UserTypeEnum
-          codeType: Integer
           values:
             - { code: 0, name: SYSTEM_USER, desc: 系统用户 }
             - { code: 1, name: NORMAL_USER, desc: 普通用户 }
-      # 枚举: varchar 列 -> UserStatusEnum（String code）
+      # 枚举: varchar 列 -> UserStatusEnum
       status:
         type: enum
         enum:
           className: UserStatusEnum
-          codeType: String
           values:
             - { code: ENABLED, name: ENABLED, desc: 启用 }
             - { code: DISABLED, name: DISABLED, desc: 停用 }
       # 强制类型转换: bigint -> Integer（Convert.toInt），也可 Long/BigDecimal/String
       login_count:
         type: Integer
-      # jsonObject: javaObject 填目标对象类型（POJO 全限定名或 Map<String, Object>），缺省 Map<String, Object>；
-      #             不支持 String（原始字符串请用 type: json）
-      # 注意: javaObject 指向的 POJO 需自己创建（如 com.jakt.aiprod.core.model.domain.Profile），
-      #       未创建时生成代码的 import 标红属预期，创建后即恢复
+      # 敏感字段: 表级配置脱敏策略（全局敏感词已移除，仅表级可配置）
+      id_card:
+        sensitive: true
+        sensitiveStrategy: ID_CARD       # PHONE | ID_CARD | BANK_CARD | EMAIL | NAME | ADDRESS | PASSWORD | NONE
+      phone:
+        sensitive: true
+        sensitiveStrategy: PHONE
+      # jsonObject: javaObject 填目标对象类型（POJO 全限定名或 Map<String, Object>），缺省 Map<String, Object>
+      # 注意: javaObject 指向的 POJO 需自己创建（如 com.jakt.aiprod.core.model.domain.Profile）
       profile:
         type: jsonObject
         javaObject: com.jakt.aiprod.core.model.domain.Profile
-      # jsonArray: javaObject 填元素类型（POJO 全限定名或 String / Integer / Double 等基础类型），
-      #            生成 List<X>，缺省 List<Object>
+      # jsonArray: javaObject 填元素类型（POJO 全限定名或 String / Integer / Double 等基础类型）
       tags:
         type: jsonArray
         javaObject: com.jakt.aiprod.core.model.domain.Tag
