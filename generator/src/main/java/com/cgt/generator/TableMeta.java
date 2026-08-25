@@ -36,6 +36,8 @@ public final class TableMeta {
 
     /** 逻辑删除是否启用（配置生效且列存在）。 */
     public boolean logicDeleteEnabled;
+    /** 逻辑删除配置开启但列不存在时的提示（非空时表级框展示，生成退化为物理删除）。 */
+    public String logicDeleteWarn;
     /** 逻辑删除列名。 */
     public String logicDeleteColumn;
     /** 未删除值（SQL 字面量，字符串列已加引号）。 */

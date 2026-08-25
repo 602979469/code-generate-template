@@ -415,8 +415,8 @@ public final class DbMetaReader {
         }
         String rawType = rawColumns.get(ld.columnName);
         if (rawType == null) {
-            System.err.println("[gen] 警告: 表 " + table.dbTableName + " 已开启全局逻辑删除（列 " + ld.columnName
-                    + "），但表中不存在该列，请确认建表脚本包含该列。");
+            meta.logicDeleteWarn = "逻辑删除: 已开启，但表中不存在列 " + ld.columnName
+                    + "，请确认建表脚本包含该列";
             return;
         }
         boolean stringColumn = "String".equals(mapJavaType(rawType));

@@ -99,8 +99,30 @@ public final class CrudGenerator {
         for (GeneratorConfig.TableConfig table : cfg.tables) {
             tableIndex++;
             String display = table.dbTableName;
-            printTableBanner(display, tableIndex, cfg.tables.size());
+            List<String> notes = new ArrayList<>();
+
             TableMeta meta = DbMetaReader.read(cfg, table);
+
+            // 主键与逻辑删除状态（放入表级框内展示）
+            if (meta.compositePk) {
+                StringBuilder pk = new StringBuilder();
+                for (ColumnMeta c : meta.pkColumns) {
+                    if (pk.length() > 0) {
+                        pk.append(" + ");
+                    }
+                    pk.append(c.columnName);
+                }
+                notes.add("主键: " + pk + "（复合主键）");
+            } else {
+                notes.add("主键: " + meta.pkColumnName + "（" + meta.pkJavaType
+                        + (meta.pkAuto ? "，自增" : "，非自增") + "）");
+            }
+            if (meta.logicDeleteWarn != null) {
+                notes.add(meta.logicDeleteWarn);
+            } else if (meta.logicDeleteEnabled) {
+                notes.add("逻辑删除: 已开启（列 " + meta.logicDeleteColumn + "，正常 "
+                        + meta.logicDeleteNormal + " / 删除 " + meta.logicDeleteDelete + "）");
+            }
 
             // 表级跳过判定：DO 已存在（未 force_create）则整表跳过；
             // 枚举已存在只跳过该枚举文件（见 renderEnums），表其余文件照常生成
@@ -114,19 +136,17 @@ public final class CrudGenerator {
                 skipReason = "DO 已存在";
             }
             if (skipReason != null) {
-                System.out.println("[gen] " + display + " 表" + skipReason + "，跳过，不覆盖"
-                        + "（如需覆盖请配置 force_create: true）");
+                notes.add("结果: 跳过（" + skipReason + "，不覆盖）");
+                printTableBox("开始 " + display + " 表生成 [" + tableIndex + "/" + cfg.tables.size() + "]", notes);
                 skipped++;
                 skipReasons.add(display + ": " + skipReason + "，跳过，不覆盖");
-                printTableBannerEnd(display);
                 continue;
             }
 
             boolean overwriting = table.forceCreate && (doExists || existingEnum != null);
             if (overwriting) {
                 String existing = existingEnum != null ? "枚举 " + existingEnum : "DO";
-                System.out.println("[gen] ⚠️ " + display + " 表" + existing + " 已存在，force_create 强制覆盖，"
-                        + "请注意：会覆盖手动修改的代码！");
+                notes.add("警告: " + existing + " 已存在，force_create 强制覆盖，会覆盖手动修改的代码");
                 warned++;
                 warnReasons.add(display + ": " + existing + " 已存在，force_create 强制覆盖，请注意会覆盖手动修改的代码");
             }
@@ -142,15 +162,15 @@ public final class CrudGenerator {
                     fileCount++;
                 }
             }
-            fileCount += renderEnums(meta, table.forceCreate);
+            fileCount += renderEnums(meta, table.forceCreate, notes);
             generateTableSql(table, table.forceCreate);
 
             String modeTip = meta.compositePk
                     ? "，复合主键：按完整主键 ByKey 生成 CRUD"
                     : "";
-            System.out.println("[gen] " + display + " 表代码生成成功（" + fileCount + " 个文件" + modeTip + "）");
+            notes.add("结果: 生成成功（" + fileCount + " 个文件" + modeTip + "）");
+            printTableBox("开始 " + display + " 表生成 [" + tableIndex + "/" + cfg.tables.size() + "]", notes);
             success++;
-            printTableBannerEnd(display);
         }
 
         if (skipped > 0 || warned > 0) {
@@ -160,20 +180,52 @@ public final class CrudGenerator {
         }
     }
 
-    /** Maven 风格的表分隔横幅：表开始。 */
-    private static void printTableBanner(String display, int index, int total) {
-        System.out.println("[gen] " + padBanner("< 表: " + display + " [" + index + "/" + total + "] >"));
+    /** 框宽（字符数，与执行报告保持一致）。 */
+    private static final int BOX_WIDTH = 50;
+
+    /** 表级状态框：标题 + 短行状态（超长自动换行）。 */
+    private static void printTableBox(String title, List<String> notes) {
+        System.out.println("[gen] " + boxBorder('┌', '┐', title));
+        for (String note : notes) {
+            for (String line : wrapLine(note, BOX_WIDTH - 6)) {
+                System.out.println("[gen] │ " + padRight(line, BOX_WIDTH - 3) + "│");
+            }
+        }
+        System.out.println("[gen] " + boxBorder('└', '┘', null));
     }
 
-    /** Maven 风格的表分隔横幅：表结束。 */
-    private static void printTableBannerEnd(String display) {
-        System.out.println("[gen] " + padBanner("< / 表: " + display + " >"));
+    private static String boxBorder(char left, char right, String title) {
+        if (title == null || title.isBlank()) {
+            return left + "─".repeat(BOX_WIDTH - 2) + right;
+        }
+        String inner = " " + title + " ";
+        int side = Math.max(1, (BOX_WIDTH - 2 - inner.length()) / 2);
+        int tail = Math.max(0, BOX_WIDTH - 2 - side - inner.length());
+        return left + "─".repeat(side) + inner + "─".repeat(tail) + right;
     }
 
-    private static String padBanner(String center) {
-        int width = Math.max(66, center.length() + 8);
-        int side = (width - center.length()) / 2;
-        return "-".repeat(side) + center + "-".repeat(width - side - center.length());
+    private static String padRight(String text, int width) {
+        return text + " ".repeat(Math.max(0, width - text.length()));
+    }
+
+    /** 按宽度换行，优先在空格/中文标点处断开，避免一行太长的字。 */
+    private static List<String> wrapLine(String text, int width) {
+        List<String> lines = new ArrayList<>();
+        String rest = text;
+        while (rest.length() > width) {
+            int cut = width;
+            for (int i = width; i > width / 2; i--) {
+                char ch = rest.charAt(i - 1);
+                if (ch == ' ' || ch == '，' || ch == '、' || ch == '；' || ch == '：' || ch == '）' || ch == ')') {
+                    cut = i;
+                    break;
+                }
+            }
+            lines.add(rest.substring(0, cut).stripTrailing());
+            rest = rest.substring(cut).stripLeading();
+        }
+        lines.add(rest);
+        return lines;
     }
 
     private String firstExistingEnumFile(TableMeta meta) {
@@ -199,7 +251,7 @@ public final class CrudGenerator {
     }
 
     /** 渲染枚举模板，返回生成/覆盖的文件数（已存在且非 force 时跳过）。 */
-    private int renderEnums(TableMeta meta, boolean force) throws IOException, TemplateException {
+    private int renderEnums(TableMeta meta, boolean force, List<String> notes) throws IOException, TemplateException {
         Set<String> seen = new LinkedHashSet<>();
         int count = 0;
         for (ColumnMeta c : meta.columns) {
@@ -220,12 +272,15 @@ public final class CrudGenerator {
             Path target = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
                     + "/core/model/enums/" + c.enumClassName + ".java");
             if (Files.exists(target) && !force) {
-                System.out.println("[gen]   枚举 " + c.enumClassName + " 已存在，跳过该枚举文件");
+                notes.add("枚举: " + c.enumClassName + " 已存在，跳过该枚举文件");
                 continue;
             }
             Files.createDirectories(target.getParent());
             Files.writeString(target, writer.toString(), StandardCharsets.UTF_8);
             count++;
+        }
+        if (count > 0) {
+            notes.add("枚举: 生成 " + count + " 个");
         }
         return count;
     }
