@@ -4,6 +4,7 @@ package ${basePackage}.core.model.domain;
 </#if><#if hasLocalDate>import java.time.LocalDate;
 </#if><#if hasBigDecimal>import java.math.BigDecimal;
 </#if>${modelImports}
+import ${basePackage}.common.framework.model.BaseModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

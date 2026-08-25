@@ -9,7 +9,7 @@ import ${basePackage}.common.util.tools.AssertUtil;
 import ${basePackage}.common.util.tools.ConvertUtil;
 import ${basePackage}.common.util.tools.LoggerUtil;
 import ${basePackage}.core.model.domain.${className};
-import ${basePackage}.core.model.enums.ErrorCodeEnum;
+import ${basePackage}.common.framework.enums.ErrorCodeEnum;
 import ${basePackage}.core.model.param.${className}QueryParam;
 import ${basePackage}.core.repository.${className}Repository;
 import ${basePackage}.core.repository.convertor.${className}Convertor;

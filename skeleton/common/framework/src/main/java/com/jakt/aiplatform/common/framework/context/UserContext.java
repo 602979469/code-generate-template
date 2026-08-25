@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.core.model.context;
+package com.jakt.aiplatform.common.framework.context;
 
 /**
  * 用户上下文：web 层过滤器写入当前请求用户，业务层统一从此读取。

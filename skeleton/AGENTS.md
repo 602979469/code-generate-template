@@ -37,6 +37,7 @@ core/model                 → aiplatform-core-model
 core/repository            → aiplatform-core-repository
 core/service               → aiplatform-core-service
 common/dal                 → aiplatform-common-dal
+common/framework           → aiplatform-common-framework
 common/util                → aiplatform-common-util
 common/integration         → aiplatform-common-integration
 bootstrap                  → aiplatform-bootstrap
@@ -47,14 +48,16 @@ bootstrap                  → aiplatform-bootstrap
 ```text
 common-util
     ↑
+    ├── common-framework
     ├── core-model
     ├── common-dal
     ├── common-integration
     │
+    core-model      → common-framework + common-util
     core-repository → core-model + common-dal + common-util
     core-service    → core-model + core-repository + common-util + common-integration
     biz-service-impl → core-model + core-service + common-util
-    web             → biz-service-impl + core-model + common-util
+    web             → biz-service-impl + core-model + common-util + common-framework
     bootstrap       → 以上所有模块
 ```
 
@@ -73,7 +76,8 @@ common-util
 | 模块 | 只允许出现 | 禁止出现 |
 |---|---|---|
 | common-util | ErrorCode、CommonErrorCode、CommonException、Result、PageResult、LogFileEnum、LoggerUtil、AssertUtil、ConvertUtil、ParamValidator、TransactionTemplate、BizTemplate、ClientInfoUtil、ThreadPoolUtil、JsonUtil、TraceIdUtil、基础配置 | core-model、common-dal、web、biz、业务规则 |
-| core-model | domain、enums、param、dto、exception、context、constant | Spring/MyBatis/Redis、业务服务实现、持久化细节 |
+| common-framework | BaseModel、BaseEnum、ErrorCodeEnum、AiPlatformException、UserContext、PageParam、AiPlatformConstants、插件代码 | core-model、common-dal、web、biz、业务规则 |
+| core-model | 业务 domain、业务 param、业务 enums（每表生成） | 公共类、Spring/MyBatis/Redis、业务服务实现、持久化细节 |
 | common-dal | DO、Mapper、Mapper.xml、DalQuery、DalResult、RedisClient、持久化连接配置 | core-model、业务规则、web/biz 类型 |
 | common-integration | 外部 HTTP/RPC 客户端、集成异常、集成配置 | core-model、common-dal、业务规则 |
 | core-repository | Repository、RepositoryImpl、Convertor | 业务规则、对外暴露 DO/DalQuery/DalResult |

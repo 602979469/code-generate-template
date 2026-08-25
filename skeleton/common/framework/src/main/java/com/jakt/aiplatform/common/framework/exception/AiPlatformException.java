@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.core.model.exception;
+package com.jakt.aiplatform.common.framework.exception;
 
 import com.jakt.aiplatform.common.util.error.CommonException;
 import com.jakt.aiplatform.common.util.error.ErrorCode;

@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.core.model.constant;
+package com.jakt.aiplatform.common.framework.constant;
 
 /**
  * 平台常量类

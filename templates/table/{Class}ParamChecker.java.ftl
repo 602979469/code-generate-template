@@ -3,7 +3,7 @@ package ${basePackage}.web.checker;
 import cn.hutool.core.util.ObjectUtil;
 import ${basePackage}.common.util.tools.AssertUtil;
 import ${basePackage}.common.util.tools.ParamValidator;
-import ${basePackage}.core.model.enums.ErrorCodeEnum;
+import ${basePackage}.common.framework.enums.ErrorCodeEnum;
 import ${basePackage}.web.param.${className}CreateRequest;
 import ${basePackage}.web.param.${className}QueryRequest;
 import ${basePackage}.web.param.${className}UpdateRequest;

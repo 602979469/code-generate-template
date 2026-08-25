@@ -1,6 +1,6 @@
-package ${basePackage}.core.model.enums;
+package ${basePackage}.common.framework.enums;
 
-import ${basePackage}.core.model.exception.AiPlatformException;
+import ${basePackage}.common.framework.exception.AiPlatformException;
 
 /**
  * 业务枚举基座。

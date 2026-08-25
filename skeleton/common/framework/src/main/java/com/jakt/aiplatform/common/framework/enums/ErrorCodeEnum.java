@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.core.model.enums;
+package com.jakt.aiplatform.common.framework.enums;
 
 import com.jakt.aiplatform.common.util.error.ErrorCode;
 

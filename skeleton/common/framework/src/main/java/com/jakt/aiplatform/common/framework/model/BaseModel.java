@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.core.model.domain;
+package com.jakt.aiplatform.common.framework.model;
 
 import lombok.Data;
 

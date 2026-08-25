@@ -17,6 +17,7 @@
     <description>基础结构层聚合模块：dal + util + integration</description>
 
     <modules>
+        <module>framework</module>
         <module>dal</module>
         <module>util</module>
         <module>integration</module>

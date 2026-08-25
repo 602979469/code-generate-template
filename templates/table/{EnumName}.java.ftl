@@ -2,6 +2,7 @@ package ${basePackage}.core.model.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import ${basePackage}.common.framework.enums.BaseEnum;
 import lombok.Getter;
 
 /**

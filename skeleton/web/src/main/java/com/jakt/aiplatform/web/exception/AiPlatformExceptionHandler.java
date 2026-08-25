@@ -5,7 +5,7 @@ import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
 import com.jakt.aiplatform.common.util.error.CommonErrorCode;
 import com.jakt.aiplatform.common.util.error.CommonException;
-import com.jakt.aiplatform.core.model.enums.ErrorCodeEnum;
+import com.jakt.aiplatform.common.framework.enums.ErrorCodeEnum;
 import com.jakt.aiplatform.common.util.enums.LogFileEnum;
 import com.jakt.aiplatform.common.util.tools.LoggerUtil;
 import com.jakt.aiplatform.web.result.ApiResult;

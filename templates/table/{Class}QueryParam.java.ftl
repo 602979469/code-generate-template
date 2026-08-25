@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 </#if><#if hasBigDecimal>import java.math.BigDecimal;
 </#if>
 ${modelImports}
+import ${basePackage}.common.framework.param.PageParam;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

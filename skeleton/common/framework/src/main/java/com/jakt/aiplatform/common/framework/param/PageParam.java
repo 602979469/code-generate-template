@@ -1,12 +1,12 @@
-package com.jakt.aiplatform.core.model.param;
+package com.jakt.aiplatform.common.framework.param;
 
-import com.jakt.aiplatform.core.model.domain.BaseModel;
+import com.jakt.aiplatform.common.framework.model.BaseModel;
 import com.jakt.aiplatform.common.util.constant.PageConstants;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 分页查询参数基类：继承 {@link com.jakt.aiplatform.core.model.domain.BaseModel} 的公共字段
+ * 分页查询参数基类：继承 {@link com.jakt.aiplatform.common.framework.model.BaseModel} 的公共字段
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

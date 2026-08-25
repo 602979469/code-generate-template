@@ -6,7 +6,7 @@ import ${basePackage}.common.util.result.PageResult;
 import ${basePackage}.common.util.tools.AssertUtil;
 import ${basePackage}.common.util.tools.ConvertUtil;
 import ${basePackage}.core.model.domain.${className};
-import ${basePackage}.core.model.enums.ErrorCodeEnum;
+import ${basePackage}.common.framework.enums.ErrorCodeEnum;
 import ${basePackage}.web.assembler.${className}Assembler;
 import ${basePackage}.web.checker.${className}ParamChecker;
 import ${basePackage}.web.param.${className}CreateRequest;

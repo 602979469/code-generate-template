@@ -15,11 +15,12 @@ aiplatform（聚合根 pom）
 ├── biz/                        # aiplatform-biz              业务层聚合（空壳）
 │   └── service-impl/           # aiplatform-biz-service-impl 业务层：XxxManager（用例编排，操作领域模型）
 ├── core/                       # aiplatform-core             核心领域层聚合
-│   ├── model/                  # aiplatform-core-model       领域模型、查询参数、异常体系（错误码枚举）
+│   ├── model/                  # aiplatform-core-model       业务 domain / param / 业务枚举（公共类已迁 common-framework）
 │   ├── repository/             # aiplatform-core-repository  仓储层：封装 Mapper，DO → Model
 │   └── service/                # aiplatform-core-service     领域服务：XxxService（业务规则）
 └── common/                     # aiplatform-common           基础结构层聚合
     ├── dal/                    # aiplatform-common-dal       数据访问：MyBatis Mapper（interface + XML）、DO
+    ├── framework/              # aiplatform-common-framework 共享框架层：BaseModel/BaseEnum/ErrorCodeEnum/AiPlatformException/UserContext/PageParam、插件代码落点
     ├── util/                   # aiplatform-common-util      最底层基础模块：AssertUtil/LoggerUtil/ConvertUtil/Result/PageResult/BizTemplate 等统一出口
     └── integration/            # aiplatform-common-integration 外部集成：HTTP/RPC 客户端封装（预留）
 ```

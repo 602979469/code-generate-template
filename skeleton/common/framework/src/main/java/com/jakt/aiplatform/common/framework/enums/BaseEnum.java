@@ -1,6 +1,6 @@
-package com.jakt.aiplatform.core.model.enums;
+package com.jakt.aiplatform.common.framework.enums;
 
-import com.jakt.aiplatform.core.model.exception.AiPlatformException;
+import com.jakt.aiplatform.common.framework.exception.AiPlatformException;
 
 /**
  * 业务枚举基座。
