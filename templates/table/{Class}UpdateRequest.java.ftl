@@ -1,4 +1,4 @@
-package ${basePackage}.web.param;
+package ${pkgWebParam};
 
 <#if hasLocalDateTime>import java.time.LocalDateTime;
 </#if><#if hasLocalDate>import java.time.LocalDate;
@@ -8,6 +8,7 @@ package ${basePackage}.web.param;
 </#if><#if hasRequiredNonString>import jakarta.validation.constraints.NotNull;
 </#if>
 ${dtoImports}
+import ${basePackage}.web.param.BaseRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

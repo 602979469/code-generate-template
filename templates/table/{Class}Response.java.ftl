@@ -1,9 +1,10 @@
-package ${basePackage}.web.result;
+package ${pkgWebResult};
 
 <#if hasLocalDateTime>import java.time.LocalDateTime;
 </#if><#if hasLocalDate>import java.time.LocalDate;
 </#if><#if hasBigDecimal>import java.math.BigDecimal;
 </#if>${dtoImports}
+import ${basePackage}.web.result.BaseResult;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

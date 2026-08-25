@@ -1,10 +1,10 @@
-package ${basePackage}.core.service.impl;
+package ${pkgServiceImpl};
 
 import ${basePackage}.common.util.result.PageResult;
-import ${basePackage}.core.model.domain.${className};
-import ${basePackage}.core.model.param.${className}QueryParam;
-import ${basePackage}.core.repository.${className}Repository;
-import ${basePackage}.core.service.${className}Service;
+import ${pkgDomain}.${className};
+import ${pkgParam}.${className}QueryParam;
+import ${pkgRepository}.${className}Repository;
+import ${pkgService}.${className}Service;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

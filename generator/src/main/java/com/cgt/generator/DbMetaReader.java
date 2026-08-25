@@ -34,6 +34,7 @@ public final class DbMetaReader {
     public static TableMeta read(GeneratorConfig cfg, GeneratorConfig.TableConfig table) {
         TableMeta meta = new TableMeta();
         meta.tableName = table.dbTableName;
+        meta.module = table.module;
         meta.className = table.modelName;
         meta.classNameLower = toLowerCamel(table.modelName);
         // model_comment 缺省时取数据库表注释，仍为空则回退表名

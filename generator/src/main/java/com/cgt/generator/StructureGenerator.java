@@ -29,7 +29,7 @@ public final class StructureGenerator {
         created.add(touch(cfg.outputDir.resolve("pom.xml")));
 
         // 2. common 模块与 bootstrap 占位
-        for (String dir : List.of("common/dal", "common/util", "common/integration", "bootstrap")) {
+        for (String dir : List.of("common/dal", "common/util", "common/framework", "common/integration", "bootstrap")) {
             created.add(touch(cfg.outputDir.resolve(dir).resolve("pom.xml")));
         }
 
@@ -38,9 +38,8 @@ public final class StructureGenerator {
             for (GeneratorConfig.ModuleConfig m : cfg.modules) {
                 created.add(touch(strategy.moduleRoot(cfg.outputDir, m.name).resolve("pom.xml")));
             }
-        } else {
-            warnUnknownModules();
         }
+        warnUnknownModules();
 
         // 4. 每张表：各层空文件占位
         for (GeneratorConfig.TableConfig t : cfg.tables) {

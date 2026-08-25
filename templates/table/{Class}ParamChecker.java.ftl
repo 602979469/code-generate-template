@@ -1,12 +1,12 @@
-package ${basePackage}.web.checker;
+package ${pkgWebChecker};
 
 import cn.hutool.core.util.ObjectUtil;
 import ${basePackage}.common.util.tools.AssertUtil;
 import ${basePackage}.common.util.tools.ParamValidator;
 import ${basePackage}.common.framework.enums.ErrorCodeEnum;
-import ${basePackage}.web.param.${className}CreateRequest;
-import ${basePackage}.web.param.${className}QueryRequest;
-import ${basePackage}.web.param.${className}UpdateRequest;
+import ${pkgWebParam}.${className}CreateRequest;
+import ${pkgWebParam}.${className}QueryRequest;
+import ${pkgWebParam}.${className}UpdateRequest;
 
 /**
  * ${entityName}参数检查器。

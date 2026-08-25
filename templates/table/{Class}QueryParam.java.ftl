@@ -1,4 +1,4 @@
-package ${basePackage}.core.model.param;
+package ${pkgParam};
 
 import java.time.LocalDateTime;
 <#if hasLocalDate>import java.time.LocalDate;

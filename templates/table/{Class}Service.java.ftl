@@ -1,8 +1,8 @@
-package ${basePackage}.core.service;
+package ${pkgService};
 
 import ${basePackage}.common.util.result.PageResult;
-import ${basePackage}.core.model.domain.${className};
-import ${basePackage}.core.model.param.${className}QueryParam;
+import ${pkgDomain}.${className};
+import ${pkgParam}.${className}QueryParam;
 
 import java.util.List;
 

@@ -1,12 +1,12 @@
-package ${basePackage}.biz.service.impl;
+package ${pkgBizImpl};
 
-import ${basePackage}.biz.service.${className}Manager;
 import ${basePackage}.common.util.enums.LogFileEnum;
 import ${basePackage}.common.util.result.PageResult;
 import ${basePackage}.common.util.tools.LoggerUtil;
-import ${basePackage}.core.model.domain.${className};
-import ${basePackage}.core.model.param.${className}QueryParam;
-import ${basePackage}.core.service.${className}Service;
+import ${pkgBiz}.${className}Manager;
+import ${pkgDomain}.${className};
+import ${pkgParam}.${className}QueryParam;
+import ${pkgService}.${className}Service;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

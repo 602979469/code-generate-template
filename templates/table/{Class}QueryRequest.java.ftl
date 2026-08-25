@@ -1,9 +1,10 @@
-package ${basePackage}.web.param;
+package ${pkgWebParam};
 
 import java.time.LocalDateTime;
 <#if hasLocalDate>import java.time.LocalDate;
 </#if><#if hasBigDecimal>import java.math.BigDecimal;
-</#if>${modelImports}import lombok.Data;
+</#if>${modelImports}import ${basePackage}.web.param.PageQueryRequest;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**

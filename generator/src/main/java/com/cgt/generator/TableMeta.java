@@ -9,6 +9,8 @@ import java.util.List;
 public final class TableMeta {
 
     public String tableName;
+    /** 所属业务模块（表级 module 配置，可空；决定业务层包路径中的模块段）。 */
+    public String module;
     /** 实体中文名：由配置 model_comment 提供(如 用户)，生成代码的所有 javadoc/日志注释都用它拼接。 */
     public String entityName;
     public String className;

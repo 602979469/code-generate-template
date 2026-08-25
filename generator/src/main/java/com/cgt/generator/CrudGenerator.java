@@ -23,54 +23,38 @@ import java.util.Set;
  */
 public final class CrudGenerator {
 
-    /** 模板文件名 -> 目标相对路径（{pkg} 为包路径，{Class} 为类名）。 */
-    private static final Map<String, String> TEMPLATES = new LinkedHashMap<>();
+    /** 模板文件名 -> 所属层（驱动文件落点与包路径，见 LayerCatalog / PathResolver）。 */
+    private static final Map<String, LayerSpec> LAYER_BY_TEMPLATE = new LinkedHashMap<>();
 
-    /** generateController: false 时不生成的 web 专属模板。 */
-    private static final Set<String> WEB_TEMPLATES = Set.of(
-            "{Class}Controller.java.ftl",
-            "{Class}CreateRequest.java.ftl",
-            "{Class}UpdateRequest.java.ftl",
-            "{Class}QueryRequest.java.ftl",
-            "{Class}Response.java.ftl",
-            "{Class}Assembler.java.ftl",
-            "{Class}ParamChecker.java.ftl"
-    );
+    /** 模板文件名 -> 目标文件名规则（{Model} 替换为模型名）。 */
+    private static final Map<String, String> RULE_BY_TEMPLATE = new LinkedHashMap<>();
 
-    /** generateController: false 时不生成的 biz 专属模板（内部表无对外接口，Manager 无存在必要）。 */
-    private static final Set<String> BIZ_TEMPLATES = Set.of(
-            "{Class}Manager.java.ftl",
-            "{Class}ManagerImpl.java.ftl"
-    );
+    /** 层 id -> LayerSpec。 */
+    private static final Map<String, LayerSpec> LAYER_BY_ID = new LinkedHashMap<>();
+
+    /** core-model 枚举层：生成器单独渲染（枚举类名 != 模型名，不在 LayerCatalog 文件规则内）。 */
+    private static final LayerSpec ENUMS_LAYER = new LayerSpec(
+            "core-model-enums", "core/model", "core.model", "enums",
+            List.of(), false, false, false);
 
     static {
-        TEMPLATES.put("{Class}DO.java.ftl", "common/dal/src/main/java/{pkg}/common/dal/dataobject/{Class}DO.java");
-        TEMPLATES.put("{Class}Mapper.java.ftl", "common/dal/src/main/java/{pkg}/common/dal/mapper/{Class}Mapper.java");
-        TEMPLATES.put("{Class}Mapper.xml.ftl", "common/dal/src/main/resources/mapper/{Class}Mapper.xml");
-        TEMPLATES.put("{Class}DalQuery.java.ftl", "common/dal/src/main/java/{pkg}/common/dal/query/{Class}DalQuery.java");
-        TEMPLATES.put("{Class}.java.ftl", "core/model/src/main/java/{pkg}/core/model/domain/{Class}.java");
-        TEMPLATES.put("{Class}QueryParam.java.ftl", "core/model/src/main/java/{pkg}/core/model/param/{Class}QueryParam.java");
-        TEMPLATES.put("{Class}Repository.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/{Class}Repository.java");
-        TEMPLATES.put("{Class}RepositoryImpl.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/impl/{Class}RepositoryImpl.java");
-        TEMPLATES.put("{Class}Convertor.java.ftl", "core/repository/src/main/java/{pkg}/core/repository/convertor/{Class}Convertor.java");
-        TEMPLATES.put("{Class}Service.java.ftl", "core/service/src/main/java/{pkg}/core/service/{Class}Service.java");
-        TEMPLATES.put("{Class}ServiceImpl.java.ftl", "core/service/src/main/java/{pkg}/core/service/impl/{Class}ServiceImpl.java");
-        TEMPLATES.put("{Class}Manager.java.ftl", "biz/service-impl/src/main/java/{pkg}/biz/service/{Class}Manager.java");
-        TEMPLATES.put("{Class}ManagerImpl.java.ftl", "biz/service-impl/src/main/java/{pkg}/biz/service/impl/{Class}ManagerImpl.java");
-        TEMPLATES.put("{Class}ParamChecker.java.ftl", "web/src/main/java/{pkg}/web/checker/{Class}ParamChecker.java");
-        TEMPLATES.put("{Class}Controller.java.ftl", "web/src/main/java/{pkg}/web/controller/{Class}Controller.java");
-        TEMPLATES.put("{Class}CreateRequest.java.ftl", "web/src/main/java/{pkg}/web/param/{Class}CreateRequest.java");
-        TEMPLATES.put("{Class}UpdateRequest.java.ftl", "web/src/main/java/{pkg}/web/param/{Class}UpdateRequest.java");
-        TEMPLATES.put("{Class}QueryRequest.java.ftl", "web/src/main/java/{pkg}/web/param/{Class}QueryRequest.java");
-        TEMPLATES.put("{Class}Response.java.ftl", "web/src/main/java/{pkg}/web/result/{Class}Response.java");
-        TEMPLATES.put("{Class}Assembler.java.ftl", "web/src/main/java/{pkg}/web/assembler/{Class}Assembler.java");
+        for (LayerSpec layer : LayerCatalog.ALL) {
+            LAYER_BY_ID.put(layer.id(), layer);
+            for (String rule : layer.fileRules()) {
+                String template = rule.replace("{Model}", "{Class}") + ".ftl";
+                LAYER_BY_TEMPLATE.put(template, layer);
+                RULE_BY_TEMPLATE.put(template, rule);
+            }
+        }
     }
 
     private final GeneratorConfig cfg;
     private final Configuration freemarker;
+    private final PathResolver resolver;
 
     public CrudGenerator(GeneratorConfig cfg) throws IOException {
         this.cfg = cfg;
+        this.resolver = new PathResolver(cfg);
         this.freemarker = new Configuration(Configuration.VERSION_2_3_33);
         this.freemarker.setDefaultEncoding("UTF-8");
         // 数字不输出千分位（如 2000 而非 2,000），避免生成 @Size(max = 2,000) 这类非法 Java 代码
@@ -153,12 +137,12 @@ public final class CrudGenerator {
 
             Map<String, Object> model = buildModel(meta);
             int fileCount = 0;
-            for (Map.Entry<String, String> entry : TEMPLATES.entrySet()) {
-                if (!table.generateController
-                        && (WEB_TEMPLATES.contains(entry.getKey()) || BIZ_TEMPLATES.contains(entry.getKey()))) {
+            for (Map.Entry<String, LayerSpec> entry : LAYER_BY_TEMPLATE.entrySet()) {
+                if (!table.generateController && entry.getValue().skipWhenNoController()) {
                     continue;
                 }
-                if (render(meta, entry.getKey(), entry.getValue(), model, table.forceCreate)) {
+                if (render(meta, entry.getKey(), entry.getValue(),
+                        RULE_BY_TEMPLATE.get(entry.getKey()), model, table.forceCreate)) {
                     fileCount++;
                 }
             }
@@ -231,8 +215,7 @@ public final class CrudGenerator {
     private String firstExistingEnumFile(TableMeta meta) {
         for (ColumnMeta c : meta.columns) {
             if (c.enumColumn) {
-                Path p = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
-                        + "/core/model/enums/" + c.enumClassName + ".java");
+                Path p = resolver.resolve(ENUMS_LAYER, meta.module).root().resolve(c.enumClassName + ".java");
                 if (Files.exists(p)) {
                     return c.enumClassName;
                 }
@@ -243,9 +226,12 @@ public final class CrudGenerator {
 
     /** 校验模式用：预估单表生成的代码文件数（不含 SQL 与枚举，与执行报告口径一致）。 */
     public static int plannedFileCount(TableMeta meta, boolean generateController) {
-        int count = TEMPLATES.size();
-        if (!generateController) {
-            count -= WEB_TEMPLATES.size() + BIZ_TEMPLATES.size();
+        int count = 0;
+        for (LayerSpec layer : LayerCatalog.ALL) {
+            if (layer.skipWhenNoController() && !generateController) {
+                continue;
+            }
+            count += layer.fileRules().size();
         }
         return count;
     }
@@ -260,6 +246,8 @@ public final class CrudGenerator {
             }
             Map<String, Object> enumModel = new LinkedHashMap<>();
             enumModel.put("basePackage", cfg.basePackage());
+            enumModel.put("module", meta.module == null ? "" : meta.module);
+            enumModel.put("pkgEnums", resolver.resolve(ENUMS_LAYER, meta.module).packageName());
             enumModel.put("entityName", meta.entityName);
             enumModel.put("enumDesc", c.comment);
             enumModel.put("enumClassName", c.enumClassName);
@@ -269,8 +257,7 @@ public final class CrudGenerator {
             Template template = freemarker.getTemplate("{EnumName}.java.ftl");
             StringWriter writer = new StringWriter();
             template.process(enumModel, writer);
-            Path target = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
-                    + "/core/model/enums/" + c.enumClassName + ".java");
+            Path target = resolver.resolve(ENUMS_LAYER, meta.module).root().resolve(c.enumClassName + ".java");
             if (Files.exists(target) && !force) {
                 notes.add("枚举: " + c.enumClassName + " 已存在，跳过该枚举文件");
                 continue;
@@ -393,7 +380,27 @@ public final class CrudGenerator {
         model.put("modelImports", buildModelImports(meta, true));
         model.put("dtoImports", buildModelImports(meta, false));
         model.put("convertorImports", buildConvertorImports(meta));
+        model.put("module", meta.module == null ? "" : meta.module);
+        model.put("pkgDomain", pkgOf(LAYER_BY_ID.get("core-model-domain"), meta.module));
+        model.put("pkgParam", pkgOf(LAYER_BY_ID.get("core-model-param"), meta.module));
+        model.put("pkgEnums", resolver.resolve(ENUMS_LAYER, meta.module).packageName());
+        model.put("pkgRepository", pkgOf(LAYER_BY_ID.get("core-repository"), meta.module));
+        model.put("pkgRepositoryImpl", pkgOf(LAYER_BY_ID.get("core-repository-impl"), meta.module));
+        model.put("pkgConvertor", pkgOf(LAYER_BY_ID.get("core-repository-convertor"), meta.module));
+        model.put("pkgService", pkgOf(LAYER_BY_ID.get("core-service"), meta.module));
+        model.put("pkgServiceImpl", pkgOf(LAYER_BY_ID.get("core-service-impl"), meta.module));
+        model.put("pkgBiz", pkgOf(LAYER_BY_ID.get("biz-manager"), meta.module));
+        model.put("pkgBizImpl", pkgOf(LAYER_BY_ID.get("biz-manager-impl"), meta.module));
+        model.put("pkgWebController", pkgOf(LAYER_BY_ID.get("web-controller"), meta.module));
+        model.put("pkgWebChecker", pkgOf(LAYER_BY_ID.get("web-checker"), meta.module));
+        model.put("pkgWebParam", pkgOf(LAYER_BY_ID.get("web-param"), meta.module));
+        model.put("pkgWebResult", pkgOf(LAYER_BY_ID.get("web-result"), meta.module));
+        model.put("pkgWebAssembler", pkgOf(LAYER_BY_ID.get("web-assembler"), meta.module));
         return model;
+    }
+
+    private String pkgOf(LayerSpec layer, String module) {
+        return resolver.resolve(layer, module).packageName();
     }
 
     /**
@@ -406,10 +413,11 @@ public final class CrudGenerator {
         StringBuilder sb = new StringBuilder();
         boolean list = false;
         boolean map = false;
-        String domainPackage = cfg.basePackage() + ".core.model.domain";
+        String domainPackage = resolver.resolve(LAYER_BY_ID.get("core-model-domain"), meta.module).packageName();
+        String enumsPackage = resolver.resolve(ENUMS_LAYER, meta.module).packageName();
         for (ColumnMeta c : meta.columns) {
             if (c.enumColumn) {
-                sb.append("import ").append(cfg.basePackage()).append(".core.model.enums.").append(c.enumClassName).append(";\n");
+                sb.append("import ").append(enumsPackage).append(".").append(c.enumClassName).append(";\n");
             }
             if (c.jsonElementType != null) {
                 String importType = DbMetaReader.importableType(c.jsonElementType);
@@ -441,7 +449,8 @@ public final class CrudGenerator {
         boolean typeRef = false;
         for (ColumnMeta c : meta.columns) {
             if (c.enumColumn) {
-                sb.append("import ").append(cfg.basePackage()).append(".core.model.enums.").append(c.enumClassName).append(";\n");
+                sb.append("import ").append(resolver.resolve(ENUMS_LAYER, meta.module).packageName())
+                        .append(".").append(c.enumClassName).append(";\n");
             }
             if ("ENUM".equals(c.conversion)) {
                 objectUtil = true;
@@ -471,16 +480,16 @@ public final class CrudGenerator {
         return sb.toString();
     }
 
-    private boolean render(TableMeta meta, String templateName, String outputPattern,
+    private boolean render(TableMeta meta, String templateName, LayerSpec layer, String fileRule,
                            Map<String, Object> model, boolean force) throws IOException, TemplateException {
         Template template = freemarker.getTemplate(templateName);
         StringWriter writer = new StringWriter();
         template.process(model, writer);
 
-        String targetRel = outputPattern
-                .replace("{pkg}", cfg.packagePath())
-                .replace("{Class}", meta.className);
-        Path target = cfg.outputDir.resolve(targetRel);
+        String fileName = fileRule.replace("{Model}", meta.className);
+        Path target = layer.resource()
+                ? resolver.resourceDir(layer).resolve(fileName)
+                : resolver.resolve(layer, meta.module).root().resolve(fileName);
         if (Files.exists(target) && !force) {
             return false;
         }

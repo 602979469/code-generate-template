@@ -1,4 +1,4 @@
-package ${basePackage}.core.repository.impl;
+package ${pkgRepositoryImpl};
 
 import ${basePackage}.common.dal.dataobject.${className}DO;
 import ${basePackage}.common.dal.mapper.${className}Mapper;
@@ -8,11 +8,11 @@ import ${basePackage}.common.util.result.PageResult;
 import ${basePackage}.common.util.tools.AssertUtil;
 import ${basePackage}.common.util.tools.ConvertUtil;
 import ${basePackage}.common.util.tools.LoggerUtil;
-import ${basePackage}.core.model.domain.${className};
 import ${basePackage}.common.framework.enums.ErrorCodeEnum;
-import ${basePackage}.core.model.param.${className}QueryParam;
-import ${basePackage}.core.repository.${className}Repository;
-import ${basePackage}.core.repository.convertor.${className}Convertor;
+import ${pkgDomain}.${className};
+import ${pkgParam}.${className}QueryParam;
+import ${pkgRepository}.${className}Repository;
+import ${pkgConvertor}.${className}Convertor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

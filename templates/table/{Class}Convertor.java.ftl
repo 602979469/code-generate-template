@@ -1,9 +1,9 @@
-package ${basePackage}.core.repository.convertor;
+package ${pkgConvertor};
 
 import ${basePackage}.common.dal.dataobject.${className}DO;
 import ${basePackage}.common.dal.query.${className}DalQuery;
-import ${basePackage}.core.model.domain.${className};
-import ${basePackage}.core.model.param.${className}QueryParam;
+import ${pkgDomain}.${className};
+import ${pkgParam}.${className}QueryParam;
 ${convertorImports}
 
 /**
