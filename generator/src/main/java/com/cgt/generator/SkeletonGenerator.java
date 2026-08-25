@@ -35,11 +35,14 @@ public final class SkeletonGenerator {
         }
         Files.createDirectories(cfg.outputDir);
 
+        // aggregated / maven-module：业务模块拆独立 Maven 子项目，骨架不再复制 flat 的 biz/core 空层模块与根/web/bootstrap pom
+        boolean layoutFlat = cfg.layoutStrategy().businessInLayer();
         int generated = 0;
         int skipped = 0;
         try (Stream<Path> walk = Files.walk(skeleton)) {
             for (Path source : walk.filter(Files::isRegularFile)
                     .filter(p -> !isSkipped(skeleton.relativize(p)))
+                    .filter(p -> layoutFlat || !isSkippedForLayout(skeleton.relativize(p)))
                     .toList()) {
                 Path relative = skeleton.relativize(source);
                 String targetRel = replace(relative.toString().replace('\\', '/'));
@@ -54,6 +57,9 @@ public final class SkeletonGenerator {
                 generated++;
             }
         }
+        if (!layoutFlat) {
+            generated += generateLayoutPoms();
+        }
         System.out.println("[gen] 项目骨架初始化完成（生成 " + generated + " 个文件，跳过 " + skipped + " 个） -> " + cfg.outputDir);
     }
 
@@ -67,6 +73,432 @@ public final class SkeletonGenerator {
             }
         }
         return false;
+    }
+
+    /** 非 flat 布局时跳过的骨架文件：flat 空层模块（biz/core）与需要按布局重写的 pom。 */
+    private static boolean isSkippedForLayout(Path relative) {
+        String first = relative.getName(0).toString();
+        if ("biz".equals(first) || "core".equals(first)) {
+            return true;
+        }
+        String path = relative.toString().replace('\\', '/');
+        return "pom.xml".equals(path) || "web/pom.xml".equals(path) || "bootstrap/pom.xml".equals(path);
+    }
+
+    /** 非 flat 布局：生成根 pom、web 共享模块 pom、bootstrap pom 与每个业务模块 pom。 */
+    private int generateLayoutPoms() throws IOException {
+        int count = 0;
+        count += writePom(cfg.outputDir.resolve("pom.xml"), buildRootPom());
+        count += writePom(cfg.outputDir.resolve("web/pom.xml"), buildWebPom());
+        count += writePom(cfg.outputDir.resolve("bootstrap/pom.xml"), buildBootstrapPom());
+        for (GeneratorConfig.ModuleConfig m : cfg.modules) {
+            Path modulePom = cfg.layoutStrategy().moduleRoot(cfg.outputDir, m.name).resolve("pom.xml");
+            count += writePom(modulePom, buildModulePom(m.name));
+        }
+        return count;
+    }
+
+    private int writePom(Path pom, String content) throws IOException {
+        if (Files.exists(pom)) {
+            return 0;
+        }
+        Files.createDirectories(pom.getParent());
+        Files.writeString(pom, content, StandardCharsets.UTF_8);
+        return 1;
+    }
+
+    private String pomHeader() {
+        return """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xmlns="http://maven.apache.org/POM/4.0.0"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                    <modelVersion>4.0.0</modelVersion>
+                """;
+    }
+
+    /** 业务模块 pom 到根 pom 的相对路径（aggregated 在 modules/ 下，maven-module 平铺在根下）。 */
+    private String rootRelativePath() {
+        return cfg.layoutStrategy().businessInLayer() ? "" : (isAggregated() ? "../.." : "..");
+    }
+
+    private boolean isAggregated() {
+        return "aggregated".equals(cfg.moduleLayout);
+    }
+
+    private String moduleElement(String module) {
+        return isAggregated() ? "modules/" + cfg.projectArtifactPrefix + "-" + module
+                : cfg.projectArtifactPrefix + "-" + module;
+    }
+
+    private String buildRootPom() {
+        StringBuilder modules = new StringBuilder();
+        for (GeneratorConfig.ModuleConfig m : cfg.modules) {
+            modules.append("\n        <module>").append(moduleElement(m.name)).append("</module>");
+        }
+        StringBuilder bizArtifacts = new StringBuilder();
+        for (GeneratorConfig.ModuleConfig m : cfg.modules) {
+            bizArtifacts.append("""
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-%s</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    """.formatted(cfg.groupId, cfg.projectArtifactPrefix, m.name));
+        }
+        return pomHeader() + """
+                    <groupId>%s</groupId>
+                    <artifactId>%s</artifactId>
+                    <version>0.1.0-SNAPSHOT</version>
+                    <packaging>pom</packaging>
+
+                    <name>%s</name>
+                    <description>%s：业务模块独立 Maven 子项目（%s）</description>
+
+                    <modules>
+                        <module>common</module>
+                        <module>web</module>
+                        <module>bootstrap</module>%s
+                    </modules>
+
+                    <properties>
+                        <java.version>17</java.version>
+                        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+                        <spring-boot.version>4.0.6</spring-boot.version>
+                        <mybatis-spring-boot.version>4.0.1</mybatis-spring-boot.version>
+                        <springdoc.version>3.0.3</springdoc.version>
+                        <hutool.version>5.8.18</hutool.version>
+                        <sa-token.version>1.45.0</sa-token.version>
+                        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+                        <lombok.version>1.18.46</lombok.version>
+                    </properties>
+
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-dependencies</artifactId>
+                                <version>${spring-boot.version}</version>
+                                <type>pom</type>
+                                <scope>import</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.mybatis.spring.boot</groupId>
+                                <artifactId>mybatis-spring-boot-starter</artifactId>
+                                <version>${mybatis-spring-boot.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.springdoc</groupId>
+                                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                                <version>${springdoc.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>cn.hutool</groupId>
+                                <artifactId>hutool-all</artifactId>
+                                <version>${hutool.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>cn.dev33</groupId>
+                                <artifactId>sa-token-core</artifactId>
+                                <version>${sa-token.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>cn.dev33</groupId>
+                                <artifactId>sa-token-spring-boot4-starter</artifactId>
+                                <version>${sa-token.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>cn.dev33</groupId>
+                                <artifactId>sa-token-redis-template</artifactId>
+                                <version>${sa-token.version}</version>
+                            </dependency>
+
+                            <!-- 本工程模块 -->
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-util</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-framework</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-dal</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-integration</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-web</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-bootstrap</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                %s
+                        </dependencies>
+                    </dependencyManagement>
+
+                    <!-- Lombok 统一在此引入（provided，仅编译期生效） -->
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <scope>provided</scope>
+                        </dependency>
+                    </dependencies>
+
+                    <build>
+                        <pluginManagement>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-compiler-plugin</artifactId>
+                                    <version>${maven-compiler-plugin.version}</version>
+                                    <configuration>
+                                        <release>${java.version}</release>
+                                        <encoding>${project.build.sourceEncoding}</encoding>
+                                        <!-- 保留参数名，供 Spring MVC/MyBatis 反射使用 -->
+                                        <parameters>true</parameters>
+                                        <!-- JDK 23+ 不再自动执行 classpath 上的注解处理器，显式声明 Lombok -->
+                                        <annotationProcessorPaths>
+                                            <path>
+                                                <groupId>org.projectlombok</groupId>
+                                                <artifactId>lombok</artifactId>
+                                                <version>${lombok.version}</version>
+                                            </path>
+                                        </annotationProcessorPaths>
+                                    </configuration>
+                                </plugin>
+                            </plugins>
+                        </pluginManagement>
+                    </build>
+                </project>
+                """.formatted(cfg.groupId, cfg.projectArtifactPrefix, cfg.projectPrefix, cfg.projectPrefix,
+                cfg.moduleLayout, modules, cfg.groupId, cfg.projectArtifactPrefix,
+                cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix,
+                cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix,
+                cfg.groupId, cfg.projectArtifactPrefix, bizArtifacts);
+    }
+
+    private String buildWebPom() {
+        return pomHeader() + """
+                    <parent>
+                        <groupId>%s</groupId>
+                        <artifactId>%s</artifactId>
+                        <version>0.1.0-SNAPSHOT</version>
+                        <relativePath>../pom.xml</relativePath>
+                    </parent>
+
+                    <artifactId>%s-web</artifactId>
+                    <name>%s-web</name>
+                    <description>web 共享层：ApiTemplate/ApiResult、ParamChecker 基类、全局异常处理、日志过滤（业务 Controller 在各自业务模块内）</description>
+
+                    <dependencies>
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-common-util</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-common-framework</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>cn.dev33</groupId>
+                            <artifactId>sa-token-spring-boot4-starter</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-validation</artifactId>
+                        </dependency>
+                        <!-- ApiTemplate / 全局异常处理器用到 DataIntegrityViolationException（spring-tx） -->
+                        <dependency>
+                            <groupId>org.springframework</groupId>
+                            <artifactId>spring-tx</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springdoc</groupId>
+                            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-test</artifactId>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """.formatted(cfg.groupId, cfg.projectArtifactPrefix, cfg.projectArtifactPrefix,
+                cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix,
+                cfg.groupId, cfg.projectArtifactPrefix);
+    }
+
+    private String buildBootstrapPom() {
+        StringBuilder bizDeps = new StringBuilder();
+        for (GeneratorConfig.ModuleConfig m : cfg.modules) {
+            bizDeps.append("""
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-%s</artifactId>
+                        </dependency>
+                    """.formatted(cfg.groupId, cfg.projectArtifactPrefix, m.name));
+        }
+        return pomHeader() + """
+                    <parent>
+                        <groupId>%s</groupId>
+                        <artifactId>%s</artifactId>
+                        <version>0.1.0-SNAPSHOT</version>
+                        <relativePath>../pom.xml</relativePath>
+                    </parent>
+
+                    <artifactId>%s-bootstrap</artifactId>
+                    <name>%s-bootstrap</name>
+                    <description>启动模块：MainApplication、注解扫描、配置文件（唯一可启动模块）</description>
+
+                    <dependencies>
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-web</artifactId>
+                        </dependency>
+                %s
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-common-dal</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-common-util</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-common-integration</artifactId>
+                        </dependency>
+
+                        <dependency>
+                            <groupId>com.mysql</groupId>
+                            <artifactId>mysql-connector-j</artifactId>
+                            <scope>runtime</scope>
+                        </dependency>
+                        <dependency>
+                            <groupId>cn.dev33</groupId>
+                            <artifactId>sa-token-spring-boot4-starter</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>cn.dev33</groupId>
+                            <artifactId>sa-token-redis-template</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-data-redis</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.commons</groupId>
+                            <artifactId>commons-pool2</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-test</artifactId>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
+
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-maven-plugin</artifactId>
+                                <version>${spring-boot.version}</version>
+                                <configuration>
+                                    <mainClass>%s.bootstrap.%sApplication</mainClass>
+                                </configuration>
+                                <executions>
+                                    <execution>
+                                        <goals>
+                                            <goal>repackage</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """.formatted(cfg.groupId, cfg.projectArtifactPrefix, cfg.projectArtifactPrefix,
+                cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix, bizDeps,
+                cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix,
+                cfg.groupId, cfg.projectArtifactPrefix, cfg.basePackage(), cfg.projectPrefix);
+    }
+
+    private String buildModulePom(String module) {
+        return pomHeader() + """
+                    <parent>
+                        <groupId>%s</groupId>
+                        <artifactId>%s</artifactId>
+                        <version>0.1.0-SNAPSHOT</version>
+                        <relativePath>%s</relativePath>
+                    </parent>
+
+                    <artifactId>%s-%s</artifactId>
+                    <name>%s-%s</name>
+                    <description>业务模块 %s：web / core / biz 各层代码（包路径带 modules 前缀）</description>
+
+                    <dependencies>
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-common-util</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-common-framework</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-common-dal</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>%s</groupId>
+                            <artifactId>%s-web</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-web</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-validation</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springdoc</groupId>
+                            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                        </dependency>
+                        <dependency>
+                            <groupId>cn.hutool</groupId>
+                            <artifactId>hutool-all</artifactId>
+                        </dependency>
+                        <!-- Jackson 注解：生成枚举的 @JsonFormat(OBJECT) / @JsonCreator（provided，无运行期依赖） -->
+                        <dependency>
+                            <groupId>com.fasterxml.jackson.core</groupId>
+                            <artifactId>jackson-annotations</artifactId>
+                            <scope>provided</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """.formatted(cfg.groupId, cfg.projectArtifactPrefix, rootRelativePath(),
+                cfg.projectArtifactPrefix, module, cfg.projectArtifactPrefix, module, module,
+                cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix,
+                cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix);
     }
 
     private String replace(String text) {

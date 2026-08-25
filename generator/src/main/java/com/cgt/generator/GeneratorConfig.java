@@ -324,8 +324,8 @@ public final class GeneratorConfig {
         if (!"monolith".equals(projectStyle)) {
             throw new IllegalArgumentException("projectStyle 仅支持 monolith（microservice 暂未实现，配置到即报错）");
         }
-        if (!"flat".equals(moduleLayout)) {
-            throw new IllegalArgumentException("moduleLayout 仅支持 flat（本期只做 flat，aggregated / maven-module 暂未实现）");
+        if (!"flat".equals(moduleLayout) && !"aggregated".equals(moduleLayout) && !"maven-module".equals(moduleLayout)) {
+            throw new IllegalArgumentException("moduleLayout 仅支持 flat / aggregated / maven-module");
         }
         if (!tables.isEmpty()) {
             if (isBlank(jdbcUrl) || isBlank(jdbcUsername)) {

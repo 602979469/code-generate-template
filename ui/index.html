@@ -735,7 +735,9 @@ new Vue({
       moduleLayout: 'flat',
       moduleLayouts: {
         monolith: [
-          { value: 'flat', label: '📁 平铺式', desc: '模块平铺在根包下，共用一个 Application（本期仅支持 flat）' }
+          { value: 'flat', label: '📁 平铺式', desc: '模块平铺在根包下，共用一个 Application' },
+          { value: 'aggregated', label: '📂 聚合式', desc: '业务模块拆 Maven 子项目，收在 modules/ 目录下' },
+          { value: 'maven-module', label: '📦 Maven 多模块', desc: '业务模块拆 Maven 子项目，平铺在根目录' }
         ]
       },
       prefixStrip: '',
