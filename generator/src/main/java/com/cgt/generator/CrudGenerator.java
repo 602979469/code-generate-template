@@ -199,8 +199,7 @@ public final class CrudGenerator {
             Path target = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
                     + "/core/model/enums/" + c.enumClassName + ".java");
             if (Files.exists(target) && !force) {
-                System.out.println("[gen]   枚举 " + c.enumClassName + " 已存在，跳过该枚举文件，不覆盖"
-                        + "（如需覆盖请配置 force_create: true）");
+                System.out.println("[gen]   枚举 " + c.enumClassName + " 已存在，跳过该枚举文件");
                 continue;
             }
             Files.createDirectories(target.getParent());
