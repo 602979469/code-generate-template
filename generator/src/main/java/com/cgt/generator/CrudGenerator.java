@@ -92,12 +92,15 @@ public final class CrudGenerator {
         int success = 0;
         int skipped = 0;
         int warned = 0;
+        int tableIndex = 0;
         List<String> skipReasons = new ArrayList<>();
         List<String> warnReasons = new ArrayList<>();
 
         for (GeneratorConfig.TableConfig table : cfg.tables) {
-            TableMeta meta = DbMetaReader.read(cfg, table);
+            tableIndex++;
             String display = table.dbTableName;
+            printTableBanner(display, tableIndex, cfg.tables.size());
+            TableMeta meta = DbMetaReader.read(cfg, table);
 
             // 表级跳过判定：DO 已存在（未 force_create）则整表跳过；
             // 枚举已存在只跳过该枚举文件（见 renderEnums），表其余文件照常生成
@@ -115,6 +118,7 @@ public final class CrudGenerator {
                         + "（如需覆盖请配置 force_create: true）");
                 skipped++;
                 skipReasons.add(display + ": " + skipReason + "，跳过，不覆盖");
+                printTableBannerEnd(display);
                 continue;
             }
 
@@ -146,6 +150,7 @@ public final class CrudGenerator {
                     : "";
             System.out.println("[gen] " + display + " 表代码生成成功（" + fileCount + " 个文件" + modeTip + "）");
             success++;
+            printTableBannerEnd(display);
         }
 
         if (skipped > 0 || warned > 0) {
@@ -153,6 +158,22 @@ public final class CrudGenerator {
         } else {
             System.out.println("[gen] 全部 " + cfg.tables.size() + " 张表生成成功");
         }
+    }
+
+    /** Maven 风格的表分隔横幅：表开始。 */
+    private static void printTableBanner(String display, int index, int total) {
+        System.out.println("[gen] " + padBanner("< 表: " + display + " [" + index + "/" + total + "] >"));
+    }
+
+    /** Maven 风格的表分隔横幅：表结束。 */
+    private static void printTableBannerEnd(String display) {
+        System.out.println("[gen] " + padBanner("< / 表: " + display + " >"));
+    }
+
+    private static String padBanner(String center) {
+        int width = Math.max(66, center.length() + 8);
+        int side = (width - center.length()) / 2;
+        return "-".repeat(side) + center + "-".repeat(width - side - center.length());
     }
 
     private String firstExistingEnumFile(TableMeta meta) {
