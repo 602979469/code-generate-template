@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.common.util.error;
+package com.jakt.aiplatform.common.framework.error;
 
 /**
  * 通用错误码契约：对外 code 为字符串，且与实现枚举名一致。

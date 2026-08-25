@@ -1,8 +1,8 @@
 package ${pkgBizImpl};
 
-import ${basePackage}.common.util.enums.LogFileEnum;
-import ${basePackage}.common.util.result.PageResult;
-import ${basePackage}.common.util.tools.LoggerUtil;
+import ${basePackage}.common.framework.enums.LogFileEnum;
+import ${basePackage}.common.framework.result.PageResult;
+import ${basePackage}.common.framework.tools.LoggerUtil;
 import ${pkgBiz}.${className}Manager;
 import ${pkgDomain}.${className};
 import ${pkgParam}.${className}QueryParam;

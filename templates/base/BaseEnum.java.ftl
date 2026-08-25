@@ -22,7 +22,7 @@ public interface BaseEnum<T> {
     String getDesc();
 
     /**
-     * 按 Integer code 反查枚举；null 返回 null，未匹配抛 ENUM_NOT_MATCHED。
+     * 按 Integer code 反查枚举；null 返回 null，未匹配抛系统异常（枚举值与库内数据不一致）。
      *
      * @param enumClass 枚举类型
      * @param code code
@@ -38,11 +38,11 @@ public interface BaseEnum<T> {
                 return e;
             }
         }
-        throw new AiPlatformException(ErrorCodeEnum.ENUM_NOT_MATCHED, "枚举值未匹配: " + code);
+        throw new AiPlatformException(ErrorCodeEnum.SYSTEM_ERROR, "枚举值未匹配: " + code);
     }
 
     /**
-     * 按 String code 反查枚举；null 返回 null，未匹配抛 ENUM_NOT_MATCHED。
+     * 按 String code 反查枚举；null 返回 null，未匹配抛系统异常（枚举值与库内数据不一致）。
      *
      * @param enumClass 枚举类型
      * @param code code
@@ -58,11 +58,11 @@ public interface BaseEnum<T> {
                 return e;
             }
         }
-        throw new AiPlatformException(ErrorCodeEnum.ENUM_NOT_MATCHED, "枚举值未匹配: " + code);
+        throw new AiPlatformException(ErrorCodeEnum.SYSTEM_ERROR, "枚举值未匹配: " + code);
     }
 
     /**
-     * 按 Long code 反查枚举；null 返回 null，未匹配抛 ENUM_NOT_MATCHED。
+     * 按 Long code 反查枚举；null 返回 null，未匹配抛系统异常（枚举值与库内数据不一致）。
      *
      * @param enumClass 枚举类型
      * @param code code
@@ -78,7 +78,7 @@ public interface BaseEnum<T> {
                 return e;
             }
         }
-        throw new AiPlatformException(ErrorCodeEnum.ENUM_NOT_MATCHED, "枚举值未匹配: " + code);
+        throw new AiPlatformException(ErrorCodeEnum.SYSTEM_ERROR, "枚举值未匹配: " + code);
     }
 
     /** 枚举是否等于指定 code。 */

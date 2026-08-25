@@ -1,8 +1,8 @@
 package ${pkgWebChecker};
 
 import cn.hutool.core.util.ObjectUtil;
-import ${basePackage}.common.util.tools.AssertUtil;
-import ${basePackage}.common.util.tools.ParamValidator;
+import ${basePackage}.common.framework.tools.AssertUtil;
+import ${basePackage}.common.framework.tools.ParamValidator;
 import ${basePackage}.common.framework.enums.ErrorCodeEnum;
 import ${pkgWebParam}.${className}CreateRequest;
 import ${pkgWebParam}.${className}QueryRequest;

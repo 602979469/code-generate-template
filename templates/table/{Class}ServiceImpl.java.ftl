@@ -1,6 +1,6 @@
 package ${pkgServiceImpl};
 
-import ${basePackage}.common.util.result.PageResult;
+import ${basePackage}.common.framework.result.PageResult;
 import ${pkgDomain}.${className};
 import ${pkgParam}.${className}QueryParam;
 import ${pkgRepository}.${className}Repository;

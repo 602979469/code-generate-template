@@ -24,7 +24,11 @@
             <groupId>com.jakt</groupId>
             <artifactId>aiplatform-common-dal</artifactId>
         </dependency>
-        <!-- ${toolPrefix}Invoker（条件断言） -->
+        <dependency>
+            <groupId>com.jakt</groupId>
+            <artifactId>aiplatform-common-framework</artifactId>
+        </dependency>
+        <!-- ConvertUtil：DO → Model 转换与分页映射 -->
         <dependency>
             <groupId>com.jakt</groupId>
             <artifactId>aiplatform-common-util</artifactId>

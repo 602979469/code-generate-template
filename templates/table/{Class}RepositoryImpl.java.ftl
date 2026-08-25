@@ -3,12 +3,10 @@ package ${pkgRepositoryImpl};
 import ${basePackage}.common.dal.dataobject.${className}DO;
 import ${basePackage}.common.dal.mapper.${className}Mapper;
 import ${basePackage}.common.dal.query.${className}DalQuery;
-import ${basePackage}.common.util.enums.LogFileEnum;
-import ${basePackage}.common.util.result.PageResult;
-import ${basePackage}.common.util.tools.AssertUtil;
+import ${basePackage}.common.framework.enums.LogFileEnum;
+import ${basePackage}.common.framework.result.PageResult;
+import ${basePackage}.common.framework.tools.LoggerUtil;
 import ${basePackage}.common.util.tools.ConvertUtil;
-import ${basePackage}.common.util.tools.LoggerUtil;
-import ${basePackage}.common.framework.enums.ErrorCodeEnum;
 import ${pkgDomain}.${className};
 import ${pkgParam}.${className}QueryParam;
 import ${pkgRepository}.${className}Repository;
@@ -46,10 +44,8 @@ public class ${className}RepositoryImpl implements ${className}Repository {
     @Override
     public ${className} findOne(${className}QueryParam query) {
         ${className}DalQuery dalQuery = ${className}Convertor.toDalQuery(query);
-        List<${className}DO> doList = ${classNameLower}Mapper.selectList(dalQuery);
-        AssertUtil.throwErrWhenTrue(doList.size() > 1, ErrorCodeEnum.RESULT_NOT_UNIQUE,
-                "查询结果不唯一：预期 1 条，实际 " + doList.size() + " 条");
-        return doList.isEmpty() ? null : ${className}Convertor.toModel(doList.get(0));
+        ${className}DO row = ${classNameLower}Mapper.selectOne(dalQuery);
+        return row == null ? null : ${className}Convertor.toModel(row);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.common.util.tools;
+package com.jakt.aiplatform.common.framework.tools;
 
 import org.slf4j.MDC;
 

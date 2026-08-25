@@ -1,10 +1,10 @@
 package com.jakt.aiplatform.web.template;
 
 import com.jakt.aiplatform.web.result.ApiResult;
-import com.jakt.aiplatform.common.util.error.CommonErrorCode;
-import com.jakt.aiplatform.common.util.error.CommonException;
-import com.jakt.aiplatform.common.util.enums.LogFileEnum;
-import com.jakt.aiplatform.common.util.tools.LoggerUtil;
+import com.jakt.aiplatform.common.framework.enums.ErrorCodeEnum;
+import com.jakt.aiplatform.common.framework.enums.LogFileEnum;
+import com.jakt.aiplatform.common.framework.error.CommonException;
+import com.jakt.aiplatform.common.framework.tools.LoggerUtil;
 import jakarta.validation.ValidationException;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -47,10 +47,10 @@ public final class ApiTemplate {
                 callback.beforeService(param);
             } catch (CommonException | ValidationException e) {
                 LoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "参数校验失败 接口信息={} 原因={}", caller, e.getMessage());
-                result = ApiResult.fail(CommonErrorCode.PARAM_INVALID, e.getMessage());
+                result = ApiResult.fail(ErrorCodeEnum.PARAM_INVALID, e.getMessage());
             } catch (Exception e) {
                 LoggerUtil.error(LogFileEnum.COMMON_ERROR, e, "执行{}校验逻辑时抛出异常", caller);
-                result = ApiResult.fail(CommonErrorCode.SYSTEM_ERROR);
+                result = ApiResult.fail(ErrorCodeEnum.SYSTEM_ERROR);
             }
 
             if (result == null) {
@@ -64,10 +64,10 @@ public final class ApiTemplate {
                 } catch (DataIntegrityViolationException e) {
                     LoggerUtil.warn(LogFileEnum.BIZ_SERVICE, "数据约束异常 接口信息={} message={}",
                             caller, e.getMessage());
-                    result = ApiResult.fail(CommonErrorCode.PARAM_INVALID, "数据不合法：必填字段缺失或违反数据约束");
+                    result = ApiResult.fail(ErrorCodeEnum.PARAM_INVALID, "数据不合法：必填字段缺失或违反数据约束");
                 } catch (Exception e) {
                     LoggerUtil.error(LogFileEnum.COMMON_ERROR, e, "执行{}业务逻辑时抛出异常", caller);
-                    result = ApiResult.fail(CommonErrorCode.SYSTEM_ERROR);
+                    result = ApiResult.fail(ErrorCodeEnum.SYSTEM_ERROR);
                 }
             }
         } finally {

@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.common.util.enums;
+package com.jakt.aiplatform.common.framework.enums;
 
 import lombok.Getter;
 

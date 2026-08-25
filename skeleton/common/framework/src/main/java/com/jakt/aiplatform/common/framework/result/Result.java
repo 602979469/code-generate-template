@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.common.util.result;
+package com.jakt.aiplatform.common.framework.result;
 
 /**
  * common-util 层通用业务执行结果。

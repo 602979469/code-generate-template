@@ -13,12 +13,23 @@
 
     <artifactId>aiplatform-common-framework</artifactId>
     <name>aiplatform-common-framework</name>
-    <description>共享框架层：core-model 迁出的公共类（BaseModel/BaseEnum/ErrorCodeEnum/AiPlatformException/UserContext/PageParam）+ 插件代码落点</description>
+    <description>共享框架层：Result/PageResult、异常体系（ErrorCode/CommonException/ErrorCodeEnum）、AssertUtil/LoggerUtil/ParamValidator、事务模板、BaseModel/PageParam 等公共类；CRUD 生成直接依赖</description>
 
     <dependencies>
+        <!-- slf4j：LoggerUtil / TraceIdUtil（MDC） -->
         <dependency>
-            <groupId>com.jakt</groupId>
-            <artifactId>aiplatform-common-util</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <!-- Hutool：AssertUtil / ParamValidator 判空与校验 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+        <!-- jakarta validation：ParamValidator 使用 -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
     </dependencies>
 </project>

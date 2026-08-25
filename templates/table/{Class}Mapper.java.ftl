@@ -40,6 +40,14 @@ public interface ${className}Mapper {
     List<${className}DO> selectList(${className}DalQuery query);
 
     /**
+     * 单条查询：与 {@link #selectList} 一致但不加 LIMIT；多条由 MyBatis 抛 TooManyResultsException，不做特殊处理。
+     *
+     * @param query 查询参数
+     * @return 至多一条数据，无匹配返回 null
+     */
+    ${className}DO selectOne(${className}DalQuery query);
+
+    /**
      * 按查询条件统计总条数，用于分页。
      *
      * @param query 查询参数

@@ -1,6 +1,6 @@
-package com.jakt.aiplatform.common.util.tools;
+package com.jakt.aiplatform.common.framework.tools;
 
-import com.jakt.aiplatform.common.util.enums.LogFileEnum;
+import com.jakt.aiplatform.common.framework.enums.LogFileEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

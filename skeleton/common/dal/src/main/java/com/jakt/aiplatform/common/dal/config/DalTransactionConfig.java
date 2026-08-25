@@ -1,6 +1,6 @@
 package com.jakt.aiplatform.common.dal.config;
 
-import com.jakt.aiplatform.common.util.template.TransactionTemplate;
+import com.jakt.aiplatform.common.framework.template.TransactionTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;

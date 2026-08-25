@@ -13,37 +13,18 @@
 
     <artifactId>aiplatform-core-model</artifactId>
     <name>aiplatform-core-model</name>
-    <description>核心领域模型：业务 domain / param / 业务枚举（公共类已迁至 common-framework）</description>
+    <description>核心领域模型：业务 domain / param / 业务枚举（公共类在 common-framework）</description>
 
     <dependencies>
         <dependency>
             <groupId>com.jakt</groupId>
             <artifactId>aiplatform-common-framework</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.jakt</groupId>
-            <artifactId>aiplatform-common-util</artifactId>
-        </dependency>
-        <!-- slf4j：AiProdException/CommonException 统一异常日志 -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <!-- Hutool：异常解析（ExceptionUtil / EnumUtil） -->
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-        </dependency>
         <!-- Jackson 注解：生成枚举的 @JsonFormat(OBJECT) / @JsonCreator 序列化（provided，无运行期依赖） -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

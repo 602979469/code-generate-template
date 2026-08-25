@@ -237,11 +237,11 @@ BizTemplate.execute(transactionTemplate, callback);
 
 仓储返回值：
 
-- `findOne`：返回单个 core-model；多条才抛 `RESULT_NOT_UNIQUE`；
+- `findOne`：由 Mapper `selectOne` 实现，返回单个 core-model；多条由 MyBatis 抛 `TooManyResultsException`，不做特殊处理；
 - `findList/findPage`：返回 `List` / `PageResult<core-model>`；
 - `insert`：按表主键类型返回主键，复合主键或无回填返回 `int`；
 - `update/updateByCondition/delete`：返回 `int` 受影响行数，0 只表示未生效，由上层决定；
-- 除 `findOne` 多条和底层 SQL 异常外，不主动抛业务异常。
+- 除底层 SQL 异常外，不主动抛业务异常。
 
 ### 5.5 common-dal
 
@@ -426,7 +426,7 @@ BizTemplate.execute(transactionTemplate, callback);
 - `insert` 是全字段插入，不提供部分插入；
 - `update` 是全量更新；
 - `updateByCondition` 按非空字段条件更新；
-- `findOne` 结果必须唯一，多条报错，零条返回 null；
+- `findOne` 由 Mapper `selectOne` 实现，零条返回 null，多条由 MyBatis 抛 `TooManyResultsException`（不额外处理）；
 - 敏感字段不得出现在响应、查询和日志中。
 
 ## 12. 测试约定

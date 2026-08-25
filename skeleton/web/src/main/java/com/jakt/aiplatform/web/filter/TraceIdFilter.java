@@ -1,7 +1,7 @@
 package com.jakt.aiplatform.web.filter;
 
 import cn.hutool.core.util.StrUtil;
-import com.jakt.aiplatform.common.util.tools.TraceIdUtil;
+import com.jakt.aiplatform.common.framework.tools.TraceIdUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,7 +1,7 @@
-package com.jakt.aiplatform.common.util.tools;
+package com.jakt.aiplatform.common.framework.tools;
 
-import com.jakt.aiplatform.common.util.error.CommonErrorCode;
-import com.jakt.aiplatform.common.util.error.CommonException;
+import com.jakt.aiplatform.common.framework.enums.ErrorCodeEnum;
+import com.jakt.aiplatform.common.framework.error.CommonException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -28,7 +28,7 @@ public final class ParamValidator {
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
                 .collect(Collectors.joining("; "));
         if (!message.isEmpty()) {
-            throw CommonException.of(CommonErrorCode.PARAM_INVALID, message);
+            throw CommonException.of(ErrorCodeEnum.PARAM_INVALID, message);
         }
     }
 }

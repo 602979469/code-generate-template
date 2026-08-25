@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.common.util.constant;
+package com.jakt.aiplatform.common.framework.constant;
 
 /**
  * 分页通用常量：默认值与上限统一收口，禁止业务代码散落魔法值。

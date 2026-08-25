@@ -314,10 +314,6 @@ public final class SkeletonGenerator {
                     <dependencies>
                         <dependency>
                             <groupId>%s</groupId>
-                            <artifactId>%s-common-util</artifactId>
-                        </dependency>
-                        <dependency>
-                            <groupId>%s</groupId>
                             <artifactId>%s-common-framework</artifactId>
                         </dependency>
                         <dependency>
@@ -349,8 +345,7 @@ public final class SkeletonGenerator {
                     </dependencies>
                 </project>
                 """.formatted(cfg.groupId, cfg.projectArtifactPrefix, cfg.projectArtifactPrefix,
-                cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix,
-                cfg.groupId, cfg.projectArtifactPrefix);
+                cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix);
     }
 
     private String buildBootstrapPom() {
@@ -387,7 +382,7 @@ public final class SkeletonGenerator {
                         </dependency>
                         <dependency>
                             <groupId>%s</groupId>
-                            <artifactId>%s-common-util</artifactId>
+                            <artifactId>%s-common-framework</artifactId>
                         </dependency>
                         <dependency>
                             <groupId>%s</groupId>
@@ -518,10 +513,6 @@ public final class SkeletonGenerator {
             case "biz" -> """
                             <dependency>
                                 <groupId>%s</groupId>
-                                <artifactId>%s-common-util</artifactId>
-                            </dependency>
-                            <dependency>
-                                <groupId>%s</groupId>
                                 <artifactId>%s-common-framework</artifactId>
                             </dependency>
                             <dependency>
@@ -533,8 +524,16 @@ public final class SkeletonGenerator {
                                 <artifactId>spring-context</artifactId>
                             </dependency>
                         """.formatted(cfg.groupId, cfg.projectArtifactPrefix,
-                    cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix, module);
+                    cfg.groupId, cfg.projectArtifactPrefix, module);
             case "web" -> """
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-framework</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-util</artifactId>
+                            </dependency>
                             <dependency>
                                 <groupId>%s</groupId>
                                 <artifactId>%s-%s-core</artifactId>
@@ -568,7 +567,8 @@ public final class SkeletonGenerator {
                                 <artifactId>jackson-annotations</artifactId>
                                 <scope>provided</scope>
                             </dependency>
-                        """.formatted(cfg.groupId, cfg.projectArtifactPrefix, module,
+                        """.formatted(cfg.groupId, cfg.projectArtifactPrefix,
+                    cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix, module,
                     cfg.groupId, cfg.projectArtifactPrefix, module, cfg.groupId, cfg.projectArtifactPrefix);
             default -> throw new IllegalArgumentException("未知层组: " + group);
         };

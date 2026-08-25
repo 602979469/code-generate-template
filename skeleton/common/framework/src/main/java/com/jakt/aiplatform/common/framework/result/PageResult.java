@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.common.util.result;
+package com.jakt.aiplatform.common.framework.result;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

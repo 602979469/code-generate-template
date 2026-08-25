@@ -1,14 +1,12 @@
-package com.jakt.aiplatform.common.util.template;
+package com.jakt.aiplatform.common.framework.template;
 
-import com.jakt.aiplatform.common.util.error.CommonErrorCode;
-import com.jakt.aiplatform.common.util.error.CommonException;
-import com.jakt.aiplatform.common.util.enums.LogFileEnum;
-import com.jakt.aiplatform.common.util.result.Result;
-import com.jakt.aiplatform.common.util.tools.LoggerUtil;
+import com.jakt.aiplatform.common.framework.enums.ErrorCodeEnum;
+import com.jakt.aiplatform.common.framework.enums.LogFileEnum;
+import com.jakt.aiplatform.common.framework.error.CommonException;
+import com.jakt.aiplatform.common.framework.result.Result;
+import com.jakt.aiplatform.common.framework.tools.LoggerUtil;
 
-/**
- * common-util 层业务执行模板：callback + 异常分类 + Result 包装。
- */
+/** common-framework 层业务执行模板：callback + 异常分类 + Result 包装。 */
 public final class BizTemplate {
 
     private BizTemplate() {
@@ -21,7 +19,7 @@ public final class BizTemplate {
             return Result.fail(e.getErrorCode(), e.getErrorMessage());
         } catch (Exception e) {
             LoggerUtil.error(LogFileEnum.COMMON_ERROR, e, "业务执行失败");
-            return Result.fail(CommonErrorCode.SYSTEM_ERROR.getCode(), CommonErrorCode.SYSTEM_ERROR.getMessage());
+            return Result.fail(ErrorCodeEnum.SYSTEM_ERROR.getCode(), ErrorCodeEnum.SYSTEM_ERROR.getMessage());
         }
     }
 
@@ -32,7 +30,7 @@ public final class BizTemplate {
             return Result.fail(e.getErrorCode(), e.getErrorMessage());
         } catch (Exception e) {
             LoggerUtil.error(LogFileEnum.COMMON_ERROR, e, "业务执行失败");
-            return Result.fail(CommonErrorCode.SYSTEM_ERROR.getCode(), CommonErrorCode.SYSTEM_ERROR.getMessage());
+            return Result.fail(ErrorCodeEnum.SYSTEM_ERROR.getCode(), ErrorCodeEnum.SYSTEM_ERROR.getMessage());
         }
     }
 

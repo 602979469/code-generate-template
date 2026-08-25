@@ -1,7 +1,7 @@
 package com.jakt.aiplatform.web.result;
 
-import com.jakt.aiplatform.common.util.error.ErrorCode;
-import com.jakt.aiplatform.common.util.error.CommonErrorCode;
+import com.jakt.aiplatform.common.framework.error.ErrorCode;
+import com.jakt.aiplatform.common.framework.enums.ErrorCodeEnum;
 import lombok.Data;
 
 import java.io.Serial;
@@ -60,6 +60,6 @@ public class ApiResult<T> implements Serializable {
     }
 
     public static <T> ApiResult<T> fail(String message) {
-        return fail(CommonErrorCode.SYSTEM_ERROR, message);
+        return fail(ErrorCodeEnum.SYSTEM_ERROR, message);
     }
 }

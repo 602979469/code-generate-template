@@ -13,50 +13,23 @@
 
     <artifactId>aiplatform-common-util</artifactId>
     <name>aiplatform-common-util</name>
-    <description>基础工具：TraceId、RestTemplate、条件断言（AssertUtil）、线程池等</description>
+    <description>基础工具：JsonUtil / ConvertUtil（用户自定义工具落点）</description>
 
     <dependencies>
-        <!-- Sa-Token core：ClientInfoUtil 经 SaHolder 获取请求客户端信息 -->
+        <!-- ConvertUtil.mapPage 依赖 framework 的 PageResult -->
         <dependency>
-            <groupId>cn.dev33</groupId>
-            <artifactId>sa-token-core</artifactId>
+            <groupId>com.jakt</groupId>
+            <artifactId>aiplatform-common-framework</artifactId>
         </dependency>
         <!-- Hutool：判空/判 blank 统一工具 -->
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
         </dependency>
-        <!-- jakarta validation：ParamValidator 校验注解使用（实现由 web 的 spring-boot-starter-validation 提供） -->
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-        </dependency>
-        <!-- spring-boot：AiChatProperties 等 @ConfigurationProperties 配置类 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
         <!-- Jackson：JsonUtil（json/jsonArray/jsonObject 转换） -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -1,12 +1,12 @@
-package com.jakt.aiplatform.common.util.tools;
+package com.jakt.aiplatform.common.framework.tools;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.jakt.aiplatform.common.util.error.CommonException;
-import com.jakt.aiplatform.common.util.error.ErrorCode;
+import com.jakt.aiplatform.common.framework.error.CommonException;
+import com.jakt.aiplatform.common.framework.error.ErrorCode;
 
 import java.util.Collection;
 import java.util.Map;

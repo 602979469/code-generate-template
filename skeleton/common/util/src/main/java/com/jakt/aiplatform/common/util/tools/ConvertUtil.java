@@ -1,7 +1,7 @@
 package com.jakt.aiplatform.common.util.tools;
 
 import cn.hutool.core.collection.CollUtil;
-import com.jakt.aiplatform.common.util.result.PageResult;
+import com.jakt.aiplatform.common.framework.result.PageResult;
 
 import java.util.List;
 import java.util.function.Function;

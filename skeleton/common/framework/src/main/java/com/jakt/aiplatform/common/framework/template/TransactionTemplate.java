@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.common.util.template;
+package com.jakt.aiplatform.common.framework.template;
 
 /**
  * common-util 层事务执行器抽象。

@@ -26,7 +26,7 @@
         </dependency>
         <dependency>
             <groupId>com.jakt</groupId>
-            <artifactId>aiplatform-common-util</artifactId>
+            <artifactId>aiplatform-common-framework</artifactId>
         </dependency>
         <dependency>
             <groupId>com.jakt</groupId>

@@ -1,4 +1,4 @@
-package com.jakt.aiplatform.common.util.error;
+package com.jakt.aiplatform.common.framework.error;
 
 /**
  * common-util 层通用业务异常。

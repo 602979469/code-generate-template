@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>com.jakt</groupId>
-            <artifactId>aiplatform-common-util</artifactId>
+            <artifactId>aiplatform-common-framework</artifactId>
         </dependency>
 
         <!-- Sa-Token core：StpUtil.getRoleList/getPermissionList -->

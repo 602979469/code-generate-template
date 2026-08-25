@@ -53,6 +53,13 @@
         ORDER BY ${pkOrderBy}
     </select>
 
+    <select id="selectOne" resultType="${basePackage}.common.dal.dataobject.${className}DO">
+        SELECT <include refid="selectColumns"/>
+        FROM ${tableName}
+        <include refid="queryConditions"/>
+        ORDER BY ${pkOrderBy}
+    </select>
+
     <select id="countByQuery" resultType="long">
         SELECT COUNT(*)
         FROM ${tableName}

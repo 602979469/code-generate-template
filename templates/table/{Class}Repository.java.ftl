@@ -1,6 +1,6 @@
 package ${pkgRepository};
 
-import ${basePackage}.common.util.result.PageResult;
+import ${basePackage}.common.framework.result.PageResult;
 import ${pkgDomain}.${className};
 import ${pkgParam}.${className}QueryParam;
 
@@ -39,7 +39,7 @@ public interface ${className}Repository {
      * 按条件查询单条：基于 {@code findList} 的结果集判断，不新增 Mapper 方法。
      *
      * @param query 查询参数
-     * @return ${entityName}领域模型；未查询到返回 null，结果多于 1 条抛「查询结果不唯一」
+     * @return ${entityName}领域模型；未查询到返回 null，多条由 Mapper selectOne 抛 TooManyResultsException
      */
     ${className} findOne(${className}QueryParam query);
 

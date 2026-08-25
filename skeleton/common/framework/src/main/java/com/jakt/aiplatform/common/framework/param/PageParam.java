@@ -1,7 +1,7 @@
 package com.jakt.aiplatform.common.framework.param;
 
 import com.jakt.aiplatform.common.framework.model.BaseModel;
-import com.jakt.aiplatform.common.util.constant.PageConstants;
+import com.jakt.aiplatform.common.framework.constant.PageConstants;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

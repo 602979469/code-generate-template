@@ -1,6 +1,6 @@
 package com.jakt.aiplatform.common.dal.query;
 
-import com.jakt.aiplatform.common.util.constant.PageConstants;
+import com.jakt.aiplatform.common.framework.constant.PageConstants;
 import lombok.Data;
 
 /**

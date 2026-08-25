@@ -1,8 +1,8 @@
 package ${pkgWebController};
 
 import cn.hutool.core.util.ObjectUtil;
-import ${basePackage}.common.util.result.PageResult;
-import ${basePackage}.common.util.tools.AssertUtil;
+import ${basePackage}.common.framework.result.PageResult;
+import ${basePackage}.common.framework.tools.AssertUtil;
 import ${basePackage}.common.util.tools.ConvertUtil;
 import ${basePackage}.common.framework.enums.ErrorCodeEnum;
 import ${basePackage}.web.result.ApiResult;
@@ -82,7 +82,7 @@ public class ${className}Controller {
             @Override
             public ${className}Response execute(${pkFirstType} param) {
                 ${className} ${classNameLower} = ${classNameLower}Manager.get${className}(${pkCallArgs});
-                AssertUtil.throwErrWhenNull(${classNameLower}, ErrorCodeEnum.RESOURCE_NOT_FOUND, "${entityName}不存在");
+                AssertUtil.throwErrWhenNull(${classNameLower}, ErrorCodeEnum.PARAM_INVALID, "${entityName}不存在");
                 return ${className}Assembler.toResponse(${classNameLower});
             }
         });

@@ -1,7 +1,7 @@
 package ${pkgWebAssembler};
 
 import cn.hutool.core.util.ObjectUtil;
-import ${basePackage}.common.util.constant.PageConstants;
+import ${basePackage}.common.framework.constant.PageConstants;
 import ${pkgDomain}.${className};
 import ${pkgParam}.${className}QueryParam;
 import ${pkgWebParam}.${className}CreateRequest;

@@ -1,6 +1,6 @@
 package com.jakt.aiplatform.web.param;
 
-import com.jakt.aiplatform.common.util.constant.PageConstants;
+import com.jakt.aiplatform.common.framework.constant.PageConstants;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
