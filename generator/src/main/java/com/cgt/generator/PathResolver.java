@@ -38,10 +38,14 @@ public final class PathResolver {
             pkg = base + "." + module + "." + layer.packagePath() + "." + sub;
             root = cfg.outputDir.resolve(layer.mavenModuleDir());
         } else {
-            // aggregated / maven-module：包路径一致（带 modules 前缀），根目录由策略决定
+            // aggregated / maven-module：包路径一致（带 modules 前缀）；
+            // 业务模块内再按层组拆 Maven 子模块（{artifact}-{module}-{web|core|biz}），根目录由策略 + 层组决定
             String prefix = strategy.packagePrefix();
             pkg = base + (prefix.isEmpty() ? "" : "." + prefix) + "." + module + "." + layer.packagePath() + "." + sub;
             root = strategy.moduleRoot(cfg.outputDir, module);
+            if (layer.group() != null) {
+                root = root.resolve(cfg.projectArtifactPrefix + "-" + module + "-" + layer.group());
+            }
         }
         return new PathSpec(root.resolve("src/main/java").resolve(pkg.replace('.', '/')), pkg);
     }

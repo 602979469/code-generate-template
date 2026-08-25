@@ -72,6 +72,7 @@ public final class Main {
         System.out.println("[gen] 校验模式（--validate）：只检查配置与表结构，不生成任何文件");
         System.out.println("[gen] 项目: " + cfg.projectPrefix + " / " + cfg.basePackage()
                 + "，输出目录: " + cfg.outputDir);
+        PathResolver resolver = new PathResolver(cfg);
         if (cfg.tables.isEmpty()) {
             System.out.println("[gen] 未配置 tables，仅校验项目命名");
             return;
@@ -105,9 +106,7 @@ public final class Main {
                 if (!c.enumColumn) {
                     continue;
                 }
-                String enumSeg = table.module == null || table.module.isBlank() ? "" : "/" + table.module;
-                Path p = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
-                        + enumSeg + "/core/model/enums/" + c.enumClassName + ".java");
+                Path p = resolver.resolve(LayerCatalog.ENUMS, table.module).root().resolve(c.enumClassName + ".java");
                 if (Files.exists(p)) {
                     existingEnum = c.enumClassName;
                     break;

@@ -85,15 +85,20 @@ public final class SkeletonGenerator {
         return "pom.xml".equals(path) || "web/pom.xml".equals(path) || "bootstrap/pom.xml".equals(path);
     }
 
-    /** 非 flat 布局：生成根 pom、web 共享模块 pom、bootstrap pom 与每个业务模块 pom。 */
+    /** 非 flat 布局：生成根 pom、web 共享模块 pom、bootstrap pom、业务模块聚合 pom 与层子模块 pom。 */
     private int generateLayoutPoms() throws IOException {
         int count = 0;
         count += writePom(cfg.outputDir.resolve("pom.xml"), buildRootPom());
         count += writePom(cfg.outputDir.resolve("web/pom.xml"), buildWebPom());
         count += writePom(cfg.outputDir.resolve("bootstrap/pom.xml"), buildBootstrapPom());
         for (GeneratorConfig.ModuleConfig m : cfg.modules) {
-            Path modulePom = cfg.layoutStrategy().moduleRoot(cfg.outputDir, m.name).resolve("pom.xml");
-            count += writePom(modulePom, buildModulePom(m.name));
+            Path moduleRoot = cfg.layoutStrategy().moduleRoot(cfg.outputDir, m.name);
+            count += writePom(moduleRoot.resolve("pom.xml"), buildModulePom(m.name));
+            for (String group : List.of("core", "biz", "web")) {
+                Path groupPom = moduleRoot.resolve(cfg.projectArtifactPrefix + "-" + m.name + "-" + group)
+                        .resolve("pom.xml");
+                count += writePom(groupPom, buildLayerModulePom(m.name, group));
+            }
         }
         return count;
     }
@@ -138,13 +143,15 @@ public final class SkeletonGenerator {
         }
         StringBuilder bizArtifacts = new StringBuilder();
         for (GeneratorConfig.ModuleConfig m : cfg.modules) {
-            bizArtifacts.append("""
-                        <dependency>
-                            <groupId>%s</groupId>
-                            <artifactId>%s-%s</artifactId>
-                            <version>${project.version}</version>
-                        </dependency>
-                    """.formatted(cfg.groupId, cfg.projectArtifactPrefix, m.name));
+            for (String artifact : moduleArtifacts(m.name)) {
+                bizArtifacts.append("""
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                        """.formatted(cfg.groupId, artifact));
+            }
         }
         return pomHeader() + """
                     <groupId>%s</groupId>
@@ -352,7 +359,7 @@ public final class SkeletonGenerator {
             bizDeps.append("""
                         <dependency>
                             <groupId>%s</groupId>
-                            <artifactId>%s-%s</artifactId>
+                            <artifactId>%s-%s-web</artifactId>
                         </dependency>
                     """.formatted(cfg.groupId, cfg.projectArtifactPrefix, m.name));
         }
@@ -451,54 +458,139 @@ public final class SkeletonGenerator {
                     </parent>
 
                     <artifactId>%s-%s</artifactId>
+                    <packaging>pom</packaging>
                     <name>%s-%s</name>
-                    <description>业务模块 %s：web / core / biz 各层代码（包路径带 modules 前缀）</description>
+                    <description>业务模块 %s 聚合：web / core / biz 三个 Maven 子模块</description>
 
-                    <dependencies>
-                        <dependency>
-                            <groupId>%s</groupId>
-                            <artifactId>%s-common-util</artifactId>
-                        </dependency>
-                        <dependency>
-                            <groupId>%s</groupId>
-                            <artifactId>%s-common-framework</artifactId>
-                        </dependency>
-                        <dependency>
-                            <groupId>%s</groupId>
-                            <artifactId>%s-common-dal</artifactId>
-                        </dependency>
-                        <dependency>
-                            <groupId>%s</groupId>
-                            <artifactId>%s-web</artifactId>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-starter-web</artifactId>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-starter-validation</artifactId>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.springdoc</groupId>
-                            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                        </dependency>
-                        <dependency>
-                            <groupId>cn.hutool</groupId>
-                            <artifactId>hutool-all</artifactId>
-                        </dependency>
-                        <!-- Jackson 注解：生成枚举的 @JsonFormat(OBJECT) / @JsonCreator（provided，无运行期依赖） -->
-                        <dependency>
-                            <groupId>com.fasterxml.jackson.core</groupId>
-                            <artifactId>jackson-annotations</artifactId>
-                            <scope>provided</scope>
-                        </dependency>
-                    </dependencies>
+                    <modules>
+                        <module>%s-%s-core</module>
+                        <module>%s-%s-biz</module>
+                        <module>%s-%s-web</module>
+                    </modules>
                 </project>
                 """.formatted(cfg.groupId, cfg.projectArtifactPrefix, rootRelativePath(),
                 cfg.projectArtifactPrefix, module, cfg.projectArtifactPrefix, module, module,
-                cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix,
-                cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix);
+                cfg.projectArtifactPrefix, module, cfg.projectArtifactPrefix, module,
+                cfg.projectArtifactPrefix, module);
+    }
+
+    /** 业务模块的 Maven 构件清单（聚合器 + web/core/biz 三个层子模块），供根 pom dependencyManagement 登记。 */
+    private List<String> moduleArtifacts(String module) {
+        return List.of(
+                cfg.projectArtifactPrefix + "-" + module,
+                cfg.projectArtifactPrefix + "-" + module + "-core",
+                cfg.projectArtifactPrefix + "-" + module + "-biz",
+                cfg.projectArtifactPrefix + "-" + module + "-web");
+    }
+
+    /** 业务模块内的层子模块 pom（core / biz / web）。 */
+    private String buildLayerModulePom(String module, String group) {
+        String deps = switch (group) {
+            case "core" -> """
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-util</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-framework</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-dal</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>cn.hutool</groupId>
+                                <artifactId>hutool-all</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.springframework</groupId>
+                                <artifactId>spring-context</artifactId>
+                            </dependency>
+                            <!-- Jackson 注解：生成枚举的 @JsonFormat(OBJECT) / @JsonCreator（provided） -->
+                            <dependency>
+                                <groupId>com.fasterxml.jackson.core</groupId>
+                                <artifactId>jackson-annotations</artifactId>
+                                <scope>provided</scope>
+                            </dependency>
+                        """.formatted(cfg.groupId, cfg.projectArtifactPrefix,
+                    cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix);
+            case "biz" -> """
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-util</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-common-framework</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-%s-core</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.springframework</groupId>
+                                <artifactId>spring-context</artifactId>
+                            </dependency>
+                        """.formatted(cfg.groupId, cfg.projectArtifactPrefix,
+                    cfg.groupId, cfg.projectArtifactPrefix, cfg.groupId, cfg.projectArtifactPrefix, module);
+            case "web" -> """
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-%s-core</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-%s-biz</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s-web</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-starter-web</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-starter-validation</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.springdoc</groupId>
+                                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>cn.hutool</groupId>
+                                <artifactId>hutool-all</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>com.fasterxml.jackson.core</groupId>
+                                <artifactId>jackson-annotations</artifactId>
+                                <scope>provided</scope>
+                            </dependency>
+                        """.formatted(cfg.groupId, cfg.projectArtifactPrefix, module,
+                    cfg.groupId, cfg.projectArtifactPrefix, module, cfg.groupId, cfg.projectArtifactPrefix);
+            default -> throw new IllegalArgumentException("未知层组: " + group);
+        };
+        return pomHeader() + """
+                    <parent>
+                        <groupId>%s</groupId>
+                        <artifactId>%s-%s</artifactId>
+                        <version>0.1.0-SNAPSHOT</version>
+                        <relativePath>../pom.xml</relativePath>
+                    </parent>
+
+                    <artifactId>%s-%s-%s</artifactId>
+                    <name>%s-%s-%s</name>
+                    <description>业务模块 %s 的 %s 层子模块</description>
+
+                    <dependencies>
+                %s
+                    </dependencies>
+                </project>
+                """.formatted(cfg.groupId, cfg.projectArtifactPrefix, module,
+                cfg.projectArtifactPrefix, module, group, cfg.projectArtifactPrefix, module, group,
+                module, group, deps);
     }
 
     private String replace(String text) {

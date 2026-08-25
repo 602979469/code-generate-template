@@ -13,6 +13,7 @@ import java.util.List;
  * @param common               共享层（common.*，不挂业务模块）
  * @param skipWhenNoController generateController=false 时跳过（web / biz 层）
  * @param resource             资源文件（src/main/resources，非 java 包）
+ * @param group                非 flat 布局下的子模块组：core / biz / web（common 层为 null）
  */
 public record LayerSpec(
         String id,
@@ -22,7 +23,8 @@ public record LayerSpec(
         List<String> fileRules,
         boolean common,
         boolean skipWhenNoController,
-        boolean resource) {
+        boolean resource,
+        String group) {
 
     public String packageSub() {
         return sub.replace('/', '.');

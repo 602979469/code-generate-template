@@ -36,7 +36,12 @@ public final class StructureGenerator {
         // 3. 业务模块根（aggregated / maven-module）：模块根 + pom 占位
         if (!strategy.businessInLayer()) {
             for (GeneratorConfig.ModuleConfig m : cfg.modules) {
-                created.add(touch(strategy.moduleRoot(cfg.outputDir, m.name).resolve("pom.xml")));
+                Path moduleRoot = strategy.moduleRoot(cfg.outputDir, m.name);
+                created.add(touch(moduleRoot.resolve("pom.xml")));
+                for (String group : List.of("core", "biz", "web")) {
+                    created.add(touch(moduleRoot.resolve(cfg.projectArtifactPrefix + "-" + m.name + "-" + group)
+                            .resolve("pom.xml")));
+                }
             }
         }
         warnUnknownModules();

@@ -32,11 +32,6 @@ public final class CrudGenerator {
     /** 层 id -> LayerSpec。 */
     private static final Map<String, LayerSpec> LAYER_BY_ID = new LinkedHashMap<>();
 
-    /** core-model 枚举层：生成器单独渲染（枚举类名 != 模型名，不在 LayerCatalog 文件规则内）。 */
-    private static final LayerSpec ENUMS_LAYER = new LayerSpec(
-            "core-model-enums", "core/model", "core.model", "enums",
-            List.of(), false, false, false);
-
     static {
         for (LayerSpec layer : LayerCatalog.ALL) {
             LAYER_BY_ID.put(layer.id(), layer);
@@ -215,7 +210,7 @@ public final class CrudGenerator {
     private String firstExistingEnumFile(TableMeta meta) {
         for (ColumnMeta c : meta.columns) {
             if (c.enumColumn) {
-                Path p = resolver.resolve(ENUMS_LAYER, meta.module).root().resolve(c.enumClassName + ".java");
+                Path p = resolver.resolve(LayerCatalog.ENUMS, meta.module).root().resolve(c.enumClassName + ".java");
                 if (Files.exists(p)) {
                     return c.enumClassName;
                 }
@@ -247,7 +242,7 @@ public final class CrudGenerator {
             Map<String, Object> enumModel = new LinkedHashMap<>();
             enumModel.put("basePackage", cfg.basePackage());
             enumModel.put("module", meta.module == null ? "" : meta.module);
-            enumModel.put("pkgEnums", resolver.resolve(ENUMS_LAYER, meta.module).packageName());
+            enumModel.put("pkgEnums", resolver.resolve(LayerCatalog.ENUMS, meta.module).packageName());
             enumModel.put("entityName", meta.entityName);
             enumModel.put("enumDesc", c.comment);
             enumModel.put("enumClassName", c.enumClassName);
@@ -257,7 +252,7 @@ public final class CrudGenerator {
             Template template = freemarker.getTemplate("{EnumName}.java.ftl");
             StringWriter writer = new StringWriter();
             template.process(enumModel, writer);
-            Path target = resolver.resolve(ENUMS_LAYER, meta.module).root().resolve(c.enumClassName + ".java");
+            Path target = resolver.resolve(LayerCatalog.ENUMS, meta.module).root().resolve(c.enumClassName + ".java");
             if (Files.exists(target) && !force) {
                 notes.add("枚举: " + c.enumClassName + " 已存在，跳过该枚举文件");
                 continue;
@@ -383,7 +378,7 @@ public final class CrudGenerator {
         model.put("module", meta.module == null ? "" : meta.module);
         model.put("pkgDomain", pkgOf(LAYER_BY_ID.get("core-model-domain"), meta.module));
         model.put("pkgParam", pkgOf(LAYER_BY_ID.get("core-model-param"), meta.module));
-        model.put("pkgEnums", resolver.resolve(ENUMS_LAYER, meta.module).packageName());
+        model.put("pkgEnums", resolver.resolve(LayerCatalog.ENUMS, meta.module).packageName());
         model.put("pkgRepository", pkgOf(LAYER_BY_ID.get("core-repository"), meta.module));
         model.put("pkgRepositoryImpl", pkgOf(LAYER_BY_ID.get("core-repository-impl"), meta.module));
         model.put("pkgConvertor", pkgOf(LAYER_BY_ID.get("core-repository-convertor"), meta.module));
@@ -414,7 +409,7 @@ public final class CrudGenerator {
         boolean list = false;
         boolean map = false;
         String domainPackage = resolver.resolve(LAYER_BY_ID.get("core-model-domain"), meta.module).packageName();
-        String enumsPackage = resolver.resolve(ENUMS_LAYER, meta.module).packageName();
+        String enumsPackage = resolver.resolve(LayerCatalog.ENUMS, meta.module).packageName();
         for (ColumnMeta c : meta.columns) {
             if (c.enumColumn) {
                 sb.append("import ").append(enumsPackage).append(".").append(c.enumClassName).append(";\n");
@@ -451,7 +446,7 @@ public final class CrudGenerator {
         boolean map = false;
         for (ColumnMeta c : meta.columns) {
             if (c.enumColumn) {
-                sb.append("import ").append(resolver.resolve(ENUMS_LAYER, meta.module).packageName())
+                sb.append("import ").append(resolver.resolve(LayerCatalog.ENUMS, meta.module).packageName())
                         .append(".").append(c.enumClassName).append(";\n");
             }
             if (c.modelType != null && c.modelType.contains("List<")) {
