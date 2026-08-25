@@ -93,5 +93,7 @@ public final class StructureGenerator {
                 .map(p -> cfg.outputDir.relativize(p).toString().replace('\\', '/'))
                 .sorted(Comparator.naturalOrder())
                 .forEach(p -> System.out.println("    " + p));
+        System.out.println("[gen] ⚠️ 占位文件均为 0 字节（仅用于查看目录结构）；正式生成前请删除输出目录内容，"
+                + "否则已存在文件会被跳过（除非 force_create: true）");
     }
 }

@@ -105,8 +105,9 @@ public final class Main {
                 if (!c.enumColumn) {
                     continue;
                 }
+                String enumSeg = table.module == null || table.module.isBlank() ? "" : "/" + table.module;
                 Path p = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
-                        + "/core/model/enums/" + c.enumClassName + ".java");
+                        + "/core/model" + enumSeg + "/enums/" + c.enumClassName + ".java");
                 if (Files.exists(p)) {
                     existingEnum = c.enumClassName;
                     break;
@@ -131,6 +132,9 @@ public final class Main {
                     .map(c -> c.columnName + "(" + c.javaType + ")")
                     .collect(java.util.stream.Collectors.joining(", "))
                     + "，逻辑删除: " + meta.logicDeleteEnabled + "，时间列: " + timeMode);
+            if (meta.logicDeleteWarn != null) {
+                System.out.println("[gen]    警告: " + meta.logicDeleteWarn);
+            }
             System.out.println("[gen]    计划: " + state + "，代码文件 "
                     + CrudGenerator.plannedFileCount(meta, table.generateController)
                     + " 个 + 1 份 DDL"

@@ -190,6 +190,9 @@ public final class DbMetaReader {
 
     private static String queryType(ColumnMeta c) {
         // 当前统一等值查询；LIKE 属于业务需求，无法从建表语句推导，后续按需求/配置扩展
+        if ("json".equals(c.dbType)) {
+            return "NONE";
+        }
         return "EQ";
     }
 
@@ -317,6 +320,7 @@ public final class DbMetaReader {
         c.toModelExpr = element.contains("<")
                 ? "JsonUtil.parseArray({do}." + getter + ", new TypeReference<java.util.List<" + element + ">>() {})"
                 : "JsonUtil.parseArray({do}." + getter + ", " + element + ".class)";
+        c.toDalExpr = "JsonUtil.toJson({query}." + getter + ")";
     }
 
     private static void applyJsonObjectConfig(TableMeta meta, ColumnMeta c, GeneratorConfig.ColumnConfig cc, String getter) {
@@ -334,6 +338,7 @@ public final class DbMetaReader {
             c.jsonElementType = cc.javaObject;
             c.toModelExpr = "JsonUtil.parseObject({do}." + getter + ", " + cc.javaObject + ".class)";
         }
+        c.toDalExpr = "JsonUtil.toJson({query}." + getter + ")";
     }
 
     /** 支持强制转换的 Java 类型（归一化后，与 GeneratorConfig.SUPPORTED_TYPES 一致）。 */
@@ -353,6 +358,7 @@ public final class DbMetaReader {
             c.conversion = "COERCE";
             c.toModelExpr = convertCall(type) + "({do}." + getter + ")";
             c.toDoExpr = convertCall(c.javaType) + "({model}." + getter + ")";
+            c.toDalExpr = convertCall(c.javaType) + "({query}." + getter + ")";
             return;
         }
         if (type.equals(c.javaType)) {
@@ -441,7 +447,9 @@ public final class DbMetaReader {
             addQueryColumn(table, table.pkColumnName, table.pkPropertyName, table.pkJavaType, "主键");
         }
         // 敏感列不进查询参数/查询条件/响应（password/token 等按默认名单或显式配置剔除）
-        table.columns.stream().filter(c -> !c.sensitive).forEach(table.queryColumns::add);
+        table.columns.stream()
+                .filter(c -> !c.sensitive && !"NONE".equals(c.queryType))
+                .forEach(table.queryColumns::add);
     }
 
     private static void addQueryColumn(TableMeta table, String columnName, String propertyName,

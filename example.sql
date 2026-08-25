@@ -63,6 +63,8 @@ CREATE TABLE IF NOT EXISTS `example` (
   `level`       tinyint       NOT NULL DEFAULT 0 COMMENT '等级',
   `login_count` bigint        NOT NULL DEFAULT 0 COMMENT '登录次数(强制转 Integer)',
   `balance`     decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT '余额',
+  `id_card`     varchar(18)   DEFAULT NULL COMMENT '身份证号',
+  `phone`       varchar(20)   DEFAULT NULL COMMENT '手机号',
   `user_type`   int           NOT NULL DEFAULT 0 COMMENT '用户类型(0系统用户 1普通用户)',
   `status`      varchar(20)   NOT NULL DEFAULT 'ENABLED' COMMENT '状态(ENABLED/DISABLED)',
   `profile`     json          DEFAULT NULL COMMENT '扩展信息(json 对象)',

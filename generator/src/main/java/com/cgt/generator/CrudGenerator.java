@@ -447,10 +447,18 @@ public final class CrudGenerator {
         boolean objectUtil = false;
         boolean jsonUtil = false;
         boolean typeRef = false;
+        boolean list = false;
+        boolean map = false;
         for (ColumnMeta c : meta.columns) {
             if (c.enumColumn) {
                 sb.append("import ").append(resolver.resolve(ENUMS_LAYER, meta.module).packageName())
                         .append(".").append(c.enumClassName).append(";\n");
+            }
+            if (c.modelType != null && c.modelType.contains("List<")) {
+                list = true;
+            }
+            if (c.modelType != null && c.modelType.contains("Map<")) {
+                map = true;
             }
             if ("ENUM".equals(c.conversion)) {
                 objectUtil = true;
@@ -476,6 +484,12 @@ public final class CrudGenerator {
         }
         if (typeRef) {
             sb.append("import com.fasterxml.jackson.core.type.TypeReference;\n");
+        }
+        if (list) {
+            sb.append("import java.util.List;\n");
+        }
+        if (map) {
+            sb.append("import java.util.Map;\n");
         }
         return sb.toString();
     }

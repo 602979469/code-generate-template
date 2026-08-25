@@ -22,13 +22,11 @@ basePackage: com.jakt.aiprod
 
 # ---------------- 项目架构风格（可选，默认 monolith:flat） ----------------
 
-# 项目风格: monolith | microservice（可选，默认 monolith；microservice 暂未实现）
+# 项目风格: monolith（microservice 暂未实现，配置到即报错）
 projectStyle: monolith
 
-# 模块样式: flat | aggregated | maven-module（可选，默认 flat）
-#   flat        - 不新建 Maven 模块（1.0 结构不变），业务模块作为层内子包: com.jakt.aiprod.core.model.chat.domain
-#   aggregated  - 业务模块拆 Maven 子项目，收在 modules/ 下: com.jakt.aiprod.modules.chat.web.controller
-#   maven-module- 业务模块拆 Maven 子项目，平铺在根下: com.jakt.aiprod.modules.chat.web.controller（目录 aiprod-chat/）
+# 模块样式: flat（本期仅支持 flat；aggregated / maven-module 暂未实现，配置到即报错）
+#   业务模块作为层内子包: com.jakt.aiprod.core.model.chat.domain
 moduleLayout: flat
 
 # ---------------- 业务模块列表（声明有哪些模块，供表关联选择） ----------------

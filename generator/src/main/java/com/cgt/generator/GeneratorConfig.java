@@ -321,6 +321,12 @@ public final class GeneratorConfig {
         if (!projectPrefix.matches("[A-Za-z][A-Za-z0-9]*")) {
             throw new IllegalArgumentException("projectPrefix 需为驼峰字母/数字(如 AiProd)");
         }
+        if (!"monolith".equals(projectStyle)) {
+            throw new IllegalArgumentException("projectStyle 仅支持 monolith（microservice 暂未实现，配置到即报错）");
+        }
+        if (!"flat".equals(moduleLayout)) {
+            throw new IllegalArgumentException("moduleLayout 仅支持 flat（本期只做 flat，aggregated / maven-module 暂未实现）");
+        }
         if (!tables.isEmpty()) {
             if (isBlank(jdbcUrl) || isBlank(jdbcUsername)) {
                 throw new IllegalArgumentException("配置了 tables 但缺少 jdbc.url / jdbc.username");
