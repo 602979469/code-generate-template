@@ -8,7 +8,7 @@ import java.nio.file.Path;
  * <p>公式（见《02-代码风格与模块设计》）：
  * <pre>
  * 共享层    = {basePackage}.{层包}.{子包}
- * flat      = {basePackage}.{层包}.{业务模块}.{子包}
+ * flat      = {basePackage}.{业务模块}.{层包}.{子包}
  * aggregated= {basePackage}.modules.{业务模块}.{层包}.{子包}
  * maven-module = 同 aggregated（仅根目录不同）
  * </pre>
@@ -34,8 +34,8 @@ public final class PathResolver {
             pkg = base + "." + layer.packagePath() + "." + sub;
             root = cfg.outputDir.resolve(layer.mavenModuleDir());
         } else if (strategy.businessInLayer()) {
-            // flat：业务模块作为层内子包
-            pkg = base + "." + layer.packagePath() + "." + module + "." + sub;
+            // flat：业务模块名前置（{basePackage}.{module}.{层包}.{子包}）
+            pkg = base + "." + module + "." + layer.packagePath() + "." + sub;
             root = cfg.outputDir.resolve(layer.mavenModuleDir());
         } else {
             // aggregated / maven-module：包路径一致（带 modules 前缀），根目录由策略决定

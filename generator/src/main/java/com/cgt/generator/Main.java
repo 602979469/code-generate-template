@@ -107,7 +107,7 @@ public final class Main {
                 }
                 String enumSeg = table.module == null || table.module.isBlank() ? "" : "/" + table.module;
                 Path p = cfg.outputDir.resolve("core/model/src/main/java/" + cfg.packagePath()
-                        + "/core/model" + enumSeg + "/enums/" + c.enumClassName + ".java");
+                        + enumSeg + "/core/model/enums/" + c.enumClassName + ".java");
                 if (Files.exists(p)) {
                     existingEnum = c.enumClassName;
                     break;
