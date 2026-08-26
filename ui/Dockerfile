@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # 阶段1：构建生成器 fat jar（前端 java -jar 调用，见 ui/server.js runGenerator）
 FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /build
