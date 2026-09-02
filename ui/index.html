@@ -32,7 +32,6 @@
     .module-global { display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #e4e7ed; }
     .module-global .el-select { margin-right: 10px; }
     .ds-form .el-form-item__label { font-weight: 600; }
-    .cluster-db-tip { font-size: 13px; color: #909399; background: #f4f4f5; border-radius: 4px; padding: 8px 12px; margin-bottom: 18px; }
     .advanced-separator { border-bottom: 1px solid #dcdfe6; margin: 2px 0 14px; }
     .logic-row { display: flex; align-items: center; margin-top: 8px; }
     .logic-label { font-size: 12px; color: #606266; font-weight: 600; margin-right: 4px; white-space: nowrap; }
@@ -148,7 +147,6 @@
     <div class="el-card__header">数据源</div>
     <div class="el-card__body">
       <el-form :model="form" label-width="100px" size="small" class="ds-form">
-        <template v-if="!clusterMode">
         <el-row :gutter="20">
           <el-col :span="12"><el-form-item label="主机"><el-input v-model="form.host" placeholder="数据库地址（需公网可访问）" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="端口"><el-input v-model.number="form.port" placeholder="端口" /></el-form-item></el-col>
@@ -160,8 +158,6 @@
         <el-row :gutter="20">
           <el-col :span="12"><el-form-item label="密码"><el-input v-model="form.password" type="password" show-password placeholder="密码（可为空）" /></el-form-item></el-col>
         </el-row>
-        </template>
-        <div v-else class="cluster-db-tip">集群模式：自动连接集群内置 MySQL（aiplatform 库），无需填写数据库信息</div>
         <el-form-item label="高级设置"><el-switch v-model="advancedEnabled" /></el-form-item>
         <template v-if="advancedEnabled">
           <div class="advanced-separator"></div>
@@ -783,10 +779,6 @@ new Vue({
   created() {
     // 注入枚举引用计数函数：遍历所有表实时统计
     EnumStore.setRefCounter(name => this.countEnumRefs(name))
-    // 集群/内嵌模式：数据源固定为集群内置 MySQL，yaml 预览里的 jdbc 同步指向内置库
-    if (this.clusterMode) {
-      this.form = { host: 'mysql.tsk.svc.cluster.local', port: 3306, database: 'aiplatform', username: 'root', password: '' }
-    }
   },
   methods: {
     addModule() { this.modules.push({ name: '', cnName: '', confirmed: false, isDefault: false }) },
@@ -929,23 +921,20 @@ new Vue({
       }
     },
     async loadSchema() {
-      if (!this.clusterMode && (!this.form.host || !this.form.port || !this.form.database || !this.form.username)) {
+      if (!this.form.host || !this.form.port || !this.form.database || !this.form.username) {
         this.$message.warning('请填写完整数据库连接信息：主机、端口、数据库、用户名（密码可为空）')
         return
       }
       this.loading = true
       this.loadError = ''
       try {
-        const schemaPayload = this.clusterMode
-          ? { mode: 'cluster', dbType: 'mysql', database: 'aiplatform' }
-          : {
-              mode: 'direct', dbType: 'mysql', host: this.form.host, port: this.form.port || 3306,
-              database: this.form.database, username: this.form.username, password: this.form.password
-            }
         const res = await fetch('/schema', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(schemaPayload)
+          body: JSON.stringify({
+            mode: 'direct', dbType: 'mysql', host: this.form.host, port: this.form.port || 3306,
+            database: this.form.database, username: this.form.username, password: this.form.password
+          })
         })
         const result = await res.json()
         if (!result.success) {
