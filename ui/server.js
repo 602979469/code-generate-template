@@ -162,6 +162,35 @@ function sendJson(res, status, body) {
 }
 
 /**
+ * 静态文件响应：带 ETag/Last-Modified 与 Cache-Control。
+ * - vendor 库文件内容基本不变，给长缓存（浏览器命中缓存后无需每次重传 649KB 的 element-ui.js）；
+ * - 页面 HTML 用 no-cache（每次 304 校验，保证发布后立即生效）。
+ */
+function serveFile(req, res, filePath, contentType, cacheControl) {
+  fs.stat(filePath, (statErr, stat) => {
+    if (statErr || !stat.isFile()) {
+      return sendJson(res, 404, { success: false, errorCode: 'NOT_FOUND', errorMessage: 'Not Found' })
+    }
+    const etag = '"' + stat.size.toString(16) + '-' + Math.floor(stat.mtimeMs).toString(16) + '"'
+    if (req.headers['if-none-match'] === etag) {
+      res.writeHead(304, {
+        'ETag': etag,
+        'Cache-Control': cacheControl
+      })
+      res.end()
+      return
+    }
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Cache-Control': cacheControl,
+      'ETag': etag,
+      'Last-Modified': stat.mtime.toUTCString()
+    })
+    fs.createReadStream(filePath).pipe(res)
+  })
+}
+
+/**
  * 调用 code-generate-template 生成器。
  * packageMode=false（本地模式）：按 yaml 的 outputDir 直接生成到指定路径；
  * packageMode=true（集群模式）：临时目录生成 + tar.gz 打包，忽略 yaml 的 outputDir。
@@ -221,8 +250,7 @@ const server = http.createServer(async (req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname
   if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html')) {
     const file = path.join(__dirname, 'index.html')
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
-    fs.createReadStream(file).pipe(res)
+    serveFile(req, res, file, 'text/html; charset=utf-8', 'no-cache')
     return
   }
   if (req.method === 'GET' && pathname.startsWith('/vendor/')) {
@@ -230,11 +258,7 @@ const server = http.createServer(async (req, res) => {
     const type = path.extname(file) === '.css'
       ? 'text/css; charset=utf-8'
       : 'application/javascript; charset=utf-8'
-    if (!fs.existsSync(file)) {
-      return sendJson(res, 404, { success: false, errorCode: 'NOT_FOUND', errorMessage: 'Not Found' })
-    }
-    res.writeHead(200, { 'Content-Type': type })
-    fs.createReadStream(file).pipe(res)
+    serveFile(req, res, file, type, 'public, max-age=604800')
     return
   }
   if (req.method === 'POST' && pathname === '/schema') {
