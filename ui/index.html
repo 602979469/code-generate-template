@@ -95,10 +95,10 @@
       <el-form :model="project" label-width="120px" size="small">
         <el-row :gutter="20">
           <el-col :span="12"><el-form-item label="项目前缀" required><el-input v-model="project.projectPrefix" placeholder="启动类名前缀" /></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="基础包名" required><el-input v-model="project.basePackage" placeholder="所有代码的根包，如 com.jakt.aiprod" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="基础包名" required><el-input v-model="project.basePackage" placeholder="所有代码的根包，如 com.example.demo" /></el-form-item></el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="12"><el-form-item label="groupId" required><el-input v-model="project.groupId" placeholder="Maven groupId，如 com.jakt" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="groupId" required><el-input v-model="project.groupId" placeholder="Maven groupId，如 example" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="artifactId" required><el-input v-model="project.projectArtifactPrefix" placeholder="artifactId/包名后缀（小写）" /></el-form-item></el-col>
         </el-row>
         <el-row :gutter="20">
@@ -721,9 +721,8 @@ new Vue({
       loading: false,
       loadError: '',
       advancedEnabled: false,
-      // 临时测试默认值，确认后需还原为空
-      form: { host: '192.168.3.131', port: 30306, database: 'aiplatform', username: 'root', password: '123456' },
-      project: { projectPrefix: 'AiProd', basePackage: 'com.jakt.aiprod', groupId: 'com.jakt', projectArtifactPrefix: 'aiprod', outputDir: '~/AiProd' },
+      form: { host: 'localhost', port: 3306, database: 'aiplatform', username: 'root', password: '' },
+      project: { projectPrefix: 'Demo', basePackage: 'com.example.Demo', groupId: 'example', projectArtifactPrefix: 'demo', outputDir: '~/Demo' },
       plugins: [],
       global: { enable: false, columnName: 'del_flag', normalValue: '0', deleteValue: '1' },
       audit: { enable: false, createTimeColumn: 'create_time', updateTimeColumn: 'update_time' },
@@ -1066,7 +1065,7 @@ new Vue({
       lines.push('  username: ' + this.form.username)
       lines.push('  password: "' + (this.form.password || '') + '"')
       lines.push('')
-      lines.push('outputDir: ' + (this.project.outputDir || '/path/to/AiProd'))
+      lines.push('outputDir: ' + (this.project.outputDir || '/path/to/Demo'))
       lines.push('')
       if (this.global.enable && this.global.columnName) {
         lines.push('globalLogicDelete:')
