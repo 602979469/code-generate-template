@@ -271,8 +271,24 @@ const server = http.createServer(async (req, res) => {
       } catch (e) {
         return sendJson(res, 400, { success: false, errorCode: 'PARAM_INVALID', errorMessage: '请求体不是合法 JSON' })
       }
-      const { host, port, database, username, password } = body
-      if (!host || !database || !username) {
+      // cluster/内嵌模式：连集群内置 MySQL（aiplatform 库），连接参数走部署环境变量（MYSQL_* 由 mysql-secret 注入），
+      // 前端无需填数据库地址/密码；standalone 模式保持原逻辑（用户填外部可访问库）。
+      const dbConfig = body.mode === 'cluster'
+        ? {
+            host: process.env.MYSQL_HOST || 'mysql.tsk.svc.cluster.local',
+            port: Number(process.env.MYSQL_PORT || 3306),
+            database: body.database || process.env.MYSQL_DATABASE || 'aiplatform',
+            username: process.env.MYSQL_USERNAME || 'root',
+            password: process.env.MYSQL_PASSWORD || ''
+          }
+        : {
+            host: body.host,
+            port: Number(body.port || 3306),
+            database: body.database,
+            username: body.username,
+            password: body.password || ''
+          }
+      if (!dbConfig.host || !dbConfig.database || !dbConfig.username) {
         return sendJson(res, 400, {
           success: false,
           errorCode: 'PARAM_INVALID',
@@ -280,7 +296,7 @@ const server = http.createServer(async (req, res) => {
         })
       }
       try {
-        const data = await readSchema({ host, port, database, username, password })
+        const data = await readSchema(dbConfig)
         return sendJson(res, 200, { success: true, data })
       } catch (e) {
         const message = (e && e.message) || '数据库连接失败'
